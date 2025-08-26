@@ -1,0 +1,93 @@
+/* Анімація центру колеса - обертання з ефектами масштабування та нахилу */
+@keyframes center-bg-animation {
+  0% {
+    transform: scale(1.2) skew(0, 0) rotate(0deg);
+  }
+  25% {
+    transform: scale(1.3) skew(12deg, 12deg) rotate(90deg);
+  }
+  50% {
+    transform: scale(1.2) skew(0deg, 0deg) rotate(179deg);
+  }
+  75% {
+    transform: scale(1.4) skew(-12deg, -12deg) rotate(270deg);
+  }
+  100% {
+    transform: scale(1.2) skew(0, 0) rotate(360deg);
+  }
+}
+
+/* Анімація лампочок - чергування світіння для ефекту мерехтіння */
+@keyframes lamp-flashes-1 {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+/* Анімація лампочок - протифазна до lamp-flashes-1 для різноманітності */
+@keyframes lamp-flashes-2 {
+  0% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/* Анімація підсвічування тексту виграшу - зміна кольору напівпрозорості */
+@keyframes sum-text-highlight {
+  50% {
+    fill: var(--color-primary-2);
+  }
+}
+
+/* Анімація тексту "SPIN" - кольорова пульсація з тінню */
+@keyframes spin-text-light {
+  0% {
+    fill: var(--color-primary-5);
+    stroke: #00124b;
+  }
+  20% {
+    fill: #ffffff;
+    stroke: #a519d3;
+  }
+  40% {
+    fill: var(--color-primary-5);
+    stroke: #00124b;
+  }
+}
+
+/* Анімація очікування - плавне обертання колеса в режимі очікування */
+@keyframes waiting-spin-animation {
+  0% {
+    transform: rotate(40deg);
+  }
+  50% {
+    transform: rotate(-60deg);
+  }
+  100% {
+    transform: rotate(40deg);
+  }
+}
+
+/* Анімація ефекту обертання - коротка спалах для feedback при кліку */
+@keyframes spin-effect {
+  0% {
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.4;
+  }
+  100% {
+    opacity: 0;
+  }
+}

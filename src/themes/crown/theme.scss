@@ -1,0 +1,352 @@
+/* Тема crown */
+@use './styles/animations';
+@use './styles/tokens';
+
+.loot-box-spin-wheel-container {
+  position: relative;
+  width: 100%;
+  height: auto;
+  margin-top: 8%;
+}
+
+.wheel-sectors-mask {
+  position: absolute;
+  width: 84%;
+  height: 76.36%;
+  transform-origin: 50% 50%;
+  top: 12%;
+  left: 8%;
+  z-index: 5;
+  border-radius: 100%;
+  overflow: hidden;
+  transition-delay: 3s;
+  transition: opacity 4s linear;
+}
+
+.wheel-sectors {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  transform-origin: 50% 50%;
+  top: 0;
+  left: 0;
+  z-index: 5;
+}
+
+.wheel-frame {
+  position: absolute;
+  width: 95%;
+  height: auto;
+  top: 6.8%;
+  left: 2.5%;
+  z-index: 4;
+  aspect-ratio: 1/1;
+}
+
+.wheel-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: auto;
+  z-index: 0;
+}
+
+.sector-border {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: auto;
+  z-index: 5;
+}
+
+.wheel-blurred {
+  z-index: 5;
+  transition: opacity 2s;
+}
+
+.wheel-pointer {
+  position: absolute;
+  height: auto;
+  width: 33%;
+  top: -7%;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 17;
+  aspect-ratio: 137/105;
+}
+
+.wheel-center {
+  position: absolute;
+  height: auto;
+  width: 126%;
+  top: -13%;
+  left: -13%;
+  z-index: 11;
+  filter: drop-shadow(2px 4px 9px rgba(0, 0, 0, 0.5));
+  transition: all 3s linear;
+  aspect-ratio: 1/1;
+}
+
+.wheel-center-black {
+  position: absolute;
+  height: auto;
+  width: 120%;
+  top: -10%;
+  left: -10%;
+  z-index: 10;
+  aspect-ratio: 1/1;
+}
+
+.center-frame {
+  position: absolute;
+  height: 17%;
+  width: 18.7%;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 12;
+  cursor: pointer;
+}
+
+.hide-center-overflow {
+  overflow: hidden;
+  border-radius: 100%;
+}
+
+.center-bg {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  top: 0;
+  left: 0;
+  transition: all 3s linear;
+  animation: center-bg-animation 20s linear infinite;
+}
+
+.center-flashes {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  top: 0;
+  left: 0;
+  transition: all 3s linear;
+  aspect-ratio: 1/1;
+}
+
+.center-bg-animation-pause {
+  animation-play-state: paused;
+}
+
+.center-bg-dark {
+  animation: center-bg-dark 2s linear forwards;
+}
+
+.wheel-mask {
+  top: -3%;
+  left: -3%;
+  position: absolute;
+  width: 106%;
+  height: auto;
+  z-index: 6;
+  transition: opacity 3s linear;
+}
+
+.win-frame {
+  top: 11.3%;
+  left: 32.8%;
+  position: absolute;
+  height: auto;
+  width: 35%;
+  z-index: 7;
+  transition: opacity 1s linear;
+  transition-delay: 6s;
+  transform-origin: 50% 100%;
+  mix-blend-mode: color-dodge;
+  animation: lamp-flashes-1 0.7s linear infinite;
+}
+
+.bonus-type {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: auto;
+  transform-origin: center;
+  width: 100%;
+  z-index: 5;
+}
+
+.loot-box-prize-type {
+  fill: var(--color-primary-2);
+  font-family: 'Rubik', sans-serif;
+  font-weight: 700;
+  letter-spacing: -0.1px;
+  transform: translate(7px);
+}
+
+.loot-box-sum {
+  stroke: #1f0832;
+  paint-order: stroke;
+  stroke-width: 1px;
+  stroke-linecap: round;
+  fill: var(--color-primary-5);
+  font-family: 'Roboto Slab', serif;
+  font-weight: 900;
+}
+
+.loot-box-currency {
+  stroke: #1f0832;
+  paint-order: stroke;
+  stroke-width: 0.7px;
+  stroke-linecap: round;
+  fill: var(--color-warning);
+  font-family: 'Roboto Slab', serif;
+  font-weight: 900;
+}
+
+.sector {
+  transform-origin: 50% 50%;
+}
+
+.lamps {
+  position: absolute;
+  width: 100%;
+  height: auto;
+  top: 9%;
+  left: 0;
+  z-index: 0;
+}
+
+.lamp {
+  position: absolute;
+  width: 100%;
+  height: auto;
+  top: 0;
+  left: 0;
+  z-index: 0;
+}
+
+.lamp-waiting-animation-1 {
+  animation: lamp-flashes-1 2s infinite linear;
+}
+
+.lamp-spin-animation-1 {
+  animation: lamp-flashes-1 1s infinite linear;
+}
+
+.lamp-waiting-animation-2 {
+  animation: lamp-flashes-2 2s infinite linear;
+}
+
+.lamp-spin-animation-2 {
+  animation: lamp-flashes-2 1s infinite linear;
+}
+
+.lamp-holders {
+  position: absolute;
+  width: 100%;
+  height: auto;
+  top: 0;
+  left: 0;
+  z-index: 1;
+}
+
+.wheel-outer-glow {
+  position: relative;
+  width: 100%;
+  height: auto;
+  left: 0;
+  z-index: 0;
+  aspect-ratio: 414/455;
+}
+
+.purple-wave {
+  position: absolute;
+  width: 100%;
+  height: auto;
+  top: 4.5%;
+  left: 0;
+  z-index: 15;
+  mix-blend-mode: color-dodge;
+  cursor: pointer;
+  aspect-ratio: 1/1;
+}
+
+.win-animation {
+  position: absolute;
+  height: 100%;
+  width: auto;
+  top: 0;
+  left: 50%;
+  transform: translate(-50%);
+  z-index: 9;
+}
+
+.win-animation-1 {
+  position: absolute;
+  height: 100%;
+  width: auto;
+  top: 0;
+  left: 50%;
+  transform: translate(-50%);
+  z-index: 8;
+  mix-blend-mode: color-dodge;
+}
+
+.win-sector .loot-box-sum,
+.win-sector .loot-box-currency {
+  animation: sum-text-highlight 0.7s linear infinite;
+}
+
+.preload {
+  position: absolute;
+  width: 0;
+  height: 0;
+  display: none;
+  opacity: 0;
+}
+
+.spin-svg {
+  position: absolute;
+  z-index: 50;
+  width: 100%;
+  height: auto;
+  top: 0;
+  left: 0;
+  aspect-ratio: 1/1;
+}
+
+.spin-text {
+  text-align: center;
+  font-family: 'Roboto Slab', serif;
+  font-weight: 900;
+  font-size: 33px;
+  z-index: 50;
+  width: 100%;
+  stroke: #00124b;
+  paint-order: stroke;
+  stroke-width: 4px;
+  stroke-linecap: round;
+  fill: var(--color-primary-5);
+  animation: spin-text-light 5s linear infinite;
+  filter: drop-shadow(0px 0px 6px #9800fd);
+}
+
+.waiting-spin-animation {
+  animation: waiting-spin-animation 30s ease-in-out infinite;
+}
+
+a {
+  text-decoration: none !important;
+}
+
+.spin-effect {
+  fill: #e2befc !important;
+  animation: spin-effect 0.6s linear forwards;
+}
+
+img {
+  pointer-events: none;
+  user-select: none;
+}

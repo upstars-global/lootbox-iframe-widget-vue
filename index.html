@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Lootbox Widget</title>
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+      * {
+        margin: 0;
+        padding: 0;
+      }
+      html,
+      body {
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+      body {
+        display: flex;
+        align-items: end;
+        line-height: 1;
+        font-family:
+          -apple-system, system-ui, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
+          sans-serif;
+      }
+      #app {
+        position: absolute;
+        top: 0;
+        left: 0;
+        display: flex;
+        align-items: center;
+        height: 100%;
+        width: 100%;
+        text-align: center;
+        overflow: hidden;
+      }
+      /* Страховка від FOUC (Flash Of Unstyled Content):
+         Поки тема не готова (немає CSS і не підвантажені всі зображення), ховаємо body.
+         bootstrap.js виставить data-theme-ready="1" — і контент з'явиться одномоментно, без мерехтіння.
+         Якщо не хочеться ховати весь контент — можна прибрати цей блок.
+      */
+      html:not([data-theme-ready='1']) body {
+        visibility: hidden;
+      }
+      .preloader-bg {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        inset: 0;
+        z-index: 100;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background-color: #000;
+        transition: opacity 0.5s linear;
+      }
+      .preloader {
+        position: absolute;
+        height: 25%;
+        width: auto;
+        aspect-ratio: 1/1;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- фон-прелоадер (картинку поставимо динамічно по темі в bootstrap.js) -->
+    <div id="preloader-bg" class="preloader-bg">
+      <img class="preloader" alt="" />
+    </div>
+    <div id="app"></div>
+    <!-- ранній рантайм: визначаємо тему, підключаємо CSS і чекаємо ВСІ картинки -->
+    <script src="/themes/themes-config.js"></script>
+    <script src="/js/bootstrap.js"></script>
+    <!-- Vue-додаток стартує ТІЛЬКИ після готовності теми (див. main.ts) -->
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
