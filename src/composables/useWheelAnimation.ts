@@ -32,7 +32,7 @@ export function useWheelAnimation(
   gameState: GameState,
   spinDuration: Ref<number>,
   timeToPopup: Ref<number>,
-  sectionsData: Sector[],
+  sectionsData: Sector[]
 ) {
   const {
     running,
@@ -83,7 +83,9 @@ export function useWheelAnimation(
     const now = performance.now()
 
     // Динамічно визначаємо параметри анімації на основі поточного стану
-    const currentDuration = hasWinSection.value ? SPIN_WITH_WIN_DURATION : SPIN_WITHOUT_WIN_DURATION
+    const currentDuration = hasWinSection.value
+      ? SPIN_WITH_WIN_DURATION
+      : SPIN_WITHOUT_WIN_DURATION
     const currentWinner = hasWinSection.value ? winnerSection.value || 0 : 0
     const currentFinalAngle = calculateFinalAngle(startAngle, currentWinner)
 
@@ -106,7 +108,9 @@ export function useWheelAnimation(
     }
 
     if (t < 1) {
-      animationId.value = requestAnimationFrame(() => handleAnimationFrame(start, startAngle))
+      animationId.value = requestAnimationFrame(() =>
+        handleAnimationFrame(start, startAngle)
+      )
       return
     }
     // Логіка завершення анімації
@@ -118,7 +122,6 @@ export function useWheelAnimation(
   }
 
   // Callbacks для подій (встановлюються ззовні)
-  let onWinSector: WheelAnimationCallbacks['onWinSector'] = undefined
   let onSpinEnd: WheelAnimationCallbacks['onSpinEnd'] = undefined
 
   /**
@@ -137,9 +140,6 @@ export function useWheelAnimation(
     // Використовуємо виграшний сектор з gameState
     const winningSector = winnerSection.value || 0
     const winningSectorData = sectionsData[winningSector]
-
-    // Викликаємо callback виграшного сектора
-    onWinSector?.(winningSector)
 
     // Викликаємо callback деталей призу
     const prize = `${winningSectorData.prizeText} ${winningSectorData.prizeCurrency}`
@@ -164,7 +164,9 @@ export function useWheelAnimation(
    */
   const spinTo = () => {
     // Генеруємо випадковий кут для різноманітності анімації
-    randomAngle.value = Math.round(Math.random() * RANDOM_ANGLE_RANGE - RANDOM_ANGLE_OFFSET)
+    randomAngle.value = Math.round(
+      Math.random() * RANDOM_ANGLE_RANGE - RANDOM_ANGLE_OFFSET
+    )
 
     const startAngle = angle.value
     const start = performance.now()
@@ -174,7 +176,9 @@ export function useWheelAnimation(
     maskOpacity.value = 0
     running.value = true
 
-    animationId.value = requestAnimationFrame(() => handleAnimationFrame(start, startAngle))
+    animationId.value = requestAnimationFrame(() =>
+      handleAnimationFrame(start, startAngle)
+    )
   }
 
   /**
@@ -190,9 +194,6 @@ export function useWheelAnimation(
   return {
     spinTo,
     runWheel,
-    setWinSectorCallback: (callback: (sector: number) => void) => {
-      onWinSector = callback
-    },
     setSpinEndCallback: (callback: (prize: string) => void) => {
       onSpinEnd = callback
     },

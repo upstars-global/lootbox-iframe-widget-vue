@@ -8,6 +8,6 @@
 export type LootboxMessages = {
   lootboxReady: void
   startSpin?: { source?: 'user_click' | 'parent' }
-  winSector: { sector: number; timestamp: number }
+  winSector: number
   spinEnd: { sector?: number; prize?: string; timestamp: number }
 }

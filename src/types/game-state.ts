@@ -24,10 +24,8 @@ export interface GameState {
 
 /**
  * WheelAnimationCallbacks — callback'и для подій анімації:
- * - onWinSector: викликається під час анімації (виграшний сектор)
  * - onSpinEnd: викликається після зупинки (деталі призу)
  */
 export interface WheelAnimationCallbacks {
-  onWinSector?: (sector: number) => void
   onSpinEnd?: (prize: string) => void
 }
