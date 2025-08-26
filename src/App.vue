@@ -27,7 +27,10 @@
         <img :src="themeImages.wheelsectorsbg" class="wheel-bg" alt="" />
         <svg class="bonus-type" viewBox="0 0 100 100" width="100" height="100">
           <defs>
-            <path id="circle" d=" M 50, 50 m -37, 0 a 37,37 0 1,1 74,0 a 37,37 0 1,1 -74,0" />
+            <path
+              id="circle"
+              d=" M 50, 50 m -37, 0 a 37,37 0 1,1 74,0 a 37,37 0 1,1 -74,0"
+            />
           </defs>
           <g
             v-for="(section, index) in sectionsData"
@@ -36,8 +39,15 @@
             :style="sectorTransform(index)"
             :class="winnerClass(index)"
           >
-            <text class="loot-box-prize-type" :font-size="getFontSize(section.type, 'bonus')">
-              <textPath xlink:href="#circle" startOffset="50%" text-anchor="middle">
+            <text
+              class="loot-box-prize-type"
+              :font-size="getFontSize(section.type, 'bonus')"
+            >
+              <textPath
+                xlink:href="#circle"
+                startOffset="50%"
+                text-anchor="middle"
+              >
                 {{ section.type }}
               </textPath>
             </text>
@@ -73,7 +83,10 @@
         :src="themeImages.wheelmask"
         class="wheel-mask"
         alt=""
-        :style="{ opacity: `${maskOpacity}`, transform: `rotate(${randomAngle}deg)` }"
+        :style="{
+          opacity: `${maskOpacity}`,
+          transform: `rotate(${randomAngle}deg)`,
+        }"
       />
     </div>
     <img :src="themeImages.wheelpointer" class="wheel-pointer" alt="" />
@@ -105,7 +118,11 @@
       <img
         :src="themeImages.centerbg"
         class="center-bg"
-        :class="maskOpacity > CENTER_BG_PAUSE_THRESHOLD ? 'center-bg-animation-pause' : ''"
+        :class="
+          maskOpacity > CENTER_BG_PAUSE_THRESHOLD
+            ? 'center-bg-animation-pause'
+            : ''
+        "
         :style="{ opacity: `${1 - maskOpacity + OPACITY_OFFSET}` }"
         alt=""
       />
@@ -123,7 +140,12 @@
       alt=""
       :style="{ transform: `rotate(${randomAngle}deg)` }"
     />
-    <img v-if="winAnimationStarted" :src="themeImages.winanimation" class="win-animation" alt="" />
+    <img
+      v-if="winAnimationStarted"
+      :src="themeImages.winanimation"
+      class="win-animation"
+      alt=""
+    />
     <img
       v-if="!running && !winAnimationStarted"
       :src="themeImages.purplewave"
@@ -197,13 +219,14 @@ const hasWinSection = computed(() => winnerSection.value !== null)
 const themeImages = window.currentTheme?.images ?? {}
 
 const sectionsData = ((): Sector[] => {
-  if (!window.currentTheme?.sectors || !window.currentTheme?.sectorsType) return []
+  if (!window.currentTheme?.sectors || !window.currentTheme?.sectorsType)
+    return []
 
   // Обробляємо сектори з URL параметрів після маунту компонента:
   // парсинг, валідація кількості, створення структурованих об'єктів
   const sectors = processSectorsFromUrl(
     window.currentTheme.sectors,
-    window.currentTheme.sectorsType,
+    window.currentTheme.sectorsType
   )
   if (sectors && sectors.isValid) {
     return sectors.sectors
@@ -230,7 +253,10 @@ const sectorTransform = (index: number): { transform: string } => {
 }
 
 /** Підбирає розмір шрифту під довжину тексту */
-const getFontSize = (text: string | undefined, type: 'sum' | 'currency' | 'bonus'): string => {
+const getFontSize = (
+  text: string | undefined,
+  type: 'sum' | 'currency' | 'bonus'
+): string => {
   if (!text) return FONT_SIZES.BONUS_TYPE.DEFAULT
 
   const length = text.length
@@ -277,22 +303,20 @@ const { postToParent } = usePostMessageBus<LootboxMessages>(
     // Слухаємо: команда запуску колеса від сайту
     startSpin: () => {
       runWheel()
+    },
 
-      // Симулюємо отримання виграшу через 2 секунди
-      setTimeout(() => {
-        winnerSection.value = validateWinnerSection(1)
-        // console.log('[App.vue] winnerSection встановлено:', winnerSection.value)
-        // console.log('[App.vue] hasWinSection став:', hasWinSection.value)
-      }, 2000)
+    // Слухаємо: команда відправки виграшного сектора
+    winSector: (sector) => {
+      winnerSection.value = validateWinnerSection(sector)
     },
   },
   {
     onlyParent: true, // Приймаємо тільки від parent вікна
-  },
+  }
 )
 
 // === WHEEL ANIMATION ===
-const { runWheel, setWinSectorCallback, setSpinEndCallback } = useWheelAnimation(
+const { runWheel, setSpinEndCallback } = useWheelAnimation(
   {
     running,
     winAnimationStarted,
@@ -306,19 +330,16 @@ const { runWheel, setWinSectorCallback, setSpinEndCallback } = useWheelAnimation
   },
   spinDuration,
   timeToPopup,
-  sectionsData,
+  sectionsData
 )
 
 // Налаштовуємо callback'и для подій анімації
-// Відправляємо повідомлення у parent сайт при подіях гри
-setWinSectorCallback((sector) => {
-  // Відправляємо у parent сайт: виграшний сектор (під час анімації)
-  postToParent('winSector', { sector, timestamp: Date.now() })
-})
-
 setSpinEndCallback((prize) => {
   // Відправляємо у parent сайт: деталі призу (після зупинки)
   postToParent('spinEnd', { prize, timestamp: Date.now() })
+
+  // Скидаємо winnerSection для наступного спіна
+  winnerSection.value = null
 })
 
 // === LIFECYCLE ===
