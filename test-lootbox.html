@@ -50,6 +50,16 @@
         color: #333;
       }
 
+      .control-group.active-checkbox .label-container {
+        display: flex;
+        align-items: start;
+        gap: 8px;
+      }
+
+      .control-group.active-checkbox .label-container input {
+        width: auto;
+      }
+
       h2,
       h3 {
         font-size: 1.5em;
@@ -365,6 +375,18 @@ Bonus Prize, Bonus Prize, Free Spins, Free Spins, Free Spins, Bonus Prize, Bonus
           >
         </div>
 
+        <div class="control-group active-checkbox">
+          <label class="label-container">
+            <input
+              type="checkbox"
+              id="activeCheckbox"
+              checked
+              style="display: inline-block"
+            />
+            Активний лутбокс (анимації включені)
+          </label>
+        </div>
+
         <div class="control-group">
           <div class="label-container">
             <label>URL виджета (приклад):</label>
@@ -449,6 +471,7 @@ Bonus Prize, Bonus Prize, Free Spins, Free Spins, Free Spins, Bonus Prize, Bonus
           '500 USD, 5000 USD, 10 FS, 20 FS, 35 FS, 25 USD, 100 USD, 250 USD',
         sectors_type:
           'Bonus Prize, Bonus Prize, Free Spins, Free Spins, Free Spins, Bonus Prize, Bonus Prize, Bonus Prize',
+        active: true, // параметр активності лутбокса
       }
 
       let widgetReady = false
@@ -474,6 +497,16 @@ Bonus Prize, Bonus Prize, Free Spins, Free Spins, Free Spins, Bonus Prize, Bonus
         isSpinning = false
       }
 
+      // Функція для управління станом кнопок в залежності від активності лутбокса
+      function updateButtonsState() {
+        const isActive = currentParams.active
+        const winningSectorSelect = document.getElementById('winningSector')
+
+        startSpinBtn.disabled = !isActive || !widgetReady || isSpinning
+        setWinningSectorBtn.disabled = !isActive || !isSpinning
+        winningSectorSelect.disabled = !isActive
+      }
+
       // Функція для встановлення теми
       function setTheme(themeIndex) {
         currentParams.style = themeIndex
@@ -481,7 +514,7 @@ Bonus Prize, Bonus Prize, Free Spins, Free Spins, Free Spins, Bonus Prize, Bonus
         // Оновлюємо активну кнопку
         document
           .querySelectorAll('.theme-btn')
-          .forEach((btn) => btn.classList.remove('active'))
+          .forEach(btn => btn.classList.remove('active'))
         if (themeIndex === 1) {
           document.querySelector('.theme-btn.default').classList.add('active')
         } else {
@@ -509,6 +542,7 @@ Bonus Prize, Bonus Prize, Free Spins, Free Spins, Free Spins, Bonus Prize, Bonus
             currentParams.sectors = url.searchParams.get('sectors') || ''
             currentParams.sectors_type =
               url.searchParams.get('sectors_type') || ''
+            currentParams.active = url.searchParams.get('active') !== 'false' // true за замовчуванням
 
             // Виправляємо пробіли в секторах
             if (currentParams.sectors) {
@@ -527,7 +561,7 @@ Bonus Prize, Bonus Prize, Free Spins, Free Spins, Free Spins, Bonus Prize, Bonus
             // Оновлюємо активну тему
             document
               .querySelectorAll('.theme-btn')
-              .forEach((btn) => btn.classList.remove('active'))
+              .forEach(btn => btn.classList.remove('active'))
             if (currentParams.style === 1) {
               document
                 .querySelector('.theme-btn.default')
@@ -583,18 +617,21 @@ Bonus Prize, Bonus Prize, Free Spins, Free Spins, Free Spins, Bonus Prize, Bonus
         currentParams.sectors = document.getElementById('sectors').value
         currentParams.sectors_type =
           document.getElementById('sectorsType').value
+        currentParams.active = document.getElementById('activeCheckbox').checked
 
         updateWidget()
+        updateButtonsState()
       }
 
       // Слухаємо повідомлення від виджета
-      window.addEventListener('message', (event) => {
+      window.addEventListener('message', event => {
         if (!event.data || typeof event.data !== 'object') return
 
         switch (event.data.type) {
           case 'lootboxReady':
             widgetReady = true
             logMessage('📤 lootboxReady', 'received', 'WIDGET')
+            updateButtonsState()
             break
           case 'winSector':
             logMessage(
@@ -610,6 +647,7 @@ Bonus Prize, Bonus Prize, Free Spins, Free Spins, Free Spins, Bonus Prize, Bonus
               'WIDGET'
             )
             enableButtons()
+            updateButtonsState()
             break
         }
       })
@@ -626,6 +664,7 @@ Bonus Prize, Bonus Prize, Free Spins, Free Spins, Free Spins, Bonus Prize, Bonus
         }
 
         disableStartButton()
+        updateButtonsState()
         const message = { type: 'startSpin' }
         iframe.contentWindow.postMessage(message, '*')
         logMessage('📥 startSpin', 'sent', 'PARENT')
@@ -656,6 +695,7 @@ Bonus Prize, Bonus Prize, Free Spins, Free Spins, Free Spins, Bonus Prize, Bonus
 
         // Блокуємо кнопку після встановлення сектора
         disableSectorButton()
+        updateButtonsState()
       }
 
       // Функція для логування повідомлень
@@ -683,7 +723,7 @@ Bonus Prize, Bonus Prize, Free Spins, Free Spins, Free Spins, Bonus Prize, Bonus
                 customUrlTextarea.value = url
               }
             })
-            .catch((err) => {
+            .catch(err => {
               logMessage(
                 '❌ Помилка копіювання: ' + err.message,
                 'error',
@@ -705,9 +745,13 @@ Bonus Prize, Bonus Prize, Free Spins, Free Spins, Free Spins, Bonus Prize, Bonus
       document
         .getElementById('sectorsType')
         .addEventListener('input', updateParams)
+      document
+        .getElementById('activeCheckbox')
+        .addEventListener('change', updateParams)
 
       // Ініціалізуємо виджет
       updateWidget()
+      updateButtonsState()
     </script>
   </body>
 </html>
