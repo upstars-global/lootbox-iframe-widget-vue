@@ -17,12 +17,10 @@
   /** Отримання параметрів з URL запиту */
   function readUrlParams() {
     const searchParams = new URLSearchParams(location.search)
-    const activeParam = searchParams.get('active')
     return {
       styleId: Number.parseInt(searchParams.get('style') || '', 10),
       sectors: searchParams.get('sectors') || null,
       sectorsType: searchParams.get('sectors_type') || null,
-      active: activeParam !== 'false', // true за замовчуванням, false тільки якщо явно вказано
     }
   }
 
@@ -37,7 +35,7 @@
   function selectThemeByStyleId(themesConfig, params) {
     const themes = Array.isArray(themesConfig.themes) ? themesConfig.themes : []
     if (Number.isInteger(params.styleId)) {
-      const byStyleId = themes.find(theme => Number(theme.styleId) === params.styleId)
+      const byStyleId = themes.find((theme) => Number(theme.styleId) === params.styleId)
       // console.log('[bootstrap] Тема за styleId:', byStyleId)
       if (byStyleId) return byStyleId
     }
@@ -49,8 +47,8 @@
   function applyThemePreloader(theme) {
     const preloaderImgEl = document.querySelector('#preloader-bg img')
     if (!preloaderImgEl) return
-    const preloaderImage = (theme.images || []).find(imagePath =>
-      /\/preloader\.(svg|png|webp|gif)$/i.test(imagePath)
+    const preloaderImage = (theme.images || []).find((imagePath) =>
+      /\/preloader\.(svg|png|webp|gif)$/i.test(imagePath),
     )
     // console.log('[bootstrap] Прелоадер теми:', preloaderImage)
     if (preloaderImage) preloaderImgEl.src = preloaderImage
@@ -68,7 +66,7 @@
     linkEl.rel = 'stylesheet'
     linkEl.href = href
     // Promise який чекає завантаження CSS файлу
-    const ready = new Promise(resolve => linkEl.addEventListener('load', resolve, { once: true }))
+    const ready = new Promise((resolve) => linkEl.addEventListener('load', resolve, { once: true }))
     document.head.appendChild(linkEl)
     return ready
   }
@@ -77,8 +75,8 @@
   async function waitForAllImages(imageUrls, timeoutMs) {
     // console.log('[bootstrap] Завантаження зображень:', imageUrls?.length)
     // Функція для завантаження одного зображення
-    const waitForOne = src =>
-      new Promise(resolve => {
+    const waitForOne = (src) =>
+      new Promise((resolve) => {
         // Створюємо зображення з оптимізацією для швидкого завантаження
         const img = new Image()
         img.loading = 'eager' // Не чекаємо видимості - завантажуємо одразу
@@ -108,7 +106,7 @@
       // Завантажуємо всі зображення одночасно для швидкості
       Promise.all((imageUrls || []).map(waitForOne)),
       // Захист від довгого очікування - максимум 6 секунд
-      new Promise(r => setTimeout(r, timeoutMs)),
+      new Promise((r) => setTimeout(r, timeoutMs)),
     ])
     // console.log('[bootstrap] Всі зображення завантажені')
   }
@@ -140,7 +138,6 @@
       name: theme.name,
       sectors: params.sectors,
       sectorsType: params.sectorsType,
-      isActive: params.active,
       stylesReady: true,
       imagesReady: true,
       get ready() {
@@ -150,12 +147,6 @@
       logic: theme.logic || {},
       images: imagesMap,
     }
-
-    // Застосовуємо CSS клас для відключення анімацій якщо лутбокс неактивний
-    if (!params.active) {
-      document.getElementById('app').classList.add('lootbox-inactive')
-    }
-
     // Захист від FOUC — сигналізуємо готовність теми для main.ts
     document.documentElement.setAttribute('data-theme-ready', '1')
   }
