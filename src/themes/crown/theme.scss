@@ -6,7 +6,7 @@
   position: relative;
   width: 100%;
   height: auto;
-  margin-top: 8%;
+  transform: translateY(3%);
 }
 
 .wheel-sectors-mask {
@@ -80,39 +80,35 @@
 .wheel-center {
   position: absolute;
   height: auto;
-  width: 126%;
-  top: -13%;
-  left: -13%;
+  width: 17%;
+  top: 42.28%;
+  left: 41.5%;
   z-index: 11;
-  filter: drop-shadow(2px 4px 9px rgba(0, 0, 0, 0.5));
-  transition: all 3s linear;
+  filter: drop-shadow(2px 4px 7px rgba(0, 0, 0, 0.5));
   aspect-ratio: 1/1;
 }
 
-.wheel-center-black {
+.wheel-pointer-shadow {
   position: absolute;
   height: auto;
-  width: 120%;
-  top: -10%;
-  left: -10%;
-  z-index: 10;
-  aspect-ratio: 1/1;
+  width: 7%;
+  top: 9%;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 16;
+  aspect-ratio: 11/14;
 }
 
 .center-frame {
   position: absolute;
-  height: 17%;
-  width: 18.7%;
+  height: 12.3%;
+  width: 13.5%;
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%);
   z-index: 12;
-  cursor: pointer;
-}
-
-.hide-center-overflow {
   overflow: hidden;
   border-radius: 100%;
+  transform: translate(-50%, -50%);
 }
 
 .center-bg {
@@ -122,7 +118,8 @@
   top: 0;
   left: 0;
   transition: all 3s linear;
-  animation: center-bg-animation 20s linear infinite;
+  animation: centerBgAnimation 20s linear infinite;
+  aspect-ratio: 1/1;
 }
 
 .center-flashes {
@@ -141,6 +138,38 @@
 
 .center-bg-dark {
   animation: center-bg-dark 2s linear forwards;
+}
+
+.purple-wave {
+  position: absolute;
+  width: 100%;
+  height: auto;
+  top: 4.5%;
+  left: 0;
+  z-index: 15;
+  mix-blend-mode: color-dodge;
+  cursor: pointer;
+  aspect-ratio: 1/1;
+}
+
+.winSector .loot-box-sum,
+.winSector .loot-box-currency {
+  animation: sumTextHighlightAnimation 0.7s linear infinite;
+}
+
+.wheel-center-black {
+  position: absolute;
+  height: auto;
+  width: 120%;
+  top: -10%;
+  left: -10%;
+  z-index: 10;
+  aspect-ratio: 1/1;
+}
+
+.hide-center-overflow {
+  overflow: hidden;
+  border-radius: 100%;
 }
 
 .wheel-mask {
@@ -164,7 +193,7 @@
   transition-delay: 6s;
   transform-origin: 50% 100%;
   mix-blend-mode: color-dodge;
-  animation: lamp-flashes-1 0.7s linear infinite;
+  animation: lampFlashes1 0.7s linear infinite;
 }
 
 .bonus-type {
@@ -216,6 +245,7 @@
   top: 9%;
   left: 0;
   z-index: 0;
+  aspect-ratio: 31 / 30;
 }
 
 .lamp {
@@ -228,19 +258,19 @@
 }
 
 .lamp-waiting-animation-1 {
-  animation: lamp-flashes-1 2s infinite linear;
+  animation: lampFlashes1 2s infinite linear;
 }
 
 .lamp-spin-animation-1 {
-  animation: lamp-flashes-1 1s infinite linear;
+  animation: lampFlashes1 1s infinite linear;
 }
 
 .lamp-waiting-animation-2 {
-  animation: lamp-flashes-2 2s infinite linear;
+  animation: lampFlashes2 2s infinite linear;
 }
 
 .lamp-spin-animation-2 {
-  animation: lamp-flashes-2 1s infinite linear;
+  animation: lampFlashes2 1s infinite linear;
 }
 
 .lamp-holders {
@@ -259,18 +289,6 @@
   left: 0;
   z-index: 0;
   aspect-ratio: 414/455;
-}
-
-.purple-wave {
-  position: absolute;
-  width: 100%;
-  height: auto;
-  top: 4.5%;
-  left: 0;
-  z-index: 15;
-  mix-blend-mode: color-dodge;
-  cursor: pointer;
-  aspect-ratio: 1/1;
 }
 
 .win-animation {
@@ -292,11 +310,6 @@
   transform: translate(-50%);
   z-index: 8;
   mix-blend-mode: color-dodge;
-}
-
-.win-sector .loot-box-sum,
-.win-sector .loot-box-currency {
-  animation: sum-text-highlight 0.7s linear infinite;
 }
 
 .preload {
@@ -329,12 +342,12 @@
   stroke-width: 4px;
   stroke-linecap: round;
   fill: var(--color-primary-5);
-  animation: spin-text-light 5s linear infinite;
+  animation: spinTextLight 5s linear infinite;
   filter: drop-shadow(0px 0px 6px #9800fd);
 }
 
 .waiting-spin-animation {
-  animation: waiting-spin-animation 30s ease-in-out infinite;
+  animation: waitingSpinAnimation 30s ease-in-out infinite;
 }
 
 a {
@@ -343,7 +356,7 @@ a {
 
 .spin-effect {
   fill: #e2befc !important;
-  animation: spin-effect 0.6s linear forwards;
+  animation: spinEffect 0.6s linear forwards;
 }
 
 img {

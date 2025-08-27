@@ -27,10 +27,7 @@
         <img :src="themeImages.wheelsectorsbg" class="wheel-bg" alt="" />
         <svg class="bonus-type" viewBox="0 0 100 100" width="100" height="100">
           <defs>
-            <path
-              id="circle"
-              d=" M 50, 50 m -37, 0 a 37,37 0 1,1 74,0 a 37,37 0 1,1 -74,0"
-            />
+            <path id="circle" d=" M 50, 50 m -37, 0 a 37,37 0 1,1 74,0 a 37,37 0 1,1 -74,0" />
           </defs>
           <g
             v-for="(section, index) in sectionsData"
@@ -39,15 +36,8 @@
             :style="sectorTransform(index)"
             :class="winnerClass(index)"
           >
-            <text
-              class="loot-box-prize-type"
-              :font-size="getFontSize(section.type, 'bonus')"
-            >
-              <textPath
-                xlink:href="#circle"
-                startOffset="50%"
-                text-anchor="middle"
-              >
+            <text class="loot-box-prize-type" :font-size="getFontSize(section.type, 'bonus')">
+              <textPath xlink:href="#circle" startOffset="50%" text-anchor="middle">
                 {{ section.type }}
               </textPath>
             </text>
@@ -89,40 +79,14 @@
         }"
       />
     </div>
+    <img :src="themeImages.pointershadow" class="wheel-pointer-shadow" alt="" />
     <img :src="themeImages.wheelpointer" class="wheel-pointer" alt="" />
+    <img :src="themeImages.center" class="wheel-center" alt="" />
     <div class="center-frame">
-      <img :src="themeImages.centerbgblack" class="wheel-center-black" alt="" />
-      <img
-        :src="themeImages.center"
-        class="wheel-center"
-        :style="{ opacity: `${1 - maskOpacity + OPACITY_OFFSET}` }"
-        alt=""
-      />
-    </div>
-    <div class="center-frame hide-center-overflow">
-      <!--
-        Запуск здійснюється з батьківського сайту
-      -->
-      <!-- <svg class="spin-svg" viewBox="0 0 100 100" width="100" height="100">
-        <text
-          v-if="!running && !winAnimationStarted"
-          x="50"
-          y="60"
-          text-anchor="middle"
-          class="spin-text"
-        >
-          SPIN
-        </text>
-        <circle v-if="running" class="spin-effect" cx="50" cy="50" r="100" />
-      </svg> -->
       <img
         :src="themeImages.centerbg"
         class="center-bg"
-        :class="
-          maskOpacity > CENTER_BG_PAUSE_THRESHOLD
-            ? 'center-bg-animation-pause'
-            : ''
-        "
+        :class="maskOpacity > CENTER_BG_PAUSE_THRESHOLD ? 'center-bg-animation-pause' : ''"
         :style="{ opacity: `${1 - maskOpacity + OPACITY_OFFSET}` }"
         alt=""
       />
@@ -140,12 +104,7 @@
       alt=""
       :style="{ transform: `rotate(${randomAngle}deg)` }"
     />
-    <img
-      v-if="winAnimationStarted"
-      :src="themeImages.winanimation"
-      class="win-animation"
-      alt=""
-    />
+    <img v-if="winAnimationStarted" :src="themeImages.winanimation" class="win-animation" alt="" />
     <img
       v-if="!running && !winAnimationStarted"
       :src="themeImages.purplewave"
@@ -219,8 +178,7 @@ const hasWinSection = computed(() => winnerSection.value !== null)
 const themeImages = window.currentTheme?.images ?? {}
 
 const sectionsData = ((): Sector[] => {
-  if (!window.currentTheme?.sectors || !window.currentTheme?.sectorsType)
-    return []
+  if (!window.currentTheme?.sectors || !window.currentTheme?.sectorsType) return []
 
   // Обробляємо сектори з URL параметрів після маунту компонента:
   // парсинг, валідація кількості, створення структурованих об'єктів
@@ -253,10 +211,7 @@ const sectorTransform = (index: number): { transform: string } => {
 }
 
 /** Підбирає розмір шрифту під довжину тексту */
-const getFontSize = (
-  text: string | undefined,
-  type: 'sum' | 'currency' | 'bonus'
-): string => {
+const getFontSize = (text: string | undefined, type: 'sum' | 'currency' | 'bonus'): string => {
   if (!text) return FONT_SIZES.BONUS_TYPE.DEFAULT
 
   const length = text.length
@@ -306,7 +261,7 @@ const { postToParent } = usePostMessageBus<LootboxMessages>(
     },
 
     // Слухаємо: команда відправки виграшного сектора
-    winSector: (sector) => {
+    winSector: sector => {
       winnerSection.value = validateWinnerSection(sector)
     },
   },
@@ -334,7 +289,7 @@ const { runWheel, setSpinEndCallback } = useWheelAnimation(
 )
 
 // Налаштовуємо callback'и для подій анімації
-setSpinEndCallback((prize) => {
+setSpinEndCallback(prize => {
   // Відправляємо у parent сайт: деталі призу (після зупинки)
   postToParent('spinEnd', { prize, timestamp: Date.now() })
 
