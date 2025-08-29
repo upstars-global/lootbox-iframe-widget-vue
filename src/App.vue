@@ -5,13 +5,19 @@
       <img
         :src="themeImages.lampsstate1"
         class="lamp"
-        :class="running ? 'lamp-spin-animation-1' : 'lamp-waiting-animation-1'"
+        :class="[
+          running ? 'lamp-spin-animation-1' : 'lamp-waiting-animation-1',
+          active ? 'will-change-opacity' : '',
+        ]"
         alt=""
       />
       <img
         :src="themeImages.lampsstate2"
         class="lamp"
-        :class="running ? 'lamp-spin-animation-2' : 'lamp-waiting-animation-2'"
+        :class="[
+          running ? 'lamp-spin-animation-2' : 'lamp-waiting-animation-2',
+          active ? 'will-change-opacity' : '',
+        ]"
         alt=""
       />
       <img :src="themeImages.lampsholders" class="lamp-holders" alt="" />
@@ -22,7 +28,10 @@
         class="wheel-sectors"
         :style="wheelSectorsStyles"
         id="wheel_sectors"
-        :class="{ 'waiting-spin-animation': !running && !winAnimationStarted }"
+        :class="{
+          'waiting-spin-animation': !running && !winAnimationStarted,
+          'will-change-transform': running || (!running && !winAnimationStarted && active),
+        }"
       >
         <img :src="themeImages.wheelsectorsbg" class="wheel-bg" alt="" />
         <svg class="bonus-type" viewBox="0 0 100 100" width="100" height="100">
@@ -34,7 +43,10 @@
             :key="index"
             class="sector"
             :style="sectorTransform(index)"
-            :class="winnerClass(index)"
+            :class="{
+              ...winnerClass(index),
+              'will-change-transform': running && active,
+            }"
           >
             <text class="loot-box-prize-type" :font-size="getFontSize(section.type, 'bonus')">
               <textPath xlink:href="#circle" startOffset="50%" text-anchor="middle">
@@ -72,6 +84,7 @@
       <img
         :src="themeImages.wheelmask"
         class="wheel-mask"
+        :class="{ 'will-change-transform': running && active }"
         alt=""
         :style="{
           opacity: `${maskOpacity}`,
@@ -86,7 +99,10 @@
       <img
         :src="themeImages.centerbg"
         class="center-bg"
-        :class="maskOpacity > CENTER_BG_PAUSE_THRESHOLD ? 'center-bg-animation-pause' : ''"
+        :class="{
+          'center-bg-animation-pause': maskOpacity > CENTER_BG_PAUSE_THRESHOLD,
+          'will-change-transform': maskOpacity <= CENTER_BG_PAUSE_THRESHOLD && active,
+        }"
         :style="{ opacity: `${1 - maskOpacity + OPACITY_OFFSET}` }"
         alt=""
       />
@@ -186,6 +202,9 @@ const hasWinSection = computed(() => winnerSection.value !== null)
 
 // Зображення теми (завантажуються динамічно)
 const themeImages = window.currentTheme?.images ?? {}
+
+// Активність лутбокса з URL параметрів
+const active = window.currentTheme?.isActive ?? true
 
 // Парсинг секторів з URL параметрів з валідацією
 // Виконується один раз при ініціалізації для оптимізації продуктивності

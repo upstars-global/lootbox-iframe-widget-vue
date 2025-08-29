@@ -363,3 +363,10 @@ img {
   pointer-events: none;
   user-select: none;
 }
+
+.will-change-transform {
+  will-change: transform;
+}
+.will-change-opacity {
+  will-change: opacity;
+}

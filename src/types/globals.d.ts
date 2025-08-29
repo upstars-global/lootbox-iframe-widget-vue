@@ -35,6 +35,7 @@ declare global {
           imagesReady: boolean
           sectors: string | null
           sectorsType: string | null
+          isActive: boolean
           images: Record<string, string>
           timings: Record<string, number>
           logic: Record<string, unknown>
