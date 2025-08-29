@@ -116,6 +116,7 @@
       <img v-if="running" :src="themeImages.wheelmask" alt="" />
     </div>
   </div>
+  <FpsMonitor />
 </template>
 
 <script setup lang="ts">
@@ -123,19 +124,24 @@ import { computed, onMounted, onUnmounted, ref } from 'vue'
 
 import { usePostMessageBus } from './composables/usePostMessageBus'
 import { useWheelAnimation } from './composables/useWheelAnimation'
+import FpsMonitor from './components/FpsMonitor.vue'
 
 import type { LootboxMessages, Sector } from './types'
 import { processSectorsFromUrl } from './utils/sectors-parser'
 
-// === КОНСТАНТИ ===
+// Позиціонування тексту в секторах (SVG координати)
 const SUM_PRIZE_POSITION_X = 89
 const SUM_PRIZE_POSITION_Y = 52
 const CURRENCY_POSITION_X = 88.7
 const CURRENCY_POSITION_Y = 56
 const SECTOR_ANGLE: number = 45
+
+// Пороги для анімаційних ефектів
 const CENTER_BG_PAUSE_THRESHOLD: number = 0.3
 const OPACITY_OFFSET: number = 0.4
 const PRELOADER_FADE_DELAY: number = 500
+
+// Адаптивні розміри шрифтів залежно від довжини тексту
 const FONT_SIZES = {
   SUM: {
     SHORT: '10',
@@ -157,10 +163,10 @@ const FONT_SIZES = {
   },
 } as const
 
-// === ГЛОБАЛЬНІ ЗМІННІ З BOOTSTRAP.JS ===
+// Конфігурація теми з bootstrap.js (завантажується динамічно)
 const themeTimings = window.currentTheme?.timings
 
-// === СТАН ГРИ ===
+// Стан анімації колеса
 const running = ref<boolean>(false)
 const winAnimationStarted = ref<boolean>(false)
 const angle = ref<number>(0)
@@ -168,15 +174,21 @@ const randomAngle = ref<number>(0)
 const motionBlurOpacity = ref<number>(0)
 const maskOpacity = ref<number>(0)
 const animationId = ref<number | null>(null)
+
+// Таймінги анімації (можуть бути перевизначені з теми)
 const spinDuration = ref<number>(8000)
 const timeToPopup = ref<number>(4000)
 const preloaderTime = ref<number>(1500)
+
+// Переможний сектор (встановлюється ззовні через postMessage)
 const winnerSection = ref<number | null>(null)
 const hasWinSection = computed(() => winnerSection.value !== null)
 
-// === ДАНІ ТЕМИ ===
+// Зображення теми (завантажуються динамічно)
 const themeImages = window.currentTheme?.images ?? {}
 
+// Парсинг секторів з URL параметрів з валідацією
+// Виконується один раз при ініціалізації для оптимізації продуктивності
 const sectionsData = ((): Sector[] => {
   if (!window.currentTheme?.sectors || !window.currentTheme?.sectorsType) return []
 
@@ -192,25 +204,29 @@ const sectionsData = ((): Sector[] => {
   return []
 })()
 
-// === COMPUTED PROPERTIES ===
+// Класи для переможного сектора (тільки перший сектор може бути переможним)
 const winnerClass = computed(() => {
   return (index: number) => ({
     winSector: index === 0 && winAnimationStarted.value,
   })
 })
 
+// Стилі обертання колеса
 const wheelSectorsStyles = computed(() => ({
   transform: `rotate(${angle.value}deg)`,
 }))
 
-// === METHODS ===
+// Розрахунок позиції сектора в градусах
 const sectorTransform = (index: number): { transform: string } => {
   return {
     transform: `rotate(${index * SECTOR_ANGLE}deg)`,
   }
 }
 
-/** Підбирає розмір шрифту під довжину тексту */
+/**
+ * Адаптивний розмір шрифту залежно від довжини тексту
+ * Запобігає переповненню тексту в секторах
+ */
 const getFontSize = (text: string | undefined, type: 'sum' | 'currency' | 'bonus'): string => {
   if (!text) return FONT_SIZES.BONUS_TYPE.DEFAULT
 
@@ -236,23 +252,18 @@ const getFontSize = (text: string | undefined, type: 'sum' | 'currency' | 'bonus
 }
 
 /**
- * Валідація winnerSection від бекенда
- *
- * Перевіряє чи є значення валідним сектором (0-7)
- *
- * @param value - значення від бекенда (number)
- * @returns валідний номер сектора (0-7) або 0 як fallback
+ * Валідація переможного сектора від бекенда
+ * Захист від некорректних даних та fallback на сектор 0
  */
 const validateWinnerSection = (value: number): number => {
   if (value >= 0 && value <= 7 && Number.isInteger(value)) {
     return value
   }
   console.error('Невірний winnerSection від бекенда:', value)
-  return 0 // fallback
+  return 0
 }
 
-// === POST MESSAGE BUS ===
-// Слухаємо повідомлення від parent сайту та відправляємо відповіді
+// Комунікація з батьківським вікном через postMessage
 const { postToParent } = usePostMessageBus<LootboxMessages>(
   {
     // Слухаємо: команда запуску колеса від сайту
@@ -266,11 +277,11 @@ const { postToParent } = usePostMessageBus<LootboxMessages>(
     },
   },
   {
-    onlyParent: true, // Приймаємо тільки від parent вікна
+    onlyParent: true, // Безпека: приймаємо тільки від батьківського вікна
   }
 )
 
-// === WHEEL ANIMATION ===
+// Анімація колеса з двофазною логікою
 const { runWheel, setSpinEndCallback } = useWheelAnimation(
   {
     running,
@@ -288,23 +299,23 @@ const { runWheel, setSpinEndCallback } = useWheelAnimation(
   sectionsData
 )
 
-// Налаштовуємо callback'и для подій анімації
+// Callback після завершення анімації
 setSpinEndCallback(prize => {
   // Відправляємо у parent сайт: деталі призу (після зупинки)
   postToParent('spinEnd', { prize, timestamp: Date.now() })
-
-  // Скидаємо winnerSection для наступного спіна
-  winnerSection.value = null
+  winnerSection.value = null // Скидання для наступного спіна
 })
 
-// === LIFECYCLE ===
+// Ініціалізація компонента
 onMounted(() => {
+  // Завантаження конфігурації теми (якщо доступна)
   if (themeTimings) {
     preloaderTime.value = themeTimings.preloaderTime
     spinDuration.value = themeTimings.spinDuration
     timeToPopup.value = themeTimings.timeToPopup
   }
 
+  // Плавне приховування прелоадера
   setTimeout(() => {
     const preloaderBg = document.querySelector('#preloader-bg') as HTMLElement
     if (preloaderBg) {
@@ -316,8 +327,7 @@ onMounted(() => {
   }, preloaderTime.value)
 
   running.value = false
-  // Відправляємо у parent сайт: сигнал готовності lootbox
-  postToParent('lootboxReady')
+  postToParent('lootboxReady') // Сигнал готовності до батьківського вікна
 })
 
 onUnmounted(() => {

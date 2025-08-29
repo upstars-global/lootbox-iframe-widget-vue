@@ -16,53 +16,80 @@
         max-width: 1400px;
         margin: 0 auto;
         display: grid;
-        grid-template-columns: 1.2fr 1fr 1.2fr;
+        grid-template-columns: 1fr 1fr 1fr;
         gap: 20px;
       }
 
       .controls {
         background: white;
-        padding: 20px;
+        padding: 24px;
         border-radius: 8px;
         box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         height: fit-content;
       }
 
       .widget-section {
-        display: flex;
-        padding: 20px;
-        flex-direction: column;
-        justify-content: start;
         background: white;
         border-radius: 8px;
         box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        overflow: hidden;
+        padding: 24px;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .widget-controls {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+        margin-bottom: 16px;
+      }
+
+      .widget-controls .control-group {
+        margin-bottom: 0;
+      }
+
+      .widget-controls .action-buttons {
+        margin: 0;
       }
 
       .control-group {
-        margin-bottom: 20px;
+        margin-bottom: 16px;
       }
 
-      .control-group label {
+      .control-group:last-child {
+        margin-bottom: 0;
+      }
+
+      .control-group label,
+      .control-group .label {
         display: block;
-        margin-bottom: 5px;
+        margin-bottom: 8px;
         font-weight: bold;
         color: #333;
       }
 
-      .control-group.active-checkbox .label-container {
+      .control-group.checkbox .label-container {
         display: flex;
         align-items: start;
         gap: 8px;
       }
 
-      .control-group.active-checkbox .label-container input {
+      .control-group.checkbox .label-container input {
         width: auto;
       }
 
-      /* Стилі для поля введення теми */
       .theme-input {
-        width: 100%;
+        width: 60px;
+        padding: 8px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 14px;
+        box-sizing: border-box;
+      }
+
+      #winningSector {
+        width: auto;
         padding: 8px;
         border: 1px solid #ddd;
         border-radius: 4px;
@@ -73,13 +100,14 @@
       h2,
       h3 {
         font-size: 1.5em;
-        margin: 0 0 20px 0;
+        margin: 0 0 24px 0;
         color: #333;
       }
 
-      .control-group input,
+      .control-group input:not(.theme-input),
       .control-group select,
-      .control-group textarea {
+      .control-group textarea,
+      .control-group .contenteditable-textarea {
         width: 100%;
         padding: 8px;
         border: 1px solid #ddd;
@@ -89,10 +117,8 @@
       }
 
       .control-group textarea {
-        height: 100px;
-        min-height: 100px;
         resize: vertical;
-        background: #f8f9fa;
+        background: white;
         padding: 10px;
         border-radius: 4px;
         font-family: monospace;
@@ -101,31 +127,55 @@
         box-sizing: border-box;
       }
 
-      .control-group textarea[id='sectors'],
-      .control-group textarea[id='sectorsType'] {
-        height: 60px;
-        min-height: 60px;
+      .control-group .contenteditable-textarea {
+        resize: vertical;
+        background: white;
+        padding: 10px;
+        border-radius: 4px;
+        font-family: monospace;
+        font-size: 12px;
+        border: 1px solid #e9ecef;
+        box-sizing: border-box;
+        overflow-y: auto;
+        word-break: break-all;
+        outline: none;
+      }
+
+      .control-group .contenteditable-textarea:focus {
+        border-color: #007bff;
+        box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+      }
+
+      .control-group .contenteditable-textarea[data-placeholder]:empty:before {
+        content: attr(data-placeholder);
+        color: #6c757d;
+        font-style: italic;
+      }
+
+      .control-group .contenteditable-textarea.spinning {
+        background: #f5f5f5;
+        color: #999;
+        cursor: not-allowed;
+      }
+
+      .control-group textarea.spinning {
+        background: #f5f5f5;
+        color: #999;
+        cursor: not-allowed;
+      }
+
+      .theme-input.spinning {
+        background: #f5f5f5;
+        color: #999;
+        cursor: not-allowed;
       }
 
       .label-container {
         display: flex;
         align-items: center;
         gap: 8px;
-        margin-bottom: 5px;
-      }
-
-      .url-display {
-        background: #f8f9fa;
-        padding: 10px;
-        border-radius: 4px;
-        font-family: monospace;
-        font-size: 12px;
-        word-break: break-all;
-        border: 1px solid #e9ecef;
-        height: 100px;
-        min-height: 100px;
-        overflow-y: auto;
-        box-sizing: border-box;
+        font-weight: bold;
+        color: #333;
       }
 
       .copy-btn {
@@ -148,53 +198,22 @@
         color: #004085;
       }
 
-      .theme-buttons {
-        display: flex;
-        gap: 10px;
-        margin-bottom: 15px;
-      }
-
-      .theme-btn {
-        padding: 8px 16px;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-        font-size: 14px;
-        transition: background-color 0.2s;
-      }
-
-      .theme-btn.default {
-        background: #007bff;
-        color: white;
-      }
-
-      .theme-btn.crown {
-        background: #ffc107;
-        color: #333;
-      }
-
-      .theme-btn:hover {
-        opacity: 0.8;
-      }
-
-      .theme-btn.active {
-        box-shadow: 0 0 0 2px #333;
-      }
-
       .iframe-wrapper {
         width: 100%;
-        height: 470px;
+        height: 100%;
+        min-height: 470px;
         display: flex;
         align-items: center;
         justify-content: center;
-        border: 2px solid #e0e0e0;
-        border-radius: 12px;
-        background: #fafafa;
+        border: 1px solid #dee2e6;
+        border-radius: 5px;
+        background: white;
       }
 
       iframe {
         width: 100%;
         height: 100%;
+        min-height: 470px;
         border: none;
         border-radius: 8px;
       }
@@ -203,17 +222,13 @@
         background: white;
         border-radius: 8px;
         box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        padding: 20px;
+        padding: 24px;
         display: flex;
         flex-direction: column;
       }
 
-      .log-header {
-        margin: 10px 0 20px;
-      }
-
       .log {
-        background: #f8f9fa;
+        background: white;
         border: 1px solid #dee2e6;
         border-radius: 5px;
         padding: 15px;
@@ -224,8 +239,8 @@
       }
 
       .log-entry {
-        margin: 5px 0;
-        padding: 5px;
+        margin: 8px 0;
+        padding: 8px;
         border-radius: 3px;
         border-left: 3px solid transparent;
         font-weight: 500;
@@ -257,13 +272,13 @@
 
       .action-buttons {
         display: flex;
-        justify-content: space-between;
-        gap: 10px;
-        margin: 10px 0;
+        gap: 12px;
+        margin: 0 0 16px 0;
+        flex-wrap: wrap;
       }
 
       .btn {
-        width: 50%;
+        min-width: 120px;
         padding: 10px 20px;
         border: none;
         border-radius: 5px;
@@ -306,12 +321,14 @@
       }
 
       .winning-sector-control {
-        margin: 15px 0;
+        margin-bottom: 16px;
       }
 
       .winning-sector-control label {
         display: block;
-        margin-bottom: 5px;
+        margin-bottom: 8px;
+        font-weight: bold;
+        color: #333;
       }
 
       .winning-sector-control select {
@@ -324,14 +341,13 @@
       }
 
       .apply-custom-url-btn {
-        margin-top: 10px;
-        width: 100%;
+        margin-top: 16px;
       }
 
       .status {
-        padding: 10px;
+        padding: 12px;
         border-radius: 4px;
-        margin: 10px 0;
+        margin: 0 0 16px 0;
         font-size: 14px;
       }
 
@@ -340,6 +356,53 @@
         color: #0c5460;
         border: 1px solid #bee5eb;
       }
+
+      @media (max-width: 1024px) {
+        .container {
+          gap: 15px;
+        }
+
+        .controls,
+        .widget-section,
+        .log-section {
+          padding: 15px;
+        }
+      }
+
+      @media (max-width: 768px) {
+        body {
+          padding: 12px;
+        }
+
+        .container {
+          display: flex;
+          flex-direction: column;
+          gap: 16px;
+        }
+
+        .controls,
+        .widget-section {
+          padding: 16px;
+        }
+
+        .control-group {
+          margin-bottom: 12px;
+        }
+
+        .control-group label {
+          margin-bottom: 6px;
+        }
+
+        h2,
+        h3 {
+          margin: 0 0 16px 0;
+        }
+
+        .action-buttons {
+          gap: 8px;
+          margin: 12px 0;
+        }
+      }
     </style>
   </head>
 
@@ -347,45 +410,46 @@
     <div class="container">
       <div class="controls">
         <div class="status info">
-          <strong>💡 Інструкція:</strong> Змінюйте параметри - виджет
-          оновлюється автоматично. Кнопка "Запустити спін" відправляє
-          повідомлення в iframe.
-        </div>
-
-        <h2>🎛️ Контрольні параметри</h2>
-        <div class="control-group">
-          <label for="themeInput">Тема:</label>
-          <input
-            type="number"
-            id="themeInput"
-            min="1"
-            value="1"
-            placeholder="Введіть номер теми"
-            class="theme-input"
-          />
+          <strong>Інструкція:</strong><br />
+          - Обрати параметри <br />
+          - Натиснути "Запустити" <br />
+          - Вибрати winSector <br />
+          - Натиснути "Застосувати" <br />
         </div>
 
         <div class="control-group">
-          <label for="sectors">Сектори (через кому):</label>
-          <textarea
+          <div class="label-container">
+            style:
+            <input
+              type="number"
+              id="themeInput"
+              min="1"
+              value="1"
+              placeholder="Введіть номер теми"
+              class="theme-input"
+            />
+          </div>
+        </div>
+
+        <div class="control-group">
+          <div
+            class="contenteditable-textarea"
             id="sectors"
-            placeholder="500 USD, 5000 USD, 10 FS, 20 FS, 35 FS, 25 USD, 100 USD, 250 USD"
-          >
-500 USD, 5000 USD, 10 FS, 20 FS, 35 FS, 25 USD, 100 USD, 250 USD</textarea
-          >
+            contenteditable="true"
+            data-placeholder="500 USD, 5000 USD, 10 FS, 20 FS, 35 FS, 25 USD, 100 USD, 250 USD"
+          ></div>
         </div>
 
         <div class="control-group">
-          <label for="sectorsType">Типи секторів (через кому):</label>
-          <textarea
+          <div
+            class="contenteditable-textarea"
             id="sectorsType"
-            placeholder="Bonus Prize, Bonus Prize, Free Spins, Free Spins, Free Spins, Bonus Prize, Bonus Prize, Bonus Prize"
-          >
-Bonus Prize, Bonus Prize, Free Spins, Free Spins, Free Spins, Bonus Prize, Bonus Prize, Bonus Prize</textarea
-          >
+            contenteditable="true"
+            data-placeholder="Bonus Prize, Bonus Prize, Free Spins, Free Spins, Free Spins, Bonus Prize, Bonus Prize, Bonus Prize"
+          ></div>
         </div>
 
-        <div class="control-group active-checkbox">
+        <div class="control-group checkbox">
           <label class="label-container">
             <input
               type="checkbox"
@@ -393,13 +457,24 @@ Bonus Prize, Bonus Prize, Free Spins, Free Spins, Free Spins, Bonus Prize, Bonus
               checked
               style="display: inline-block"
             />
-            Активний лутбокс (анимації включені)
+            active
+          </label>
+        </div>
+
+        <div class="control-group checkbox">
+          <label class="label-container">
+            <input
+              type="checkbox"
+              id="fpsCheckbox"
+              style="display: inline-block"
+            />
+            fps
           </label>
         </div>
 
         <div class="control-group">
-          <div class="label-container">
-            <label>URL виджета (приклад):</label>
+          <div class="label">
+            URL (example)
             <button
               class="copy-btn"
               onclick="copyWidgetUrl()"
@@ -408,53 +483,63 @@ Bonus Prize, Bonus Prize, Free Spins, Free Spins, Free Spins, Bonus Prize, Bonus
               📄
             </button>
           </div>
-          <div class="url-display" id="widgetUrl"></div>
+          <div class="contenteditable-textarea" id="widgetUrl"></div>
         </div>
 
-        <!-- Додаємо поле для кастомного URL на першу вкладку -->
         <div class="control-group">
-          <label for="customUrl">URL виджета:</label>
-          <textarea id="customUrl" placeholder="Вставте URL сюда..."></textarea>
+          <div class="label">URL (custom)</div>
+          <div
+            class="contenteditable-textarea"
+            id="customUrl"
+            contenteditable="true"
+            data-placeholder="Введіть URL http://localhost:5173/?style=1&..."
+          ></div>
           <button
             class="btn btn-primary apply-custom-url-btn"
             onclick="applyCustomUrl()"
           >
-            Застосувати кастомний URL
+            Застосувати URL
           </button>
         </div>
       </div>
 
       <div class="widget-section">
-        <div class="action-buttons">
-          <button
-            class="btn btn-success"
-            id="startSpinBtn"
-            onclick="startSpin()"
-          >
-            ▶️ Запустити спін
-          </button>
+        <div class="widget-controls">
+          <div class="action-buttons">
+            <button
+              class="btn btn-success"
+              id="startSpinBtn"
+              onclick="startSpin()"
+            >
+              Запустити
+            </button>
+          </div>
 
-          <button
-            class="btn btn-primary"
-            id="setWinningSectorBtn"
-            onclick="setWinningSector()"
+          <div
+            class="control-group"
+            style="display: flex; gap: 10px; align-items: center"
           >
-            🎯 Встановити виграшний сектор
-          </button>
-        </div>
-
-        <div class="winning-sector-control">
-          <label for="winningSector">🎯 Виграшний сектор:</label>
-          <select id="winningSector">
-            <option value="0">Сектор 0</option>
-            <option value="1">Сектор 1</option>
-            <option value="2">Сектор 2</option>
-            <option value="3">Сектор 3</option>
-            <option value="4">Сектор 4</option>
-            <option value="5">Сектор 5</option>
-            <option value="6">Сектор 6</option>
-            <option value="7">Сектор 7</option>
-          </select>
+            <div class="label-container">
+              winSector:
+              <select id="winningSector">
+                <option value="0">0</option>
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+                <option value="6">6</option>
+                <option value="7">7</option>
+              </select>
+            </div>
+            <button
+              class="btn btn-primary"
+              id="setWinningSectorBtn"
+              onclick="setWinningSector()"
+            >
+              Застосувати
+            </button>
+          </div>
         </div>
 
         <div class="iframe-wrapper">
@@ -463,11 +548,13 @@ Bonus Prize, Bonus Prize, Free Spins, Free Spins, Free Spins, Bonus Prize, Bonus
       </div>
 
       <div class="log-section">
-        <div class="log-header">
-          <h3>📋 Лог повідомлень</h3>
-          <button class="btn btn-secondary" onclick="clearLog()">
-            🧹 Очистити лог
-          </button>
+        <div class="control-group">
+          <div class="label-container">
+            Post messages
+            <button class="btn btn-secondary" onclick="clearLog()">
+              Очистити
+            </button>
+          </div>
         </div>
         <div class="log" id="messageLog"></div>
       </div>
@@ -481,7 +568,8 @@ Bonus Prize, Bonus Prize, Free Spins, Free Spins, Free Spins, Bonus Prize, Bonus
           '500 USD, 5000 USD, 10 FS, 20 FS, 35 FS, 25 USD, 100 USD, 250 USD',
         sectors_type:
           'Bonus Prize, Bonus Prize, Free Spins, Free Spins, Free Spins, Bonus Prize, Bonus Prize, Bonus Prize',
-        active: true, // параметр активності лутбокса
+        active: true,
+        fps: false,
       }
 
       let widgetReady = false
@@ -492,10 +580,10 @@ Bonus Prize, Bonus Prize, Free Spins, Free Spins, Free Spins, Bonus Prize, Bonus
       const startSpinBtn = document.getElementById('startSpinBtn')
       const setWinningSectorBtn = document.getElementById('setWinningSectorBtn')
 
-      // Функції для управління станом кнопок
       function disableStartButton() {
         startSpinBtn.disabled = true
         isSpinning = true
+        updateButtonsState()
       }
 
       function disableSectorButton() {
@@ -508,108 +596,145 @@ Bonus Prize, Bonus Prize, Free Spins, Free Spins, Free Spins, Bonus Prize, Bonus
         setWinningSectorBtn.disabled = false
         isSpinning = false
         winningSectorSet = false
+        updateButtonsState()
       }
 
-      // Функція для управління станом кнопок в залежності від активності лутбокса
+      function initializeContentEditable() {
+        const contentEditableElements = document.querySelectorAll(
+          '.contenteditable-textarea'
+        )
+
+        contentEditableElements.forEach(element => {
+          if (element.id === 'sectors') {
+            element.textContent =
+              '500 USD, 5000 USD, 10 FS, 20 FS, 35 FS, 25 USD, 100 USD, 250 USD'
+          } else if (element.id === 'sectorsType') {
+            element.textContent =
+              'Bonus Prize, Bonus Prize, Free Spins, Free Spins, Free Spins, Bonus Prize, Bonus Prize, Bonus Prize'
+          }
+
+          element.addEventListener('paste', e => {
+            e.preventDefault()
+            const text = e.clipboardData.getData('text/plain')
+            document.execCommand('insertText', false, text)
+          })
+        })
+      }
+
       function updateButtonsState() {
         const isActive = currentParams.active
         const winningSectorSelect = document.getElementById('winningSector')
         const themeInput = document.getElementById('themeInput')
         const sectorsInput = document.getElementById('sectors')
         const sectorsTypeInput = document.getElementById('sectorsType')
+        const customUrlInput = document.getElementById('customUrl')
         const activeCheckbox = document.getElementById('activeCheckbox')
+        const fpsCheckbox = document.getElementById('fpsCheckbox')
         const clearLogBtn = document.querySelector(
           'button[onclick="clearLog()"]'
         )
         const applyCustomUrlBtn = document.querySelector(
           'button[onclick="applyCustomUrl()"]'
         )
+        const widgetUrlElement = document.getElementById('widgetUrl')
 
-        // Блокуємо всі контроли під час анімації
         const isBlocked = isSpinning || !isActive
 
         startSpinBtn.disabled = !isActive || isSpinning
-        setWinningSectorBtn.disabled = !isActive || winningSectorSet
-        winningSectorSelect.disabled = !isActive
+        setWinningSectorBtn.disabled =
+          !isActive || !isSpinning || winningSectorSet
+        winningSectorSelect.disabled =
+          !isActive || !isSpinning || winningSectorSet
         themeInput.disabled = isBlocked
-        sectorsInput.disabled = isBlocked
-        sectorsTypeInput.disabled = isBlocked
-        activeCheckbox.disabled = isSpinning // Блокируем только во время анимации
+        sectorsInput.contentEditable = !isBlocked
+        sectorsTypeInput.contentEditable = !isBlocked
+        if (customUrlInput) customUrlInput.contentEditable = !isBlocked
+        activeCheckbox.disabled = isSpinning
+        if (fpsCheckbox) fpsCheckbox.disabled = isSpinning
 
-        // Блокуємо кнопки очищення логу та застосування кастомного URL під час анімації або коли лутбокс неактивний
+        if (sectorsInput) {
+          sectorsInput.classList.toggle('spinning', isSpinning)
+        }
+        if (sectorsTypeInput) {
+          sectorsTypeInput.classList.toggle('spinning', isSpinning)
+        }
+        if (customUrlInput) {
+          customUrlInput.classList.toggle('spinning', isSpinning)
+        }
+
+        if (widgetUrlElement) {
+          widgetUrlElement.classList.toggle('spinning', isSpinning)
+        }
+
+        if (themeInput) {
+          themeInput.classList.toggle('spinning', isSpinning)
+        }
+
         if (clearLogBtn) clearLogBtn.disabled = isSpinning || !isActive
         if (applyCustomUrlBtn) applyCustomUrlBtn.disabled = isSpinning
       }
 
-      // Функція для встановлення теми
       function setTheme(themeIndex) {
         currentParams.style = themeIndex
         updateWidget()
       }
 
-      // Функція для застосування кастомного URL
       function applyCustomUrl() {
         const textarea = document.getElementById('customUrl')
-        let customUrl = textarea ? textarea.value.trim() : ''
+        let customUrl = textarea ? textarea.textContent.trim() : ''
 
         if (customUrl) {
-          try {
-            // Виправляємо символи § на &
-            customUrl = customUrl.replace(/§/g, '&')
+          customUrl = customUrl.replace(/§/g, '&')
 
-            // Парсимо URL та оновлюємо параметри
-            const url = new URL(customUrl)
+          const url = new URL(customUrl)
 
-            // Оновлюємо currentParams з URL
-            currentParams.style = parseInt(url.searchParams.get('style')) || 1
-            currentParams.sectors = url.searchParams.get('sectors') || ''
-            currentParams.sectors_type =
-              url.searchParams.get('sectors_type') || ''
-            currentParams.active = url.searchParams.get('active') !== 'false' // true за замовчуванням
+          currentParams.style = parseInt(url.searchParams.get('style')) || 1
+          currentParams.sectors = url.searchParams.get('sectors') || ''
+          currentParams.sectors_type =
+            url.searchParams.get('sectors_type') || ''
+          currentParams.active = url.searchParams.get('active') !== 'false'
+          currentParams.fps = url.searchParams.get('fps') === 'true'
 
-            // Виправляємо пробіли в секторах
-            if (currentParams.sectors) {
-              currentParams.sectors = currentParams.sectors.replace(/,/g, ', ')
-            }
-            if (currentParams.sectors_type) {
-              currentParams.sectors_type = currentParams.sectors_type.replace(
-                /,/g,
-                ', '
-              )
-            }
-
-            // Оновлюємо форму
-            updateFormFields()
-
-            // Оновлюємо поле введення теми
-            document.getElementById('themeInput').value = currentParams.style
-
-            // Скидаємо готовність виджета
-            widgetReady = false
-
-            // Оновлюємо виджет
-            updateWidget()
-          } catch (error) {
-            logMessage(
-              '❌ Помилка парсингу URL: ' + error.message,
-              'error',
-              'PARENT'
+          if (currentParams.sectors) {
+            currentParams.sectors = currentParams.sectors.replace(/,/g, ', ')
+          }
+          if (currentParams.sectors_type) {
+            currentParams.sectors_type = currentParams.sectors_type.replace(
+              /,/g,
+              ', '
             )
           }
-        } else {
-          logMessage('❌ Порожній URL', 'error', 'PARENT')
+
+          updateFormFields()
+
+          document.getElementById('themeInput').value = currentParams.style
+
+          widgetReady = false
+
+          updateWidget()
         }
       }
 
-      // Функція для оновлення полів форми
       function updateFormFields() {
-        document.getElementById('sectors').value = currentParams.sectors || ''
-        document.getElementById('sectorsType').value =
-          currentParams.sectors_type || ''
-        document.getElementById('themeInput').value = currentParams.style || 1
+        const sectorsElement = document.getElementById('sectors')
+        const sectorsTypeElement = document.getElementById('sectorsType')
+        const activeCheckbox = document.getElementById('activeCheckbox')
+        const fpsCheckbox = document.getElementById('fpsCheckbox')
+
+        if (sectorsElement) {
+          sectorsElement.textContent = currentParams.sectors
+        }
+        if (sectorsTypeElement) {
+          sectorsTypeElement.textContent = currentParams.sectors_type
+        }
+        if (activeCheckbox) {
+          activeCheckbox.checked = currentParams.active
+        }
+        if (fpsCheckbox) {
+          fpsCheckbox.checked = currentParams.fps
+        }
       }
 
-      // Функція для оновлення виджета
       function updateWidget() {
         const url = new URL('http://localhost:5173/')
 
@@ -627,25 +752,20 @@ Bonus Prize, Bonus Prize, Free Spins, Free Spins, Free Spins, Bonus Prize, Bonus
         iframe.src = finalUrl
       }
 
-      // Функція для оновлення параметрів з input полів
       function updateParams() {
-        const sectorsInput = document.getElementById('sectors')
-        const sectorsTypeInput = document.getElementById('sectorsType')
+        const sectorsElement = document.getElementById('sectors')
+        const sectorsTypeElement = document.getElementById('sectorsType')
         const activeCheckbox = document.getElementById('activeCheckbox')
+        const fpsCheckbox = document.getElementById('fpsCheckbox')
 
-        // Оновлюємо параметри тільки якщо контроли не заблоковані
-        if (!sectorsInput.disabled) {
-          currentParams.sectors = sectorsInput.value
-        }
-        if (!sectorsTypeInput.disabled) {
-          currentParams.sectors_type = sectorsTypeInput.value
-        }
-        if (!activeCheckbox.disabled) {
-          currentParams.active = activeCheckbox.checked
-        }
+        currentParams.sectors = sectorsElement ? sectorsElement.textContent : ''
+        currentParams.sectors_type = sectorsTypeElement
+          ? sectorsTypeElement.textContent
+          : ''
+        currentParams.active = activeCheckbox ? activeCheckbox.checked : true
+        currentParams.fps = fpsCheckbox ? fpsCheckbox.checked : false
 
         updateWidget()
-        updateButtonsState()
       }
 
       // Слухаємо повідомлення від виджета
@@ -658,13 +778,7 @@ Bonus Prize, Bonus Prize, Free Spins, Free Spins, Free Spins, Bonus Prize, Bonus
             logMessage('📤 lootboxReady', 'received', 'WIDGET')
             updateButtonsState()
             break
-          case 'winSector':
-            logMessage(
-              `📤 winSector: ${event.data.data.sector}`,
-              'received',
-              'WIDGET'
-            )
-            break
+
           case 'spinEnd':
             logMessage(
               `📤 spinEnd: ${event.data.data.prize}`,
@@ -677,33 +791,18 @@ Bonus Prize, Bonus Prize, Free Spins, Free Spins, Free Spins, Bonus Prize, Bonus
         }
       })
 
-      // Функція для запуску спіна
       function startSpin() {
-        if (!widgetReady) {
-          logMessage('❌ Виджет ще не готовий', 'error', 'PARENT')
-          return
-        }
-
         if (isSpinning) {
           return
         }
 
         disableStartButton()
-        // Скидаємо стан виграшного сектора при новому спіні
-        winningSectorSet = false
-        setWinningSectorBtn.disabled = false
-        updateButtonsState()
         const message = { type: 'startSpin' }
         iframe.contentWindow.postMessage(message, '*')
         logMessage('📥 startSpin', 'sent', 'PARENT')
       }
 
-      // Функція для встановлення вигашного сектора
       function setWinningSector() {
-        if (!isSpinning) {
-          return
-        }
-
         const select = document.getElementById('winningSector')
         const selectedValue = select.value
 
@@ -712,7 +811,6 @@ Bonus Prize, Bonus Prize, Free Spins, Free Spins, Free Spins, Bonus Prize, Bonus
         const sectorName =
           sectors[winningSector] || `Сектор ${winningSector + 1}`
 
-        // Відправляємо повідомлення в iframe
         const message = {
           type: 'winSector',
           data: winningSector,
@@ -721,13 +819,11 @@ Bonus Prize, Bonus Prize, Free Spins, Free Spins, Free Spins, Bonus Prize, Bonus
         iframe.contentWindow.postMessage(message, '*')
         logMessage(`📥 winSector: ${winningSector}`, 'sent', 'PARENT')
 
-        // Блокуємо кнопку після встановлення сектора
         winningSectorSet = true
         setWinningSectorBtn.disabled = true
         updateButtonsState()
       }
 
-      // Функція для логування повідомлень
       function logMessage(message, type = 'info', sender = '') {
         const entry = document.createElement('div')
         entry.className = `log-entry log-${type}`
@@ -737,45 +833,29 @@ Bonus Prize, Bonus Prize, Free Spins, Free Spins, Free Spins, Bonus Prize, Bonus
         messageLog.scrollTop = messageLog.scrollHeight
       }
 
-      // Функція для копіювання URL виджета
       function copyWidgetUrl() {
         const urlDisplay = document.getElementById('widgetUrl')
+        const customUrlField = document.getElementById('customUrl')
         const url = urlDisplay.textContent.trim()
 
-        if (url) {
-          navigator.clipboard
-            .writeText(url)
-            .then(() => {
-              // Вставляємо URL в поле customUrl
-              const customUrlTextarea = document.getElementById('customUrl')
-              if (customUrlTextarea) {
-                customUrlTextarea.value = url
-              }
-            })
-            .catch(err => {
-              logMessage(
-                '❌ Помилка копіювання: ' + err.message,
-                'error',
-                'PARENT'
-              )
-            })
-        } else {
-          logMessage('❌ URL порожній', 'error', 'PARENT')
-        }
+        navigator.clipboard.writeText(url).then(() => {
+          customUrlField.textContent = url
+        })
       }
 
-      // Функція для очищення логу
       function clearLog() {
         messageLog.innerHTML = ''
       }
 
-      // Додаємо event listeners для всіх input полів
       document.getElementById('sectors').addEventListener('input', updateParams)
       document
         .getElementById('sectorsType')
         .addEventListener('input', updateParams)
       document
         .getElementById('activeCheckbox')
+        .addEventListener('change', updateParams)
+      document
+        .getElementById('fpsCheckbox')
         .addEventListener('change', updateParams)
       document
         .getElementById('themeInput')
@@ -786,9 +866,9 @@ Bonus Prize, Bonus Prize, Free Spins, Free Spins, Free Spins, Bonus Prize, Bonus
           }
         })
 
-      // Ініціалізуємо виджет
       updateWidget()
       updateButtonsState()
+      initializeContentEditable()
     </script>
   </body>
 </html>
