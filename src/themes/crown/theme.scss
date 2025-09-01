@@ -4,19 +4,17 @@
 
 .loot-box-spin-wheel-container {
   position: relative;
-  width: 100%;
-  height: auto;
-  transform: translateY(3%);
+  width: 90vmin;
+  height: 90vmin;
 }
 
 .wheel-sectors-mask {
   position: absolute;
-  width: 84%;
-  height: 76.36%;
-  transform-origin: 50% 50%;
-  top: 12%;
-  left: 8%;
+  top: 12.5%;
+  left: 7.7%;
   z-index: 5;
+  width: 85%;
+  height: 85%;
   border-radius: 100%;
   overflow: hidden;
   transition-delay: 3s;
@@ -25,21 +23,20 @@
 
 .wheel-sectors {
   position: absolute;
-  width: 100%;
-  height: 100%;
-  transform-origin: 50% 50%;
   top: 0;
   left: 0;
   z-index: 5;
+  width: 100%;
+  height: 100%;
 }
 
 .wheel-frame {
   position: absolute;
-  width: 95%;
-  height: auto;
   top: 6.8%;
   left: 2.5%;
   z-index: 4;
+  width: 95%;
+  height: auto;
   aspect-ratio: 1/1;
 }
 
@@ -47,18 +44,18 @@
   position: absolute;
   top: 0;
   left: 0;
+  z-index: 0;
   width: 100%;
   height: auto;
-  z-index: 0;
 }
 
 .sector-border {
   position: absolute;
   top: 0;
   left: 0;
+  z-index: 5;
   width: 100%;
   height: auto;
-  z-index: 5;
 }
 
 .wheel-blurred {
@@ -68,44 +65,44 @@
 
 .wheel-pointer {
   position: absolute;
-  height: auto;
-  width: 33%;
-  top: -7%;
+  top: -8.4%;
   left: 50%;
-  transform: translateX(-50%);
   z-index: 17;
+  transform: translateX(-50%);
+  width: 33%;
+  height: auto;
   aspect-ratio: 137/105;
 }
 
 .wheel-center {
   position: absolute;
-  height: auto;
-  width: 17%;
-  top: 42.28%;
+  top: 46%;
   left: 41.5%;
   z-index: 11;
-  filter: drop-shadow(2px 4px 7px rgba(0, 0, 0, 0.5));
+  width: 17%;
+  height: auto;
   aspect-ratio: 1/1;
+  filter: drop-shadow(2px 4px 7px rgba(0, 0, 0, 0.5));
 }
 
 .wheel-pointer-shadow {
   position: absolute;
-  height: auto;
-  width: 7%;
   top: 9%;
   left: 50%;
-  transform: translateX(-50%);
   z-index: 16;
+  width: 7%;
+  height: auto;
+  transform: translateX(-50%);
   aspect-ratio: 11/14;
 }
 
 .center-frame {
   position: absolute;
-  height: 12.3%;
-  width: 13.5%;
-  top: 50%;
+  top: 54.6%;
   left: 50%;
   z-index: 12;
+  height: 13.5%;
+  width: 13.5%;
   overflow: hidden;
   border-radius: 100%;
   transform: translate(-50%, -50%);
@@ -113,10 +110,10 @@
 
 .center-bg {
   position: absolute;
-  height: 100%;
-  width: 100%;
   top: 0;
   left: 0;
+  width: 100%;
+  height: 100%;
   transition: all 3s linear;
   animation: centerBgAnimation 20s linear infinite;
   aspect-ratio: 1/1;
@@ -124,10 +121,10 @@
 
 .center-flashes {
   position: absolute;
-  height: 100%;
-  width: 100%;
   top: 0;
   left: 0;
+  width: 100%;
+  height: 100%;
   transition: all 3s linear;
   aspect-ratio: 1/1;
 }
@@ -142,11 +139,11 @@
 
 .purple-wave {
   position: absolute;
-  width: 100%;
-  height: auto;
   top: 4.5%;
   left: 0;
   z-index: 15;
+  width: 100%;
+  height: auto;
   mix-blend-mode: color-dodge;
   cursor: pointer;
   aspect-ratio: 1/1;
@@ -159,10 +156,10 @@
 
 .wheel-center-black {
   position: absolute;
-  height: auto;
-  width: 120%;
   top: -10%;
   left: -10%;
+  height: auto;
+  width: 120%;
   z-index: 10;
   aspect-ratio: 1/1;
 }
@@ -176,19 +173,19 @@
   top: -3%;
   left: -3%;
   position: absolute;
+  z-index: 6;
   width: 106%;
   height: auto;
-  z-index: 6;
   transition: opacity 3s linear;
 }
 
 .win-frame {
   top: 11.3%;
-  left: 32.8%;
+  left: 30.9%;
   position: absolute;
-  height: auto;
-  width: 35%;
   z-index: 7;
+  width: 35vmin;
+  height: auto;
   transition: opacity 1s linear;
   transition-delay: 6s;
   transform-origin: 50% 100%;
@@ -200,10 +197,10 @@
   position: absolute;
   left: 0;
   top: 0;
+  z-index: 5;
+  width: 100%;
   height: auto;
   transform-origin: center;
-  width: 100%;
-  z-index: 5;
 }
 
 .loot-box-prize-type {
@@ -240,21 +237,21 @@
 
 .lamps {
   position: absolute;
+  top: 9.4%;
+  left: 0.1%;
+  z-index: 0;
   width: 100%;
   height: auto;
-  top: 9%;
-  left: 0;
-  z-index: 0;
   aspect-ratio: 31 / 30;
 }
 
 .lamp {
   position: absolute;
-  width: 100%;
-  height: auto;
   top: 0;
   left: 0;
   z-index: 0;
+  width: inherit;
+  height: inherit;
 }
 
 .lamp-waiting-animation-1 {
@@ -275,17 +272,16 @@
 
 .lamp-holders {
   position: absolute;
-  width: 100%;
-  height: auto;
   top: 0;
   left: 0;
   z-index: 1;
+  width: 100%;
+  height: auto;
 }
 
 .wheel-outer-glow {
   position: relative;
-  width: 100%;
-  height: auto;
+  top: -0.7%;
   left: 0;
   z-index: 0;
   aspect-ratio: 414/455;
@@ -293,22 +289,22 @@
 
 .win-animation {
   position: absolute;
-  height: 100%;
-  width: auto;
   top: 0;
   left: 50%;
-  transform: translate(-50%);
   z-index: 9;
+  width: auto;
+  height: 100%;
+  transform: translate(-50%);
 }
 
 .win-animation-1 {
   position: absolute;
-  height: 100%;
-  width: auto;
   top: 0;
   left: 50%;
-  transform: translate(-50%);
   z-index: 8;
+  height: 100%;
+  width: auto;
+  transform: translate(-50%);
   mix-blend-mode: color-dodge;
 }
 
@@ -322,20 +318,20 @@
 
 .spin-svg {
   position: absolute;
+  top: 0;
+  left: 0;
   z-index: 50;
   width: 100%;
   height: auto;
-  top: 0;
-  left: 0;
   aspect-ratio: 1/1;
 }
 
 .spin-text {
+  z-index: 50;
   text-align: center;
   font-family: 'Roboto Slab', serif;
   font-weight: 900;
   font-size: 33px;
-  z-index: 50;
   width: 100%;
   stroke: #00124b;
   paint-order: stroke;
@@ -367,6 +363,7 @@ img {
 .will-change-transform {
   will-change: transform;
 }
+
 .will-change-opacity {
   will-change: opacity;
 }

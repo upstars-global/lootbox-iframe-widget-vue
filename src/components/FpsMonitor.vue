@@ -134,7 +134,6 @@ function onMessage(e: MessageEvent<FpsMessage>): void {
   }
 }
 
-// Життєвий цикл
 watchEffect(() => {
   if (visible.value) {
     startLoop()
