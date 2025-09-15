@@ -1,877 +1,834 @@
 <!doctype html>
 <html lang="uk">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>🎰 Lootbox Widget</title>
-    <style>
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🎰 Lootbox Widget</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 20px;
+    }
+
+    .controls {
+      background: white;
+      padding: 24px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      height: fit-content;
+    }
+
+    .widget-section {
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .widget-controls {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .widget-controls .control-group {
+      margin-bottom: 0;
+    }
+
+    .widget-controls .action-buttons {
+      margin: 0;
+    }
+
+    .control-group {
+      margin-bottom: 16px;
+    }
+
+    .control-group:last-child {
+      margin-bottom: 0;
+    }
+
+    .control-group label,
+    .control-group .label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: bold;
+      color: #333;
+    }
+
+    .control-group.checkbox .label-container {
+      display: flex;
+      align-items: start;
+      gap: 8px;
+    }
+
+    .control-group.checkbox .label-container input {
+      width: auto;
+    }
+
+    .theme-input {
+      width: 60px;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 14px;
+      box-sizing: border-box;
+    }
+
+    #winningSector {
+      width: auto;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 14px;
+      box-sizing: border-box;
+    }
+
+    h2,
+    h3 {
+      font-size: 1.5em;
+      margin: 0 0 24px 0;
+      color: #333;
+    }
+
+    .control-group input:not(.theme-input),
+    .control-group select,
+    .control-group textarea,
+    .control-group .contenteditable-textarea {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 14px;
+      box-sizing: border-box;
+    }
+
+    .control-group textarea {
+      resize: vertical;
+      background: white;
+      padding: 10px;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 12px;
+      border: 1px solid #e9ecef;
+      box-sizing: border-box;
+    }
+
+    .control-group .contenteditable-textarea {
+      resize: vertical;
+      background: white;
+      padding: 10px;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 12px;
+      border: 1px solid #e9ecef;
+      box-sizing: border-box;
+      overflow-y: auto;
+      word-break: break-all;
+      outline: none;
+    }
+
+    .control-group .contenteditable-textarea:focus {
+      border-color: #007bff;
+      box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+    }
+
+    .control-group .contenteditable-textarea[data-placeholder]:empty:before {
+      content: attr(data-placeholder);
+      color: #6c757d;
+      font-style: italic;
+    }
+
+    .control-group .contenteditable-textarea.spinning {
+      background: #f5f5f5;
+      color: #999;
+      cursor: not-allowed;
+    }
+
+    .control-group textarea.spinning {
+      background: #f5f5f5;
+      color: #999;
+      cursor: not-allowed;
+    }
+
+    .theme-input.spinning {
+      background: #f5f5f5;
+      color: #999;
+      cursor: not-allowed;
+    }
+
+    .label-container {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: bold;
+      color: #333;
+    }
+
+    .copy-btn {
+      background: none;
+      color: #007bff;
+      border: none;
+      cursor: pointer;
+      font-size: 16px;
+      transition: color 0.2s;
+      padding: 2px;
+      border-radius: 3px;
+    }
+
+    .copy-btn:hover {
+      color: #0056b3;
+      background: #f8f9fa;
+    }
+
+    .copy-btn:active {
+      color: #004085;
+    }
+
+    .iframe-wrapper {
+      width: 100%;
+      height: 100%;
+      /* min-height: 470px;
+        height: 400px; */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid #dee2e6;
+      border-radius: 5px;
+      background: #000;
+      resize: both;
+      overflow: auto;
+    }
+
+    iframe {
+      width: 100%;
+      height: 100%;
+      /* min-height: 470px; */
+      border: none;
+      border-radius: 8px;
+    }
+
+    .log-section {
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .log {
+      background: white;
+      border: 1px solid #dee2e6;
+      border-radius: 5px;
+      padding: 15px;
+      flex: 1;
+      overflow-y: auto;
+      font-family: monospace;
+      font-size: 12px;
+    }
+
+    .log-entry {
+      margin: 8px 0;
+      padding: 8px;
+      border-radius: 3px;
+      border-left: 3px solid transparent;
+      font-weight: 500;
+    }
+
+    .log-received {
+      background: #d4edda;
+      color: #155724;
+      border-left-color: #28a745;
+    }
+
+    .log-sent {
+      background: #cce5ff;
+      color: #004085;
+      border-left-color: #007bff;
+    }
+
+    .log-error {
+      background: #f8d7da;
+      color: #721c24;
+      border-left-color: #dc3545;
+    }
+
+    .log-info {
+      background: #d1ecf1;
+      color: #0c5460;
+      border-left-color: #17a2b8;
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 12px;
+      margin: 0 0 16px 0;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      min-width: 120px;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background-color 0.2s;
+    }
+
+    .btn-primary {
+      background: #007bff;
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: #0056b3;
+    }
+
+    .btn-secondary {
+      background: #6c757d;
+      color: white;
+    }
+
+    .btn-secondary:hover {
+      background: #545b62;
+    }
+
+    .btn-success {
+      background: #28a745;
+      color: white;
+    }
+
+    .btn-success:hover {
+      background: #1e7e34;
+    }
+
+    .btn:disabled {
+      opacity: 0.8;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+
+    .winning-sector-control {
+      margin-bottom: 16px;
+    }
+
+    .winning-sector-control label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: bold;
+      color: #333;
+    }
+
+    .winning-sector-control select {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 14px;
+      box-sizing: border-box;
+    }
+
+    .apply-custom-url-btn {
+      margin-top: 16px;
+    }
+
+    .status {
+      padding: 12px;
+      border-radius: 4px;
+      margin: 0 0 16px 0;
+      font-size: 14px;
+    }
+
+    .status.info {
+      background: #d1ecf1;
+      color: #0c5460;
+      border: 1px solid #bee5eb;
+    }
+
+    @media (max-width: 1024px) {
+      .container {
+        gap: 15px;
+      }
+
+      .controls,
+      .widget-section,
+      .log-section {
+        padding: 15px;
+      }
+    }
+
+    @media (max-width: 768px) {
       body {
-        font-family: Arial, sans-serif;
-        margin: 0;
-        padding: 20px;
-        background: #f5f5f5;
+        padding: 12px;
       }
 
       .container {
-        max-width: 1400px;
-        margin: 0 auto;
-        display: grid;
-        grid-template-columns: 1fr 1fr 1fr;
-        gap: 20px;
-      }
-
-      .controls {
-        background: white;
-        padding: 24px;
-        border-radius: 8px;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        height: fit-content;
-      }
-
-      .widget-section {
-        background: white;
-        border-radius: 8px;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        padding: 24px;
         display: flex;
         flex-direction: column;
-      }
-
-      .widget-controls {
-        display: flex;
-        flex-direction: column;
-        align-items: flex-start;
         gap: 16px;
-        margin-bottom: 16px;
       }
 
-      .widget-controls .control-group {
-        margin-bottom: 0;
-      }
-
-      .widget-controls .action-buttons {
-        margin: 0;
+      .controls,
+      .widget-section {
+        padding: 16px;
       }
 
       .control-group {
-        margin-bottom: 16px;
+        margin-bottom: 12px;
       }
 
-      .control-group:last-child {
-        margin-bottom: 0;
-      }
-
-      .control-group label,
-      .control-group .label {
-        display: block;
-        margin-bottom: 8px;
-        font-weight: bold;
-        color: #333;
-      }
-
-      .control-group.checkbox .label-container {
-        display: flex;
-        align-items: start;
-        gap: 8px;
-      }
-
-      .control-group.checkbox .label-container input {
-        width: auto;
-      }
-
-      .theme-input {
-        width: 60px;
-        padding: 8px;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-        font-size: 14px;
-        box-sizing: border-box;
-      }
-
-      #winningSector {
-        width: auto;
-        padding: 8px;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-        font-size: 14px;
-        box-sizing: border-box;
+      .control-group label {
+        margin-bottom: 6px;
       }
 
       h2,
       h3 {
-        font-size: 1.5em;
-        margin: 0 0 24px 0;
-        color: #333;
-      }
-
-      .control-group input:not(.theme-input),
-      .control-group select,
-      .control-group textarea,
-      .control-group .contenteditable-textarea {
-        width: 100%;
-        padding: 8px;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-        font-size: 14px;
-        box-sizing: border-box;
-      }
-
-      .control-group textarea {
-        resize: vertical;
-        background: white;
-        padding: 10px;
-        border-radius: 4px;
-        font-family: monospace;
-        font-size: 12px;
-        border: 1px solid #e9ecef;
-        box-sizing: border-box;
-      }
-
-      .control-group .contenteditable-textarea {
-        resize: vertical;
-        background: white;
-        padding: 10px;
-        border-radius: 4px;
-        font-family: monospace;
-        font-size: 12px;
-        border: 1px solid #e9ecef;
-        box-sizing: border-box;
-        overflow-y: auto;
-        word-break: break-all;
-        outline: none;
-      }
-
-      .control-group .contenteditable-textarea:focus {
-        border-color: #007bff;
-        box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
-      }
-
-      .control-group .contenteditable-textarea[data-placeholder]:empty:before {
-        content: attr(data-placeholder);
-        color: #6c757d;
-        font-style: italic;
-      }
-
-      .control-group .contenteditable-textarea.spinning {
-        background: #f5f5f5;
-        color: #999;
-        cursor: not-allowed;
-      }
-
-      .control-group textarea.spinning {
-        background: #f5f5f5;
-        color: #999;
-        cursor: not-allowed;
-      }
-
-      .theme-input.spinning {
-        background: #f5f5f5;
-        color: #999;
-        cursor: not-allowed;
-      }
-
-      .label-container {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        font-weight: bold;
-        color: #333;
-      }
-
-      .copy-btn {
-        background: none;
-        color: #007bff;
-        border: none;
-        cursor: pointer;
-        font-size: 16px;
-        transition: color 0.2s;
-        padding: 2px;
-        border-radius: 3px;
-      }
-
-      .copy-btn:hover {
-        color: #0056b3;
-        background: #f8f9fa;
-      }
-
-      .copy-btn:active {
-        color: #004085;
-      }
-
-      .iframe-wrapper {
-        width: 100%;
-        height: 100%;
-        /* min-height: 470px;
-        height: 400px; */
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border: 1px solid #dee2e6;
-        border-radius: 5px;
-        /* background: white; */
-        resize: both;
-        overflow: auto;
-      }
-
-      iframe {
-        width: 100%;
-        height: 100%;
-        /* min-height: 470px; */
-        border: none;
-        border-radius: 8px;
-      }
-
-      .log-section {
-        background: white;
-        border-radius: 8px;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        padding: 24px;
-        display: flex;
-        flex-direction: column;
-      }
-
-      .log {
-        background: white;
-        border: 1px solid #dee2e6;
-        border-radius: 5px;
-        padding: 15px;
-        flex: 1;
-        overflow-y: auto;
-        font-family: monospace;
-        font-size: 12px;
-      }
-
-      .log-entry {
-        margin: 8px 0;
-        padding: 8px;
-        border-radius: 3px;
-        border-left: 3px solid transparent;
-        font-weight: 500;
-      }
-
-      .log-received {
-        background: #d4edda;
-        color: #155724;
-        border-left-color: #28a745;
-      }
-
-      .log-sent {
-        background: #cce5ff;
-        color: #004085;
-        border-left-color: #007bff;
-      }
-
-      .log-error {
-        background: #f8d7da;
-        color: #721c24;
-        border-left-color: #dc3545;
-      }
-
-      .log-info {
-        background: #d1ecf1;
-        color: #0c5460;
-        border-left-color: #17a2b8;
+        margin: 0 0 16px 0;
       }
 
       .action-buttons {
-        display: flex;
-        gap: 12px;
-        margin: 0 0 16px 0;
-        flex-wrap: wrap;
+        gap: 8px;
+        margin: 12px 0;
       }
+    }
+  </style>
+</head>
 
-      .btn {
-        min-width: 120px;
-        padding: 10px 20px;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-        font-size: 14px;
-        transition: background-color 0.2s;
-      }
+<body>
+  <div class="container">
+    <div class="controls">
+      <div class="status info">
+        <strong>Інструкція:</strong><br />
+        - Обрати параметри <br />
+        - Натиснути "Запустити" <br />
+        - Вибрати winSector <br />
+        - Натиснути "Застосувати" <br />
+      </div>
 
-      .btn-primary {
-        background: #007bff;
-        color: white;
-      }
+      <div class="control-group">
+        <div class="label-container">
+          style:
+          <input type="number" id="themeInput" min="1" value="1" placeholder="Введіть номер теми" class="theme-input" />
+        </div>
+      </div>
 
-      .btn-primary:hover {
-        background: #0056b3;
-      }
+      <div class="control-group">
+        <div class="contenteditable-textarea" id="sectors" contenteditable="true"
+          data-placeholder="500 USD, 5000 USD, 10 FS, 20 FS, 35 FS, 25 USD, 100 USD, 250 USD"></div>
+      </div>
 
-      .btn-secondary {
-        background: #6c757d;
-        color: white;
-      }
+      <div class="control-group">
+        <div class="contenteditable-textarea" id="sectorsType" contenteditable="true"
+          data-placeholder="Bonus Prize, Bonus Prize, Free Spins, Free Spins, Free Spins, Bonus Prize, Bonus Prize, Bonus Prize">
+        </div>
+      </div>
 
-      .btn-secondary:hover {
-        background: #545b62;
-      }
+      <div class="control-group checkbox">
+        <label class="label-container">
+          <input type="checkbox" id="activeCheckbox" checked style="display: inline-block" />
+          active
+        </label>
+      </div>
 
-      .btn-success {
-        background: #28a745;
-        color: white;
-      }
+      <div class="control-group checkbox">
+        <label class="label-container">
+          <input type="checkbox" id="fpsCheckbox" style="display: inline-block" />
+          fps
+        </label>
+      </div>
 
-      .btn-success:hover {
-        background: #1e7e34;
-      }
+      <div class="control-group">
+        <div class="label">
+          URL (example)
+          <button class="copy-btn" onclick="copyWidgetUrl()" title="Копировать URL">
+            📄
+          </button>
+        </div>
+        <div class="contenteditable-textarea" id="widgetUrl"></div>
+      </div>
 
-      .btn:disabled {
-        opacity: 0.8;
-        cursor: not-allowed;
-        pointer-events: none;
-      }
+      <div class="control-group">
+        <div class="label">URL (custom)</div>
+        <div class="contenteditable-textarea" id="customUrl" contenteditable="true"
+          data-placeholder="Введіть URL http://localhost:5173/?style=1&..."></div>
+        <button class="btn btn-primary apply-custom-url-btn" onclick="applyCustomUrl()">
+          Застосувати URL
+        </button>
+      </div>
+    </div>
 
-      .winning-sector-control {
-        margin-bottom: 16px;
-      }
-
-      .winning-sector-control label {
-        display: block;
-        margin-bottom: 8px;
-        font-weight: bold;
-        color: #333;
-      }
-
-      .winning-sector-control select {
-        width: 100%;
-        padding: 8px;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-        font-size: 14px;
-        box-sizing: border-box;
-      }
-
-      .apply-custom-url-btn {
-        margin-top: 16px;
-      }
-
-      .status {
-        padding: 12px;
-        border-radius: 4px;
-        margin: 0 0 16px 0;
-        font-size: 14px;
-      }
-
-      .status.info {
-        background: #d1ecf1;
-        color: #0c5460;
-        border: 1px solid #bee5eb;
-      }
-
-      @media (max-width: 1024px) {
-        .container {
-          gap: 15px;
-        }
-
-        .controls,
-        .widget-section,
-        .log-section {
-          padding: 15px;
-        }
-      }
-
-      @media (max-width: 768px) {
-        body {
-          padding: 12px;
-        }
-
-        .container {
-          display: flex;
-          flex-direction: column;
-          gap: 16px;
-        }
-
-        .controls,
-        .widget-section {
-          padding: 16px;
-        }
-
-        .control-group {
-          margin-bottom: 12px;
-        }
-
-        .control-group label {
-          margin-bottom: 6px;
-        }
-
-        h2,
-        h3 {
-          margin: 0 0 16px 0;
-        }
-
-        .action-buttons {
-          gap: 8px;
-          margin: 12px 0;
-        }
-      }
-    </style>
-  </head>
-
-  <body>
-    <div class="container">
-      <div class="controls">
-        <div class="status info">
-          <strong>Інструкція:</strong><br />
-          - Обрати параметри <br />
-          - Натиснути "Запустити" <br />
-          - Вибрати winSector <br />
-          - Натиснути "Застосувати" <br />
+    <div class="widget-section">
+      <div class="widget-controls">
+        <div class="action-buttons">
+          <button class="btn btn-success" id="startSpinBtn" onclick="startSpin()">
+            Запустити
+          </button>
         </div>
 
-        <div class="control-group">
+        <div class="control-group" style="display: flex; gap: 10px; align-items: center">
           <div class="label-container">
-            style:
-            <input
-              type="number"
-              id="themeInput"
-              min="1"
-              value="1"
-              placeholder="Введіть номер теми"
-              class="theme-input"
-            />
+            winSector:
+            <select id="winningSector">
+              <option value="0">0</option>
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+              <option value="5">5</option>
+              <option value="6">6</option>
+              <option value="7">7</option>
+            </select>
           </div>
-        </div>
-
-        <div class="control-group">
-          <div
-            class="contenteditable-textarea"
-            id="sectors"
-            contenteditable="true"
-            data-placeholder="500 USD, 5000 USD, 10 FS, 20 FS, 35 FS, 25 USD, 100 USD, 250 USD"
-          ></div>
-        </div>
-
-        <div class="control-group">
-          <div
-            class="contenteditable-textarea"
-            id="sectorsType"
-            contenteditable="true"
-            data-placeholder="Bonus Prize, Bonus Prize, Free Spins, Free Spins, Free Spins, Bonus Prize, Bonus Prize, Bonus Prize"
-          ></div>
-        </div>
-
-        <div class="control-group checkbox">
-          <label class="label-container">
-            <input
-              type="checkbox"
-              id="activeCheckbox"
-              checked
-              style="display: inline-block"
-            />
-            active
-          </label>
-        </div>
-
-        <div class="control-group checkbox">
-          <label class="label-container">
-            <input
-              type="checkbox"
-              id="fpsCheckbox"
-              style="display: inline-block"
-            />
-            fps
-          </label>
-        </div>
-
-        <div class="control-group">
-          <div class="label">
-            URL (example)
-            <button
-              class="copy-btn"
-              onclick="copyWidgetUrl()"
-              title="Копировать URL"
-            >
-              📄
-            </button>
-          </div>
-          <div class="contenteditable-textarea" id="widgetUrl"></div>
-        </div>
-
-        <div class="control-group">
-          <div class="label">URL (custom)</div>
-          <div
-            class="contenteditable-textarea"
-            id="customUrl"
-            contenteditable="true"
-            data-placeholder="Введіть URL http://localhost:5173/?style=1&..."
-          ></div>
-          <button
-            class="btn btn-primary apply-custom-url-btn"
-            onclick="applyCustomUrl()"
-          >
-            Застосувати URL
+          <button class="btn btn-primary" id="setWinningSectorBtn" onclick="setWinningSector()">
+            Застосувати
           </button>
         </div>
       </div>
 
-      <div class="widget-section">
-        <div class="widget-controls">
-          <div class="action-buttons">
-            <button
-              class="btn btn-success"
-              id="startSpinBtn"
-              onclick="startSpin()"
-            >
-              Запустити
-            </button>
-          </div>
-
-          <div
-            class="control-group"
-            style="display: flex; gap: 10px; align-items: center"
-          >
-            <div class="label-container">
-              winSector:
-              <select id="winningSector">
-                <option value="0">0</option>
-                <option value="1">1</option>
-                <option value="2">2</option>
-                <option value="3">3</option>
-                <option value="4">4</option>
-                <option value="5">5</option>
-                <option value="6">6</option>
-                <option value="7">7</option>
-              </select>
-            </div>
-            <button
-              class="btn btn-primary"
-              id="setWinningSectorBtn"
-              onclick="setWinningSector()"
-            >
-              Застосувати
-            </button>
-          </div>
-        </div>
-
-        <div class="iframe-wrapper">
-          <iframe id="widgetFrame" src=""></iframe>
-        </div>
-      </div>
-
-      <div class="log-section">
-        <div class="control-group">
-          <div class="label-container">
-            Post messages
-            <button class="btn btn-secondary" onclick="clearLog()">
-              Очистити
-            </button>
-          </div>
-        </div>
-        <div class="log" id="messageLog"></div>
+      <div class="iframe-wrapper">
+        <iframe id="widgetFrame" src=""></iframe>
       </div>
     </div>
 
-    <script>
-      // Початкові параметри
-      let currentParams = {
-        style: 1,
-        sectors:
-          '500 USD, 5000 USD, 10 FS, 20 FS, 35 FS, 25 USD, 100 USD, 250 USD',
-        sectors_type:
-          'Bonus Prize, Bonus Prize, Free Spins, Free Spins, Free Spins, Bonus Prize, Bonus Prize, Bonus Prize',
-        active: true,
-        fps: false,
-      }
+    <div class="log-section">
+      <div class="control-group">
+        <div class="label-container">
+          Post messages
+          <button class="btn btn-secondary" onclick="clearLog()">
+            Очистити
+          </button>
+        </div>
+      </div>
+      <div class="log" id="messageLog"></div>
+    </div>
+  </div>
 
-      let widgetReady = false
-      let isSpinning = false
-      let winningSectorSet = false
-      let iframe = document.getElementById('widgetFrame')
-      const messageLog = document.getElementById('messageLog')
-      const startSpinBtn = document.getElementById('startSpinBtn')
-      const setWinningSectorBtn = document.getElementById('setWinningSectorBtn')
+  <script>
+    // Початкові параметри
+    let currentParams = {
+      style: 1,
+      sectors:
+        '500 USD, 5000 USD, 10 FS, 20 FS, 35 FS, 25 USD, 100 USD, 250 USD',
+      sectors_type:
+        'Bonus Prize, Bonus Prize, Free Spins, Free Spins, Free Spins, Bonus Prize, Bonus Prize, Bonus Prize',
+      active: true,
+      fps: false,
+    }
 
-      function disableStartButton() {
-        startSpinBtn.disabled = true
-        isSpinning = true
-        updateButtonsState()
-      }
+    let widgetReady = false
+    let isSpinning = false
+    let winningSectorSet = false
+    let iframe = document.getElementById('widgetFrame')
+    const messageLog = document.getElementById('messageLog')
+    const startSpinBtn = document.getElementById('startSpinBtn')
+    const setWinningSectorBtn = document.getElementById('setWinningSectorBtn')
 
-      function disableSectorButton() {
-        setWinningSectorBtn.disabled = true
-        winningSectorSet = true
-      }
+    function disableStartButton() {
+      startSpinBtn.disabled = true
+      isSpinning = true
+      updateButtonsState()
+    }
 
-      function enableButtons() {
-        startSpinBtn.disabled = false
-        setWinningSectorBtn.disabled = false
-        isSpinning = false
-        winningSectorSet = false
-        updateButtonsState()
-      }
+    function disableSectorButton() {
+      setWinningSectorBtn.disabled = true
+      winningSectorSet = true
+    }
 
-      function initializeContentEditable() {
-        const contentEditableElements = document.querySelectorAll(
-          '.contenteditable-textarea'
-        )
+    function enableButtons() {
+      startSpinBtn.disabled = false
+      setWinningSectorBtn.disabled = false
+      isSpinning = false
+      winningSectorSet = false
+      updateButtonsState()
+    }
 
-        contentEditableElements.forEach(element => {
-          if (element.id === 'sectors') {
-            element.textContent =
-              '500 USD, 5000 USD, 10 FS, 20 FS, 35 FS, 25 USD, 100 USD, 250 USD'
-          } else if (element.id === 'sectorsType') {
-            element.textContent =
-              'Bonus Prize, Bonus Prize, Free Spins, Free Spins, Free Spins, Bonus Prize, Bonus Prize, Bonus Prize'
-          }
+    function initializeContentEditable() {
+      const contentEditableElements = document.querySelectorAll(
+        '.contenteditable-textarea'
+      )
 
-          element.addEventListener('paste', e => {
-            e.preventDefault()
-            const text = e.clipboardData.getData('text/plain')
-            document.execCommand('insertText', false, text)
-          })
+      contentEditableElements.forEach(element => {
+        if (element.id === 'sectors') {
+          element.textContent =
+            '500 USD, 5000 USD, 10 FS, 20 FS, 35 FS, 25 USD, 100 USD, 250 USD'
+        } else if (element.id === 'sectorsType') {
+          element.textContent =
+            'Bonus Prize, Bonus Prize, Free Spins, Free Spins, Free Spins, Bonus Prize, Bonus Prize, Bonus Prize'
+        }
+
+        element.addEventListener('paste', e => {
+          e.preventDefault()
+          const text = e.clipboardData.getData('text/plain')
+          document.execCommand('insertText', false, text)
         })
+      })
+    }
+
+    function updateButtonsState() {
+      const isActive = currentParams.active
+      const winningSectorSelect = document.getElementById('winningSector')
+      const themeInput = document.getElementById('themeInput')
+      const sectorsInput = document.getElementById('sectors')
+      const sectorsTypeInput = document.getElementById('sectorsType')
+      const customUrlInput = document.getElementById('customUrl')
+      const activeCheckbox = document.getElementById('activeCheckbox')
+      const fpsCheckbox = document.getElementById('fpsCheckbox')
+      const clearLogBtn = document.querySelector(
+        'button[onclick="clearLog()"]'
+      )
+      const applyCustomUrlBtn = document.querySelector(
+        'button[onclick="applyCustomUrl()"]'
+      )
+      const widgetUrlElement = document.getElementById('widgetUrl')
+
+      const isBlocked = isSpinning || !isActive
+
+      startSpinBtn.disabled = !isActive || isSpinning
+      setWinningSectorBtn.disabled =
+        !isActive || !isSpinning || winningSectorSet
+      winningSectorSelect.disabled =
+        !isActive || !isSpinning || winningSectorSet
+      themeInput.disabled = isBlocked
+      sectorsInput.contentEditable = !isBlocked
+      sectorsTypeInput.contentEditable = !isBlocked
+      if (customUrlInput) customUrlInput.contentEditable = !isBlocked
+      activeCheckbox.disabled = isSpinning
+      if (fpsCheckbox) fpsCheckbox.disabled = isSpinning
+
+      if (sectorsInput) {
+        sectorsInput.classList.toggle('spinning', isSpinning)
+      }
+      if (sectorsTypeInput) {
+        sectorsTypeInput.classList.toggle('spinning', isSpinning)
+      }
+      if (customUrlInput) {
+        customUrlInput.classList.toggle('spinning', isSpinning)
       }
 
-      function updateButtonsState() {
-        const isActive = currentParams.active
-        const winningSectorSelect = document.getElementById('winningSector')
-        const themeInput = document.getElementById('themeInput')
-        const sectorsInput = document.getElementById('sectors')
-        const sectorsTypeInput = document.getElementById('sectorsType')
-        const customUrlInput = document.getElementById('customUrl')
-        const activeCheckbox = document.getElementById('activeCheckbox')
-        const fpsCheckbox = document.getElementById('fpsCheckbox')
-        const clearLogBtn = document.querySelector(
-          'button[onclick="clearLog()"]'
-        )
-        const applyCustomUrlBtn = document.querySelector(
-          'button[onclick="applyCustomUrl()"]'
-        )
-        const widgetUrlElement = document.getElementById('widgetUrl')
-
-        const isBlocked = isSpinning || !isActive
-
-        startSpinBtn.disabled = !isActive || isSpinning
-        setWinningSectorBtn.disabled =
-          !isActive || !isSpinning || winningSectorSet
-        winningSectorSelect.disabled =
-          !isActive || !isSpinning || winningSectorSet
-        themeInput.disabled = isBlocked
-        sectorsInput.contentEditable = !isBlocked
-        sectorsTypeInput.contentEditable = !isBlocked
-        if (customUrlInput) customUrlInput.contentEditable = !isBlocked
-        activeCheckbox.disabled = isSpinning
-        if (fpsCheckbox) fpsCheckbox.disabled = isSpinning
-
-        if (sectorsInput) {
-          sectorsInput.classList.toggle('spinning', isSpinning)
-        }
-        if (sectorsTypeInput) {
-          sectorsTypeInput.classList.toggle('spinning', isSpinning)
-        }
-        if (customUrlInput) {
-          customUrlInput.classList.toggle('spinning', isSpinning)
-        }
-
-        if (widgetUrlElement) {
-          widgetUrlElement.classList.toggle('spinning', isSpinning)
-        }
-
-        if (themeInput) {
-          themeInput.classList.toggle('spinning', isSpinning)
-        }
-
-        if (clearLogBtn) clearLogBtn.disabled = isSpinning || !isActive
-        if (applyCustomUrlBtn) applyCustomUrlBtn.disabled = isSpinning
+      if (widgetUrlElement) {
+        widgetUrlElement.classList.toggle('spinning', isSpinning)
       }
 
-      function setTheme(themeIndex) {
-        currentParams.style = themeIndex
-        updateWidget()
+      if (themeInput) {
+        themeInput.classList.toggle('spinning', isSpinning)
       }
 
-      function applyCustomUrl() {
-        const textarea = document.getElementById('customUrl')
-        let customUrl = textarea ? textarea.textContent.trim() : ''
+      if (clearLogBtn) clearLogBtn.disabled = isSpinning || !isActive
+      if (applyCustomUrlBtn) applyCustomUrlBtn.disabled = isSpinning
+    }
 
-        if (customUrl) {
-          customUrl = customUrl.replace(/§/g, '&')
+    function setTheme(themeIndex) {
+      currentParams.style = themeIndex
+      updateWidget()
+    }
 
-          const url = new URL(customUrl)
+    function applyCustomUrl() {
+      const textarea = document.getElementById('customUrl')
+      let customUrl = textarea ? textarea.textContent.trim() : ''
 
-          currentParams.style = parseInt(url.searchParams.get('style')) || 1
-          currentParams.sectors = url.searchParams.get('sectors') || ''
-          currentParams.sectors_type =
-            url.searchParams.get('sectors_type') || ''
-          currentParams.active = url.searchParams.get('active') !== 'false'
-          currentParams.fps = url.searchParams.get('fps') === 'true'
+      if (customUrl) {
+        customUrl = customUrl.replace(/§/g, '&')
 
-          if (currentParams.sectors) {
-            currentParams.sectors = currentParams.sectors.replace(/,/g, ', ')
-          }
-          if (currentParams.sectors_type) {
-            currentParams.sectors_type = currentParams.sectors_type.replace(
-              /,/g,
-              ', '
-            )
-          }
+        const url = new URL(customUrl)
 
-          updateFormFields()
+        currentParams.style = parseInt(url.searchParams.get('style')) || 1
+        currentParams.sectors = url.searchParams.get('sectors') || ''
+        currentParams.sectors_type =
+          url.searchParams.get('sectors_type') || ''
+        currentParams.active = url.searchParams.get('active') !== 'false'
+        currentParams.fps = url.searchParams.get('fps') === 'true'
 
-          document.getElementById('themeInput').value = currentParams.style
-
-          widgetReady = false
-
-          updateWidget()
+        if (currentParams.sectors) {
+          currentParams.sectors = currentParams.sectors.replace(/,/g, ', ')
         }
-      }
-
-      function updateFormFields() {
-        const sectorsElement = document.getElementById('sectors')
-        const sectorsTypeElement = document.getElementById('sectorsType')
-        const activeCheckbox = document.getElementById('activeCheckbox')
-        const fpsCheckbox = document.getElementById('fpsCheckbox')
-
-        if (sectorsElement) {
-          sectorsElement.textContent = currentParams.sectors
+        if (currentParams.sectors_type) {
+          currentParams.sectors_type = currentParams.sectors_type.replace(
+            /,/g,
+            ', '
+          )
         }
-        if (sectorsTypeElement) {
-          sectorsTypeElement.textContent = currentParams.sectors_type
-        }
-        if (activeCheckbox) {
-          activeCheckbox.checked = currentParams.active
-        }
-        if (fpsCheckbox) {
-          fpsCheckbox.checked = currentParams.fps
-        }
-      }
 
-      function updateWidget() {
-        const url = new URL('http://localhost:5173/')
+        updateFormFields()
 
-        // Додаємо параметри
-        Object.entries(currentParams).forEach(([key, value]) => {
-          if (value !== undefined && value !== null && value !== '') {
-            url.searchParams.set(key, value)
-          }
-        })
+        document.getElementById('themeInput').value = currentParams.style
 
-        const finalUrl = url.toString()
-
-        // Оновлюємо URL та iframe
-        document.getElementById('widgetUrl').textContent = finalUrl
-        iframe.src = finalUrl
-      }
-
-      function updateParams() {
-        const sectorsElement = document.getElementById('sectors')
-        const sectorsTypeElement = document.getElementById('sectorsType')
-        const activeCheckbox = document.getElementById('activeCheckbox')
-        const fpsCheckbox = document.getElementById('fpsCheckbox')
-
-        currentParams.sectors = sectorsElement ? sectorsElement.textContent : ''
-        currentParams.sectors_type = sectorsTypeElement
-          ? sectorsTypeElement.textContent
-          : ''
-        currentParams.active = activeCheckbox ? activeCheckbox.checked : true
-        currentParams.fps = fpsCheckbox ? fpsCheckbox.checked : false
+        widgetReady = false
 
         updateWidget()
       }
+    }
 
-      // Слухаємо повідомлення від виджета
-      window.addEventListener('message', event => {
-        if (!event.data || typeof event.data !== 'object') return
+    function updateFormFields() {
+      const sectorsElement = document.getElementById('sectors')
+      const sectorsTypeElement = document.getElementById('sectorsType')
+      const activeCheckbox = document.getElementById('activeCheckbox')
+      const fpsCheckbox = document.getElementById('fpsCheckbox')
 
-        switch (event.data.type) {
-          case 'lootboxReady':
-            widgetReady = true
-            logMessage('📤 lootboxReady', 'received', 'WIDGET')
-            updateButtonsState()
-            break
+      if (sectorsElement) {
+        sectorsElement.textContent = currentParams.sectors
+      }
+      if (sectorsTypeElement) {
+        sectorsTypeElement.textContent = currentParams.sectors_type
+      }
+      if (activeCheckbox) {
+        activeCheckbox.checked = currentParams.active
+      }
+      if (fpsCheckbox) {
+        fpsCheckbox.checked = currentParams.fps
+      }
+    }
 
-          case 'spinEnd':
-            logMessage(
-              `📤 spinEnd: ${event.data.data.prize}`,
-              'received',
-              'WIDGET'
-            )
-            enableButtons()
-            updateButtonsState()
-            break
+    function updateWidget() {
+      const url = new URL('http://localhost:5173/')
+
+      // Додаємо параметри
+      Object.entries(currentParams).forEach(([key, value]) => {
+        if (value !== undefined && value !== null && value !== '') {
+          url.searchParams.set(key, value)
         }
       })
 
-      function startSpin() {
-        if (isSpinning) {
-          return
-        }
+      const finalUrl = url.toString()
 
-        disableStartButton()
-        const message = { type: 'startSpin' }
-        iframe.contentWindow.postMessage(message, '*')
-        logMessage('📥 startSpin', 'sent', 'PARENT')
-      }
+      // Оновлюємо URL та iframe
+      document.getElementById('widgetUrl').textContent = finalUrl
+      iframe.src = finalUrl
+    }
 
-      function setWinningSector() {
-        const select = document.getElementById('winningSector')
-        const selectedValue = select.value
+    function updateParams() {
+      const sectorsElement = document.getElementById('sectors')
+      const sectorsTypeElement = document.getElementById('sectorsType')
+      const activeCheckbox = document.getElementById('activeCheckbox')
+      const fpsCheckbox = document.getElementById('fpsCheckbox')
 
-        const winningSector = parseInt(selectedValue)
-        const sectors = currentParams.sectors.split(', ')
-        const sectorName =
-          sectors[winningSector] || `Сектор ${winningSector + 1}`
-
-        const message = {
-          type: 'winSector',
-          data: winningSector,
-        }
-
-        iframe.contentWindow.postMessage(message, '*')
-        logMessage(`📥 winSector: ${winningSector}`, 'sent', 'PARENT')
-
-        winningSectorSet = true
-        setWinningSectorBtn.disabled = true
-        updateButtonsState()
-      }
-
-      function logMessage(message, type = 'info', sender = '') {
-        const entry = document.createElement('div')
-        entry.className = `log-entry log-${type}`
-        const senderPrefix = sender ? `[${sender}] ` : ''
-        entry.textContent = `[${new Date().toLocaleTimeString()}] ${senderPrefix}${message}`
-        messageLog.appendChild(entry)
-        messageLog.scrollTop = messageLog.scrollHeight
-      }
-
-      function copyWidgetUrl() {
-        const urlDisplay = document.getElementById('widgetUrl')
-        const customUrlField = document.getElementById('customUrl')
-        const url = urlDisplay.textContent.trim()
-
-        navigator.clipboard.writeText(url).then(() => {
-          customUrlField.textContent = url
-        })
-      }
-
-      function clearLog() {
-        messageLog.innerHTML = ''
-      }
-
-      document.getElementById('sectors').addEventListener('input', updateParams)
-      document
-        .getElementById('sectorsType')
-        .addEventListener('input', updateParams)
-      document
-        .getElementById('activeCheckbox')
-        .addEventListener('change', updateParams)
-      document
-        .getElementById('fpsCheckbox')
-        .addEventListener('change', updateParams)
-      document
-        .getElementById('themeInput')
-        .addEventListener('input', function () {
-          if (!this.disabled) {
-            const themeValue = parseInt(this.value) || 1
-            setTheme(themeValue)
-          }
-        })
+      currentParams.sectors = sectorsElement ? sectorsElement.textContent : ''
+      currentParams.sectors_type = sectorsTypeElement
+        ? sectorsTypeElement.textContent
+        : ''
+      currentParams.active = activeCheckbox ? activeCheckbox.checked : true
+      currentParams.fps = fpsCheckbox ? fpsCheckbox.checked : false
 
       updateWidget()
+    }
+
+    // Слухаємо повідомлення від виджета
+    window.addEventListener('message', event => {
+      if (!event.data || typeof event.data !== 'object') return
+
+      switch (event.data.type) {
+        case 'lootboxReady':
+          widgetReady = true
+          logMessage('📤 lootboxReady', 'received', 'WIDGET')
+          updateButtonsState()
+          break
+
+        case 'spinEnd':
+          logMessage(
+            `📤 spinEnd: ${event.data.data.prize}`,
+            'received',
+            'WIDGET'
+          )
+          enableButtons()
+          updateButtonsState()
+          break
+      }
+    })
+
+    function startSpin() {
+      if (isSpinning) {
+        return
+      }
+
+      disableStartButton()
+      const message = { type: 'startSpin' }
+      iframe.contentWindow.postMessage(message, '*')
+      logMessage('📥 startSpin', 'sent', 'PARENT')
+    }
+
+    function setWinningSector() {
+      const select = document.getElementById('winningSector')
+      const selectedValue = select.value
+
+      const winningSector = parseInt(selectedValue)
+      const sectors = currentParams.sectors.split(', ')
+      const sectorName =
+        sectors[winningSector] || `Сектор ${winningSector + 1}`
+
+      const message = {
+        type: 'winSector',
+        data: winningSector,
+      }
+
+      iframe.contentWindow.postMessage(message, '*')
+      logMessage(`📥 winSector: ${winningSector}`, 'sent', 'PARENT')
+
+      winningSectorSet = true
+      setWinningSectorBtn.disabled = true
       updateButtonsState()
-      initializeContentEditable()
-    </script>
-  </body>
+    }
+
+    function logMessage(message, type = 'info', sender = '') {
+      const entry = document.createElement('div')
+      entry.className = `log-entry log-${type}`
+      const senderPrefix = sender ? `[${sender}] ` : ''
+      entry.textContent = `[${new Date().toLocaleTimeString()}] ${senderPrefix}${message}`
+      messageLog.appendChild(entry)
+      messageLog.scrollTop = messageLog.scrollHeight
+    }
+
+    function copyWidgetUrl() {
+      const urlDisplay = document.getElementById('widgetUrl')
+      const customUrlField = document.getElementById('customUrl')
+      const url = urlDisplay.textContent.trim()
+
+      navigator.clipboard.writeText(url).then(() => {
+        customUrlField.textContent = url
+      })
+    }
+
+    function clearLog() {
+      messageLog.innerHTML = ''
+    }
+
+    document.getElementById('sectors').addEventListener('input', updateParams)
+    document
+      .getElementById('sectorsType')
+      .addEventListener('input', updateParams)
+    document
+      .getElementById('activeCheckbox')
+      .addEventListener('change', updateParams)
+    document
+      .getElementById('fpsCheckbox')
+      .addEventListener('change', updateParams)
+    document
+      .getElementById('themeInput')
+      .addEventListener('input', function () {
+        if (!this.disabled) {
+          const themeValue = parseInt(this.value) || 1
+          setTheme(themeValue)
+        }
+      })
+
+    updateWidget()
+    updateButtonsState()
+    initializeContentEditable()
+  </script>
+</body>
+
 </html>
