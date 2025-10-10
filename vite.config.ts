@@ -8,6 +8,7 @@ import { themesPlugin } from './vite/plugins/vite-plugin-themes'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [vue(), vueDevTools(), themesPlugin()],
+  base: './',
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),

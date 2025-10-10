@@ -198,12 +198,12 @@ function collectImages(themeId: string): {
 } {
   const imgDir = path.join(SRC_THEMES_DIR, themeId, 'images')
   const rels = walkFiles(imgDir, imgDir).sort()
-  const urls = rels.map((rel) => `/${OUT_BASE}/${themeId}/images/${rel}`)
+  const urls = rels.map((rel) => `${OUT_BASE}/${themeId}/images/${rel}`)
   const map: Record<string, string> = {}
   for (const rel of rels) {
     const base = rel.split('/').pop()!
     const key = base.replace(/\.[^.]+$/, '')
-    map[key] = `/${OUT_BASE}/${themeId}/images/${rel}`
+    map[key] = `${OUT_BASE}/${themeId}/images/${rel}`
   }
   return { rels, urls, map }
 }

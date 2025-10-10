@@ -363,6 +363,6 @@ onUnmounted(() => {
   Стилі завантажуються динамічно з теми (з URL параметрів ?style=N) через bootstrap.js для запобігання FOUC
   Архітектура:
   - index.html (базові)
-  - bootstrap.js (завантаження) → /themes/{theme}/theme.css
+  - bootstrap.js (завантаження) → themes/{theme}/theme.css
 */
 </style>

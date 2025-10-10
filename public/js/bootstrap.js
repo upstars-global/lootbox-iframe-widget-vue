@@ -63,7 +63,7 @@
 
   /** Завантаження CSS теми */
   function loadThemeStylesheet(theme) {
-    const href = `/themes/${theme.name}/theme.css`
+    const href = `themes/${theme.name}/theme.css`
     const linkEl = document.createElement('link')
     linkEl.rel = 'stylesheet'
     linkEl.href = href
@@ -117,8 +117,8 @@
    * Побудувати мапу зображень для Vue компонентів
    *
    * Перетворює список URL зображень у зручну мапу:
-   * Input:  ["/themes/default/images/bg.webp", "/themes/default/images/logo.svg"]
-   * Output: { "bg": "/themes/default/images/bg.webp", "logo": "/themes/default/images/logo.svg" }
+   * Input:  ["themes/default/images/bg.webp", "themes/default/images/logo.svg"]
+   * Output: { "bg": "themes/default/images/bg.webp", "logo": "themes/default/images/logo.svg" }
    *
    * Це дозволяє Vue компонентам динамічно звертатися до зображень по імені:
    * <img :src="currentTheme.images.bg" /> замість довгих URL

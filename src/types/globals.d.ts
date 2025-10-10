@@ -4,7 +4,7 @@ export {}
 declare global {
   interface Window {
     /**
-     * Конфігурація всіх тем (генерується плагіном у /themes/themes-config.js)
+     * Конфігурація всіх тем (генерується плагіном у themes/themes-config.js)
      */
     THEMES_CONFIG?: {
       themes: Array<{
