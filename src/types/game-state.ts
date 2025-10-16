@@ -7,6 +7,7 @@ import type { Ref } from 'vue'
  * - showWinAnimation: чи відображається візуальна анімація виграшу (окремо від winAnimationStarted)
  * - angle/randomAngle: керують обертанням та маскою
  * - motionBlurOpacity/maskOpacity: прозорості ефектів
+ * - winAnimationOpacity: прозорість анімації виграшу (для плавного зникнення)
  * - animationId: ref з requestAnimationFrame
  * - winnerSection: номер виграшного сектора (0-7) або null
  * - hasWinSection: чи є виграшний сектор
@@ -19,6 +20,7 @@ export interface GameState {
   randomAngle: Ref<number>
   motionBlurOpacity: Ref<number>
   maskOpacity: Ref<number>
+  winAnimationOpacity: Ref<number>
   animationId: Ref<number | null>
   winnerSection: Ref<number | null>
   hasWinSection: Ref<boolean>

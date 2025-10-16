@@ -43,6 +43,7 @@ export function useWheelAnimation(
     randomAngle,
     motionBlurOpacity,
     maskOpacity,
+    winAnimationOpacity,
     animationId,
     winnerSection,
     hasWinSection,
@@ -133,13 +134,15 @@ export function useWheelAnimation(
    * 1. Запуск анімації виграшу (winAnimationStarted та showWinAnimation = true)
    * 2. Виклик callback'ів (якщо встановлені)
    * 3. Пауза для показу анімації виграшу (timeToPopup)
-   * 4. Приховування візуальної анімації (showWinAnimation = false)
-   * 5. Затримка 30 секунд - колесо нерухоме в фінальній позиції (winAnimationStarted = true)
-   * 6. Скидання всіх станів для наступного обертання
+   * 4. Плавне зникнення анімації виграшу (500мс fade-out)
+   * 5. Приховування візуальної анімації (showWinAnimation = false)
+   * 6. Затримка 30 секунд - колесо нерухоме в фінальній позиції (winAnimationStarted = true)
+   * 7. Скидання всіх станів для наступного обертання
    */
   const handleWinAnimation = () => {
     winAnimationStarted.value = true
     showWinAnimation.value = true
+    winAnimationOpacity.value = 1
     running.value = false
 
     // Використовуємо виграшний сектор з gameState
@@ -149,6 +152,12 @@ export function useWheelAnimation(
     // Викликаємо callback деталей призу
     const prize = `${winningSectorData.prizeText} ${winningSectorData.prizeCurrency}`
     onSpinEnd?.(prize)
+
+    // Плавне зникнення анімації за 500мс перед приховуванням
+    const fadeOutDelay = timeToPopup.value - 500
+    setTimeout(() => {
+      winAnimationOpacity.value = 0
+    }, fadeOutDelay)
 
     // Приховуємо візуальну анімацію виграшу після timeToPopup
     setTimeout(() => {
@@ -182,6 +191,7 @@ export function useWheelAnimation(
     // Це важливо, щоб клас winSector прибрався з попереднього виграшного сектора
     winAnimationStarted.value = false
     showWinAnimation.value = false
+    winAnimationOpacity.value = 1
     winnerSection.value = null // Скидаємо виграшний сектор перед новим спіном
     
     // Генеруємо випадковий кут для різноманітності анімації

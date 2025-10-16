@@ -121,7 +121,13 @@
       alt=""
       :style="{ transform: `rotate(${randomAngle}deg)` }"
     />
-    <img v-if="showWinAnimation" :src="themeImages.winanimation" class="win-animation" alt="" />
+      <img
+        v-if="showWinAnimation"
+        :src="themeImages.winanimation"
+        class="win-animation"
+        alt=""
+        :style="{ opacity: winAnimationOpacity }"
+      />
     <img
       v-if="!running && !winAnimationStarted"
       :src="themeImages.purplewave"
@@ -192,6 +198,7 @@ const angle = ref<number>(0)
 const randomAngle = ref<number>(0)
 const motionBlurOpacity = ref<number>(0)
 const maskOpacity = ref<number>(0)
+const winAnimationOpacity = ref<number>(1)
 const animationId = ref<number | null>(null)
 
 // Таймінги анімації (можуть бути перевизначені з теми)
@@ -313,6 +320,7 @@ const { runWheel, setSpinEndCallback } = useWheelAnimation(
     randomAngle,
     motionBlurOpacity,
     maskOpacity,
+    winAnimationOpacity,
     animationId,
     winnerSection,
     hasWinSection,

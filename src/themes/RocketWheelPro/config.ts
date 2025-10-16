@@ -5,7 +5,7 @@ export const config: ThemeConfig = {
   styleId: 2,
   timings: {
     spinDuration: 8000,
-    timeToPopup: 4000,
+    timeToPopup: 9000,
     preloaderTime: 500,
   },
   logic: {
