@@ -10,6 +10,7 @@ const RANDOM_ANGLE_OFFSET = 3 // Зміщення випадкового кут�
 const SPIN_WITHOUT_WIN_DURATION = 3000 // Тривалість для обертання без виграшу (3s)
 const SPIN_WITH_WIN_DURATION = 14000 // Тривалість для обертання з виграшем (14s)
 const SWITCH_EFFECTS_THRESHOLD = 0.7 // Поріг для переключення ефектів (70%)
+const RESET_DELAY = 30000 // Затримка перед поверненням колеса в початковий стан після виграшу (30s)
 
 /**
  * useWheelAnimation
@@ -37,6 +38,7 @@ export function useWheelAnimation(
   const {
     running,
     winAnimationStarted,
+    showWinAnimation,
     angle,
     randomAngle,
     motionBlurOpacity,
@@ -128,13 +130,16 @@ export function useWheelAnimation(
    * Дії після зупинки колеса: анімація виграшу + виклик callback'ів
    *
    * Послідовність дій:
-   * 1. Запуск анімації виграшу
+   * 1. Запуск анімації виграшу (winAnimationStarted та showWinAnimation = true)
    * 2. Виклик callback'ів (якщо встановлені)
-   * 3. Пауза для показу результату
-   * 4. Повернення у стан очікування
+   * 3. Пауза для показу анімації виграшу (timeToPopup)
+   * 4. Приховування візуальної анімації (showWinAnimation = false)
+   * 5. Затримка 30 секунд - колесо нерухоме в фінальній позиції (winAnimationStarted = true)
+   * 6. Скидання всіх станів для наступного обертання
    */
   const handleWinAnimation = () => {
     winAnimationStarted.value = true
+    showWinAnimation.value = true
     running.value = false
 
     // Використовуємо виграшний сектор з gameState
@@ -145,12 +150,21 @@ export function useWheelAnimation(
     const prize = `${winningSectorData.prizeText} ${winningSectorData.prizeCurrency}`
     onSpinEnd?.(prize)
 
-    // Пауза перед поверненням у «очікування» (показуємо результат)
+    // Приховуємо візуальну анімацію виграшу після timeToPopup
     setTimeout(() => {
-      maskOpacity.value = 0
-      winAnimationStarted.value = false
-      running.value = false
+      showWinAnimation.value = false
     }, timeToPopup.value)
+
+    // Загальна затримка = час показу анімації + час утримання позиції
+    const totalDelay = timeToPopup.value + RESET_DELAY
+
+    // Скидаємо всі стани після повної затримки
+    // winAnimationStarted залишається true протягом всього часу, щоб запобігти
+    // застосуванню класу waiting-spin-animation, який скидає позицію колеса
+    setTimeout(() => {
+      winAnimationStarted.value = false
+      maskOpacity.value = 0
+    }, totalDelay)
   }
 
   /**

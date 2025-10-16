@@ -115,13 +115,13 @@
       />
     </div>
     <img
-      v-if="winAnimationStarted"
+      v-if="showWinAnimation"
       :src="themeImages.winframe"
       class="win-frame"
       alt=""
       :style="{ transform: `rotate(${randomAngle}deg)` }"
     />
-    <img v-if="winAnimationStarted" :src="themeImages.winanimation" class="win-animation" alt="" />
+    <img v-if="showWinAnimation" :src="themeImages.winanimation" class="win-animation" alt="" />
     <img
       v-if="!running && !winAnimationStarted"
       :src="themeImages.purplewave"
@@ -187,6 +187,7 @@ const themeTimings = window.currentTheme?.timings
 // Стан анімації колеса
 const running = ref<boolean>(false)
 const winAnimationStarted = ref<boolean>(false)
+const showWinAnimation = ref<boolean>(false)
 const angle = ref<number>(0)
 const randomAngle = ref<number>(0)
 const motionBlurOpacity = ref<number>(0)
@@ -302,11 +303,12 @@ const { postToParent } = usePostMessageBus<LootboxMessages>(
   }
 )
 
-// Анімація колеса з двофазною логікою
+// Анімація колеса з двофазною логікою  
 const { runWheel, setSpinEndCallback } = useWheelAnimation(
   {
     running,
     winAnimationStarted,
+    showWinAnimation,
     angle,
     randomAngle,
     motionBlurOpacity,

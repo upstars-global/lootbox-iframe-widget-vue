@@ -3,7 +3,8 @@ import type { Ref } from 'vue'
 /**
  * GameState — стан колеса:
  * - running: чи зараз крутиться
- * - winAnimationStarted: чи показується win-анімація
+ * - winAnimationStarted: чи показується win-анімація (також блокує waiting-spin-animation)
+ * - showWinAnimation: чи відображається візуальна анімація виграшу (окремо від winAnimationStarted)
  * - angle/randomAngle: керують обертанням та маскою
  * - motionBlurOpacity/maskOpacity: прозорості ефектів
  * - animationId: ref з requestAnimationFrame
@@ -13,6 +14,7 @@ import type { Ref } from 'vue'
 export interface GameState {
   running: Ref<boolean>
   winAnimationStarted: Ref<boolean>
+  showWinAnimation: Ref<boolean>
   angle: Ref<number>
   randomAngle: Ref<number>
   motionBlurOpacity: Ref<number>
