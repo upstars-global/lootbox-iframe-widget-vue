@@ -19,7 +19,7 @@
     const searchParams = new URLSearchParams(location.search)
     const activeParam = searchParams.get('active')
     return {
-      styleId: Number.parseInt(searchParams.get('style') || '', 10),
+      themeName: searchParams.get('style') || null,
       sectors: searchParams.get('sectors') || null,
       sectorsType: searchParams.get('sectors_type') || null,
       active: activeParam !== 'false', // true за замовчуванням, false тільки якщо явно вказано
@@ -33,13 +33,13 @@
     return themesConfig
   }
 
-  /** Вибір теми за styleId */
-  function selectThemeByStyleId(themesConfig, params) {
+  /** Вибір теми за назвою */
+  function selectThemeByName(themesConfig, params) {
     const themes = Array.isArray(themesConfig.themes) ? themesConfig.themes : []
-    if (Number.isInteger(params.styleId)) {
-      const byStyleId = themes.find(theme => Number(theme.styleId) === params.styleId)
-      // console.log('[bootstrap] Тема за styleId:', byStyleId)
-      if (byStyleId) return byStyleId
+    if (params.themeName) {
+      const byName = themes.find(theme => theme.name === params.themeName)
+      // console.log('[bootstrap] Тема за назвою:', byName)
+      if (byName) return byName
     }
     // console.log('[bootstrap] Використовуємо першу тему:', themes[0])
     return themes[0] || null
@@ -165,7 +165,7 @@
   const urlParams = readUrlParams()
   const themesConfig = getThemesConfig()
 
-  let selectedTheme = selectThemeByStyleId(themesConfig, urlParams)
+  let selectedTheme = selectThemeByName(themesConfig, urlParams)
 
   applyThemePreloader(selectedTheme)
   setThemeDataAttribute(selectedTheme)

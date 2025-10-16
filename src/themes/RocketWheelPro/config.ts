@@ -1,8 +1,8 @@
 import type { ThemeConfig } from '../../types/theme'
 
 export const config: ThemeConfig = {
-  name: 'default',
-  styleId: 1,
+  name: 'RocketWheelPro',
+  styleId: 2,
   timings: {
     spinDuration: 8000,
     timeToPopup: 4000,

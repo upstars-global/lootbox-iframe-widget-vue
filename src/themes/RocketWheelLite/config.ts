@@ -1,15 +1,15 @@
 import type { ThemeConfig } from '../../types/theme'
 
 export const config: ThemeConfig = {
-  name: 'crown',
-  styleId: 2,
+  name: 'RocketWheelLite',
+  styleId: 1,
   timings: {
     spinDuration: 8000,
     timeToPopup: 4000,
-    preloaderTime: 1500,
+    preloaderTime: 500,
   },
   logic: {
     numberOfSpins: 1,
-    winSection: 5,
+    winSection: 0,
   },
 }

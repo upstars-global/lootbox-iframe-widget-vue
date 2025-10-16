@@ -80,8 +80,8 @@
       width: auto;
     }
 
-    .theme-input {
-      width: 60px;
+    .theme-select {
+      width: 100%;
       padding: 8px;
       border: 1px solid #ddd;
       border-radius: 4px;
@@ -165,7 +165,7 @@
       cursor: not-allowed;
     }
 
-    .theme-input.spinning {
+    .theme-select.spinning {
       background: #f5f5f5;
       color: #999;
       cursor: not-allowed;
@@ -422,10 +422,11 @@
       </div>
 
       <div class="control-group">
-        <div class="label-container">
-          style:
-          <input type="number" id="themeInput" min="1" value="1" placeholder="Введіть номер теми" class="theme-input" />
-        </div>
+        <label for="themeSelect">Тема:</label>
+        <select id="themeSelect" class="theme-select">
+          <option value="RocketWheelLite">RocketWheelLite (за замовчуванням)</option>
+          <option value="RocketWheelPro">RocketWheelPro</option>
+        </select>
       </div>
 
       <div class="control-group">
@@ -522,7 +523,7 @@
   <script>
     // Початкові параметри
     let currentParams = {
-      style: 1,
+      style: 'RocketWheelLite',
       sectors:
         '500 USD, 5000 USD, 10 FS, 20 FS, 35 FS, 25 USD, 100 USD, 250 USD',
       sectors_type:
@@ -583,7 +584,7 @@
     function updateButtonsState() {
       const isActive = currentParams.active
       const winningSectorSelect = document.getElementById('winningSector')
-      const themeInput = document.getElementById('themeInput')
+      const themeSelect = document.getElementById('themeSelect')
       const sectorsInput = document.getElementById('sectors')
       const sectorsTypeInput = document.getElementById('sectorsType')
       const customUrlInput = document.getElementById('customUrl')
@@ -604,7 +605,7 @@
         !isActive || !isSpinning || winningSectorSet
       winningSectorSelect.disabled =
         !isActive || !isSpinning || winningSectorSet
-      themeInput.disabled = isBlocked
+      themeSelect.disabled = isBlocked
       sectorsInput.contentEditable = !isBlocked
       sectorsTypeInput.contentEditable = !isBlocked
       if (customUrlInput) customUrlInput.contentEditable = !isBlocked
@@ -625,8 +626,8 @@
         widgetUrlElement.classList.toggle('spinning', isSpinning)
       }
 
-      if (themeInput) {
-        themeInput.classList.toggle('spinning', isSpinning)
+      if (themeSelect) {
+        themeSelect.classList.toggle('spinning', isSpinning)
       }
 
       if (clearLogBtn) clearLogBtn.disabled = isSpinning || !isActive
@@ -647,7 +648,7 @@
 
         const url = new URL(customUrl)
 
-        currentParams.style = parseInt(url.searchParams.get('style')) || 1
+        currentParams.style = url.searchParams.get('style') || 'RocketWheelLite'
         currentParams.sectors = url.searchParams.get('sectors') || ''
         currentParams.sectors_type =
           url.searchParams.get('sectors_type') || ''
@@ -666,7 +667,10 @@
 
         updateFormFields()
 
-        document.getElementById('themeInput').value = currentParams.style
+        const themeSelect = document.getElementById('themeSelect')
+        if (themeSelect) {
+          themeSelect.value = currentParams.style
+        }
 
         widgetReady = false
 
@@ -817,11 +821,10 @@
       .getElementById('fpsCheckbox')
       .addEventListener('change', updateParams)
     document
-      .getElementById('themeInput')
-      .addEventListener('input', function () {
+      .getElementById('themeSelect')
+      .addEventListener('change', function () {
         if (!this.disabled) {
-          const themeValue = parseInt(this.value) || 1
-          setTheme(themeValue)
+          setTheme(this.value)
         }
       })
 
