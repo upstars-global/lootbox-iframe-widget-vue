@@ -226,10 +226,10 @@ const sectionsData = ((): Sector[] => {
   return []
 })()
 
-// Класи для переможного сектора (тільки перший сектор може бути переможним)
+// Класи для переможного сектора
 const winnerClass = computed(() => {
   return (index: number) => ({
-    winSector: index === 0 && winAnimationStarted.value,
+    winSector: winnerSection.value !== null && index === winnerSection.value && winAnimationStarted.value,
   })
 })
 
@@ -326,7 +326,6 @@ const { runWheel, setSpinEndCallback } = useWheelAnimation(
 setSpinEndCallback(prize => {
   // Відправляємо у parent сайт: деталі призу (після зупинки)
   postToParent('spinEnd', { prize, timestamp: Date.now() })
-  winnerSection.value = null // Скидання для наступного спіна
 })
 
 // Ініціалізація компонента
