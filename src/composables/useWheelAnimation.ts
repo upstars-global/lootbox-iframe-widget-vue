@@ -132,8 +132,8 @@ export function useWheelAnimation(
    *
    * Послідовність дій:
    * 1. Запуск анімації виграшу (winAnimationStarted та showWinAnimation = true)
-   * 2. Виклик callback'ів (якщо встановлені)
-   * 3. Пауза для показу анімації виграшу (timeToPopup)
+   * 2. Пауза для показу анімації виграшу (timeToPopup)
+   * 3. Виклик callback'ів (spinEnd) за 3 секунди до приховування анімації
    * 4. Плавне зникнення анімації виграшу (500мс fade-out)
    * 5. Приховування візуальної анімації (showWinAnimation = false)
    * 6. Затримка 30 секунд - колесо нерухоме в фінальній позиції (winAnimationStarted = true)
@@ -148,10 +148,13 @@ export function useWheelAnimation(
     // Використовуємо виграшний сектор з gameState
     const winningSector = winnerSection.value || 0
     const winningSectorData = sectionsData[winningSector]
-
-    // Викликаємо callback деталей призу
     const prize = `${winningSectorData.prizeText} ${winningSectorData.prizeCurrency}`
-    onSpinEnd?.(prize)
+
+    // Відправляємо spinEnd за 3 секунди до приховування анімації
+    const spinEndDelay = timeToPopup.value - 3000
+    setTimeout(() => {
+      onSpinEnd?.(prize)
+    }, spinEndDelay)
 
     // Плавне зникнення анімації за 500мс перед приховуванням
     const fadeOutDelay = timeToPopup.value - 500
