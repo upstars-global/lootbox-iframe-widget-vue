@@ -431,12 +431,12 @@
 
       <div class="control-group">
         <div class="contenteditable-textarea" id="sectors" contenteditable="true"
-          data-placeholder="500 USD, 5000 USD, 10 FS, 20 FS, 35 FS, 25 USD, 100 USD, 250 USD"></div>
+          data-placeholder="500 USD; 5,000 USD; 10 FS; 20 FS; 35 FS; 25 USD; 100 USD; 250 USD"></div>
       </div>
 
       <div class="control-group">
         <div class="contenteditable-textarea" id="sectorsType" contenteditable="true"
-          data-placeholder="Bonus Prize, Bonus Prize, Free Spins, Free Spins, Free Spins, Bonus Prize, Bonus Prize, Bonus Prize">
+          data-placeholder="Bonus Prize; Bonus Prize; Free Spins; Free Spins; Free Spins; Bonus Prize; Bonus Prize; Bonus Prize">
         </div>
       </div>
 
@@ -533,9 +533,9 @@
     let currentParams = {
       style: 'RocketWheelLite',
       sectors:
-        '500 USD, 5000 USD, 10 FS, 20 FS, 35 FS, 25 USD, 100 USD, 250 USD',
+        '500 USD; 5,000 USD; 10 FS; 20 FS; 35 FS; 25 USD; 100 USD; 250 USD',
       sectors_type:
-        'Bonus Prize, Bonus Prize, Free Spins, Free Spins, Free Spins, Bonus Prize, Bonus Prize, Bonus Prize',
+        'Bonus Prize; Bonus Prize; Free Spins; Free Spins; Free Spins; Bonus Prize; Bonus Prize; Bonus Prize',
       active: true,
       fps: false,
       vip_level: 0,
@@ -576,10 +576,10 @@
       contentEditableElements.forEach(element => {
         if (element.id === 'sectors') {
           element.textContent =
-            '500 USD, 5000 USD, 10 FS, 20 FS, 35 FS, 25 USD, 100 USD, 250 USD'
+            '500 USD; 5,000 USD; 10 FS; 20 FS; 35 FS; 25 USD; 100 USD; 250 USD'
         } else if (element.id === 'sectorsType') {
           element.textContent =
-            'Bonus Prize, Bonus Prize, Free Spins, Free Spins, Free Spins, Bonus Prize, Bonus Prize, Bonus Prize'
+            'Bonus Prize; Bonus Prize; Free Spins; Free Spins; Free Spins; Bonus Prize; Bonus Prize; Bonus Prize'
         }
 
         element.addEventListener('paste', e => {
@@ -666,16 +666,6 @@
         currentParams.active = url.searchParams.get('active') !== 'false'
         currentParams.fps = url.searchParams.get('fps') === 'true'
         currentParams.vip_level = parseInt(url.searchParams.get('vip_level') || '0')
-
-        if (currentParams.sectors) {
-          currentParams.sectors = currentParams.sectors.replace(/,/g, ', ')
-        }
-        if (currentParams.sectors_type) {
-          currentParams.sectors_type = currentParams.sectors_type.replace(
-            /,/g,
-            ', '
-          )
-        }
 
         updateFormFields()
 
@@ -788,7 +778,7 @@
       const selectedValue = select.value
 
       const winningSector = parseInt(selectedValue)
-      const sectors = currentParams.sectors.split(', ')
+      const sectors = currentParams.sectors.split(';').map(s => s.trim())
       const sectorName =
         sectors[winningSector] || `Сектор ${winningSector + 1}`
 

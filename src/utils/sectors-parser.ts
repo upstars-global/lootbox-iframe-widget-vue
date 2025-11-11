@@ -6,13 +6,13 @@ export type { Sector, ParsedSectorsResult }
  * Розбиває рядок секторів з URL у масив, коректно декодуючи значення.
  *
  * Приклади:
- *   "100%20FS,200%20EUR" → ["100 FS", "200 EUR"]
+ *   "100%20FS;200%20EUR" → ["100 FS", "200 EUR"]
  */
 export function parseSectors(sectorsString: string): string[] {
   if (typeof sectorsString !== 'string' || sectorsString.trim() === '') return []
 
   return sectorsString
-    .split(',')
+    .split(';')
     .map((s) => s.trim())
     .filter((s) => s.length > 0)
     .map((s) => {
@@ -105,7 +105,7 @@ export function processSectorsFromUrl(
 
   const types = typesString
     ? typesString
-        .split(',')
+        .split(';')
         .map((t) => t.trim())
         .filter((t) => t.length > 0)
         .map((t) => {

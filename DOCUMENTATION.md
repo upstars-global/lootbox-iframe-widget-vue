@@ -121,8 +121,8 @@ src/themes/
 
 - **Query-параметри**:
   - `?style=1` - вибір теми за ID (default, crown, тощо)
-  - `?sectors=100%20FS,50%20USD` - налаштування секторів
-  - `?sectors_type=Free%20Spins,USD` - типи призів для секторів
+  - `?sectors=100%20FS;50%20USD` - налаштування секторів
+  - `?sectors_type=Free%20Spins;USD` - типи призів для секторів
 - **Автоматична компіляція** SCSS в CSS
 - **Попереднє завантаження** зображень теми
 - **Запобігання FOUC** (Flash of Unstyled Content)
@@ -185,8 +185,8 @@ await waitThemeReady() // Vue ініціалізація
 export const defaultTheme = {
   id: 1,
   name: 'Default Theme',
-  sectors: ['100 FS', '50 USD', '200 EUR'],
-  sectorsType: ['Free Spins', 'USD', 'EUR'],
+  sectors: ['100 FS', '5,000 USD', '200 EUR'],
+  sectorsType: ['Free Spins', 'Bonus Prize', 'Cash Prize'],
   images: {
     wheel: '/themes/default/images/wheel.png',
     background: '/themes/default/images/background.png',
@@ -258,9 +258,9 @@ export const defaultTheme = {
 ### Приклади використання
 
 ```
-?style=2&sectors=100%20FS,50%20USD&sectors_type=Free%20Spins,USD
+?style=2&sectors=100%20FS;5,000%20USD&sectors_type=Free%20Spins;Bonus%20Prize
 ?style=1&sectors=500%20USD&sectors_type=Bonus%20Prize&active=false
-?style=1&sectors=1000%20USD,50%20FS&sectors_type=Bonus%20Prize,Free%20Spins&vip_level=5
+?style=1&sectors=1,000%20USD;50%20FS&sectors_type=Bonus%20Prize;Free%20Spins&vip_level=5
 ?style=2&vip_level=10&active=true
 ```
 
