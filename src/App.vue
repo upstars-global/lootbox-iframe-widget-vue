@@ -1,5 +1,4 @@
 <template>
-  <!-- <div style="width: 92vmin; height: 92vmin"> -->
   <div class="loot-box-spin-wheel-container">
     <img :src="themeImages.wheelouterglow" class="wheel-outer-glow" alt="" />
     <div class="lamps">
@@ -139,7 +138,6 @@
       <img v-if="running" :src="themeImages.wheelmask" alt="" />
     </div>
   </div>
-  <!-- </div> -->
   <FpsMonitor />
 </template>
 
