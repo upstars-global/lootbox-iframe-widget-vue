@@ -167,7 +167,11 @@
 
   let selectedTheme = selectThemeByName(themesConfig, urlParams)
 
-  applyThemePreloader(selectedTheme)
+  // applyThemePreloader(selectedTheme)
+  // ↑ ЗАКОМЕНТОВАНО: Прелоадер тепер встановлюється синхронно через інлайн-скрипт в index.html
+  // для миттєвого відображення без затримки. Це виправляє баг з білим фоном при жорсткому перезавантаженні.
+  // Функція applyThemePreloader залишена як fallback, але більше не викликається.
+
   setThemeDataAttribute(selectedTheme)
 
   const cssReady = loadThemeStylesheet(selectedTheme)

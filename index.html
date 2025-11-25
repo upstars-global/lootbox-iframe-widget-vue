@@ -101,9 +101,18 @@
   </head>
 
   <body>
-    <!-- фон-прелоадер (картинку поставимо динамічно по темі в bootstrap.js) -->
+    <!-- фон-прелоадер (картинку поставимо динамічно - інлайн для миттєвого рендеру) -->
     <div id="preloader-bg" class="preloader-bg">
-      <img class="preloader" alt="" />
+      <img class="preloader" id="preloader-img" alt="" />
+      <script>
+        // Синхронна установка preloader src для миттєвого відображення
+        ;(function () {
+          var params = new URLSearchParams(location.search)
+          var theme = params.get('style') || 'RocketWheelLite'
+          document.getElementById('preloader-img').src =
+            'themes/' + theme + '/images/preloader.svg'
+        })()
+      </script>
     </div>
     <div id="app"></div>
     <!-- ранній рантайм: визначаємо тему, підключаємо CSS і чекаємо ВСІ картинки -->
