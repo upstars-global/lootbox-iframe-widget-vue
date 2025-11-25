@@ -157,6 +157,7 @@
     }
 
     // Захист від FOUC — сигналізуємо готовність теми для main.ts
+    console.log('[bootstrap] Захист від FOUC — сигналізуємо готовність теми для main.ts')
     document.documentElement.setAttribute('data-theme-ready', '1')
   }
 

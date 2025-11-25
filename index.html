@@ -7,6 +7,17 @@
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <!-- Preload preloader SVGs for both themes -->
+    <link
+      rel="preload"
+      as="image"
+      href="themes/RocketWheelLite/images/preloader.svg"
+    />
+    <link
+      rel="preload"
+      as="image"
+      href="themes/RocketWheelPro/images/preloader.svg"
+    />
     <link
       href="https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@900&family=Rubik:wght@700&display=swap"
       rel="stylesheet"
@@ -33,6 +44,24 @@
         background-color: #000a12;
       }
 
+      /* КРИТИЧНО: Захист від "білого квадрата" під час hard reload.
+         Є мікрозатримка між початком reload і спрацюванням JS скрипта.
+         У цей момент браузер може очистити кеш зображень, залишивши broken images з білим фоном.
+         Ці стили страхують на випадок, якщо JS не встигне спрацювати. */
+
+      img,
+      svg,
+      canvas {
+        background: transparent !important;
+      }
+
+      img:not([src]),
+      img[src=''],
+      img[src='about:blank'] {
+        opacity: 0 !important;
+        visibility: hidden !important;
+      }
+
       body {
         display: flex;
         align-items: end;
@@ -56,12 +85,20 @@
       }
 
       /* Страховка від FOUC (Flash Of Unstyled Content):
-         Поки тема не готова (немає CSS і не підвантажені всі зображення), ховаємо #app.
+         Поки тема не готова (немає CSS і не підвантажені всі зображення), ховаємо body.
          bootstrap.js виставить data-theme-ready="1" — і контент з'явиться одномоментно, без мерехтіння.
-         Прелоадер залишається видимим, тому що він в body, а не в #app.
+         Якщо не хочеться ховати весь контент — можна прибрати цей блок.
       */
-      html:not([data-theme-ready='1']) #app {
+      html:not([data-theme-ready='1']) body {
         visibility: hidden;
+      }
+
+      /* КРИТИЧНО: При скритті body (reload) відключаємо ВСІ transition/animation
+         для МИТТЄВОГО зникнення контенту. Інакше .center-bg з transition: all 3s 
+         буде зникати 3 секунди, що виглядає як баг. */
+      html:not([data-theme-ready='1']) body * {
+        transition: none !important;
+        animation: none !important;
       }
 
       .preloader-bg {
@@ -104,17 +141,48 @@
     <!-- фон-прелоадер (картинку поставимо динамічно - інлайн для миттєвого рендеру) -->
     <div id="preloader-bg" class="preloader-bg">
       <img class="preloader" id="preloader-img" alt="" />
-      <script>
-        // Синхронна установка preloader src для миттєвого відображення
-        ;(function () {
-          var params = new URLSearchParams(location.search)
-          var theme = params.get('style') || 'RocketWheelLite'
-          document.getElementById('preloader-img').src =
-            'themes/' + theme + '/images/preloader.svg'
-        })()
-      </script>
     </div>
     <div id="app"></div>
+    <script>
+      ;(function () {
+        // 1. СИНХРОННА установка preloader src для миттєвого відображення
+        var params = new URLSearchParams(location.search)
+        var theme = params.get('style') || 'RocketWheelLite'
+        document.getElementById('preloader-img').src =
+          'themes/' + theme + '/images/preloader.svg'
+
+        // 2. ЗАХИСТ від "білого квадрата" під час hard reload
+        // Коли браузер починає reload, він очищає кеш зображень, але елементи залишаються в DOM.
+        // Прибираємо атрибут data-theme-ready="1" → CSS правило автоматично ховає body.
+        function hideContent() {
+          document.documentElement.removeAttribute('data-theme-ready')
+        }
+
+        // Відслідковуємо всі можливі події reload
+        window.addEventListener('beforeunload', hideContent, { capture: true })
+        window.addEventListener('pagehide', hideContent, { capture: true })
+        window.addEventListener('unload', hideContent, { capture: true })
+
+        // Для деяких браузерів також відслідковуємо visibilitychange
+        document.addEventListener('visibilitychange', function () {
+          if (document.visibilityState === 'hidden') {
+            hideContent()
+          }
+        })
+
+        // 3. АВТОМАТИЧНЕ скриття зламаних зображень
+        document.addEventListener(
+          'error',
+          function (e) {
+            if (e.target && e.target.tagName === 'IMG') {
+              e.target.style.display = 'none'
+            }
+          },
+          true
+        )
+      })()
+    </script>
+
     <!-- ранній рантайм: визначаємо тему, підключаємо CSS і чекаємо ВСІ картинки -->
     <script src="themes/themes-config.js"></script>
     <script src="js/bootstrap.js"></script>
