@@ -163,13 +163,6 @@
         window.addEventListener('pagehide', hideContent, { capture: true })
         window.addEventListener('unload', hideContent, { capture: true })
 
-        // Для деяких браузерів також відслідковуємо visibilitychange
-        document.addEventListener('visibilitychange', function () {
-          if (document.visibilityState === 'hidden') {
-            hideContent()
-          }
-        })
-
         // 3. АВТОМАТИЧНЕ скриття зламаних зображень
         document.addEventListener(
           'error',

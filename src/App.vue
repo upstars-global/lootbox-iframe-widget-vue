@@ -120,13 +120,13 @@
       alt=""
       :style="{ transform: `rotate(${randomAngle}deg)` }"
     />
-      <img
-        v-if="showWinAnimation"
-        :src="themeImages.winanimation"
-        class="win-animation"
-        alt=""
-        :style="{ opacity: winAnimationOpacity }"
-      />
+    <img
+      v-if="showWinAnimation"
+      :src="themeImages.winanimation"
+      class="win-animation"
+      alt=""
+      :style="{ opacity: winAnimationOpacity }"
+    />
     <img
       v-if="!running && !winAnimationStarted"
       :src="themeImages.purplewave"
@@ -234,7 +234,8 @@ const sectionsData = ((): Sector[] => {
 // Класи для переможного сектора
 const winnerClass = computed(() => {
   return (index: number) => ({
-    winSector: winnerSection.value !== null && index === winnerSection.value && winAnimationStarted.value,
+    winSector:
+      winnerSection.value !== null && index === winnerSection.value && winAnimationStarted.value,
   })
 })
 
@@ -308,7 +309,7 @@ const { postToParent } = usePostMessageBus<LootboxMessages>(
   }
 )
 
-// Анімація колеса з двофазною логікою  
+// Анімація колеса з двофазною логікою
 const { runWheel, setSpinEndCallback } = useWheelAnimation(
   {
     running,
