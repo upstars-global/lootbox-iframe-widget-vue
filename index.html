@@ -44,10 +44,10 @@
         background-color: #000a12;
       }
 
-      /* КРИТИЧНО: Захист від "білого квадрата" під час hard reload.
-         Є мікрозатримка між початком reload і спрацюванням JS скрипта.
-         У цей момент браузер може очистити кеш зображень, залишивши broken images з білим фоном.
-         Ці стили страхують на випадок, якщо JS не встигне спрацювати. */
+      /* CRITICAL: Protection against the "white square" during hard reload.
+         There's a micro-delay between reload start and JS script execution.
+         During this time the browser may clear image cache, leaving broken images with a white background.
+         These styles act as insurance in case JS doesn't fire in time. */
 
       img,
       svg,
@@ -84,18 +84,18 @@
         overflow: hidden;
       }
 
-      /* Страховка від FOUC (Flash Of Unstyled Content):
-         Поки тема не готова (немає CSS і не підвантажені всі зображення), ховаємо body.
-         bootstrap.js виставить data-theme-ready="1" — і контент з'явиться одномоментно, без мерехтіння.
-         Якщо не хочеться ховати весь контент — можна прибрати цей блок.
+      /* FOUC (Flash Of Unstyled Content) protection:
+         If the theme is not ready (no CSS and not all images are loaded), hide the body.
+         bootstrap.js sets data-theme-ready="1" — so content appears at once, without flicker.
+         If you don't want to hide all content — you can remove this block.
       */
       html:not([data-theme-ready='1']) body {
         visibility: hidden;
       }
 
-      /* КРИТИЧНО: При скритті body (reload) відключаємо ВСІ transition/animation
-         для МИТТЄВОГО зникнення контенту. Інакше .center-bg з transition: all 3s 
-         буде зникати 3 секунди, що виглядає як баг. */
+      /* CRITICAL: When hiding the body (reload), disable ALL transition/animation
+         for INSTANT disappearance of content. Otherwise .center-bg with transition: all 3s
+         will disappear for 3 seconds, which looks like a bug. */
       html:not([data-theme-ready='1']) body * {
         transition: none !important;
         animation: none !important;
@@ -138,32 +138,32 @@
   </head>
 
   <body>
-    <!-- фон-прелоадер (картинку поставимо динамічно - інлайн для миттєвого рендеру) -->
+    <!-- Preloader background (image set dynamically - inline for instant rendering) -->
     <div id="preloader-bg" class="preloader-bg">
       <img class="preloader" id="preloader-img" alt="" />
     </div>
     <div id="app"></div>
     <script>
       ;(function () {
-        // 1. СИНХРОННА установка preloader src для миттєвого відображення
+        // 1. SYNCHRONOUS preloader src assignment for instant display
         var params = new URLSearchParams(location.search)
         var theme = params.get('style') || 'RocketWheelLite'
         document.getElementById('preloader-img').src =
           'themes/' + theme + '/images/preloader.svg'
 
-        // 2. ЗАХИСТ від "білого квадрата" під час hard reload
-        // Коли браузер починає reload, він очищає кеш зображень, але елементи залишаються в DOM.
-        // Прибираємо атрибут data-theme-ready="1" → CSS правило автоматично ховає body.
+        // 2. PROTECTION from "white square" during hard reload
+        // When the browser begins reload, it clears image cache but DOM elements stay.
+        // Remove data-theme-ready="1" attribute → CSS rule automatically hides body.
         function hideContent() {
           document.documentElement.removeAttribute('data-theme-ready')
         }
 
-        // Відслідковуємо всі можливі події reload
+        // Listen to all possible reload events
         window.addEventListener('beforeunload', hideContent, { capture: true })
         window.addEventListener('pagehide', hideContent, { capture: true })
         window.addEventListener('unload', hideContent, { capture: true })
 
-        // 3. АВТОМАТИЧНЕ скриття зламаних зображень
+        // 3. AUTOMATIC hiding of broken images
         document.addEventListener(
           'error',
           function (e) {
@@ -176,10 +176,10 @@
       })()
     </script>
 
-    <!-- ранній рантайм: визначаємо тему, підключаємо CSS і чекаємо ВСІ картинки -->
+    <!-- early runtime: determine theme, include CSS, wait for ALL images to load -->
     <script src="themes/themes-config.js"></script>
     <script src="js/bootstrap.js"></script>
-    <!-- Vue-додаток стартує ТІЛЬКИ після готовності теми (див. main.ts) -->
+    <!-- Vue app starts ONLY after theme is ready (see main.ts) -->
     <script type="module" src="src/main.ts"></script>
   </body>
 </html>
