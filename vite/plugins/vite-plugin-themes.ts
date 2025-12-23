@@ -54,6 +54,8 @@ try {
 export type ThemeConfig = {
   name: string
   styleId: number
+  project: string
+  isProjectDefault: boolean
   timings: { spinDuration: number; timeToPopup: number; preloaderTime: number }
   logic: { numberOfSpins: number; winSection: number }
   fontSizes?: {

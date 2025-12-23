@@ -7,7 +7,7 @@
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <!-- Preload preloader SVGs for both themes -->
+    <!-- Preload preloader SVGs for all themes -->
     <link
       rel="preload"
       as="image"
@@ -17,6 +17,11 @@
       rel="preload"
       as="image"
       href="themes/RocketWheelPro/images/preloader.svg"
+    />
+    <link
+      rel="preload"
+      as="image"
+      href="themes/KingWheel/images/preloader.svg"
     />
     <link
       href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Roboto+Slab:wght@900&family=Rubik:wght@700&display=swap"
@@ -147,7 +152,26 @@
       ;(function () {
         // 1. SYNCHRONOUS preloader src assignment for instant display
         var params = new URLSearchParams(location.search)
-        var theme = params.get('style') || 'RocketWheelLite'
+        var style = params.get('style')
+        var project = params.get('project')
+
+        // Determine theme for preloader:
+        // - If ?style= is provided, use it
+        // - If only ?project= is provided, use project default theme
+        // - Fallback to RocketWheelLite
+        var theme = style
+        if (!theme && project) {
+          // Project default themes mapping (must match config.ts isProjectDefault: true)
+          var projectDefaults = {
+            rocket: 'RocketWheelLite',
+            king: 'KingWheel',
+          }
+          theme = projectDefaults[project] || 'RocketWheelLite'
+        }
+        if (!theme) {
+          theme = 'RocketWheelLite'
+        }
+
         document.getElementById('preloader-img').src =
           'themes/' + theme + '/images/preloader.svg'
 

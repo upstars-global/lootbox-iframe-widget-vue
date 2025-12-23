@@ -20,6 +20,7 @@
     const activeParam = searchParams.get('active')
     return {
       themeName: searchParams.get('style') || null,
+      project: searchParams.get('project') || null,
       sectors: searchParams.get('sectors') || null,
       sectorsType: searchParams.get('sectors_type') || null,
       active: activeParam !== 'false', // true за замовчуванням, false тільки якщо явно вказано
@@ -33,27 +34,74 @@
     return themesConfig
   }
 
-  /** Вибір теми за назвою */
-  function selectThemeByName(themesConfig, params) {
+  /**
+   * Вибір теми з валідацією належності до проекту.
+   *
+   * Пріоритети:
+   * 1. ?style= без ?project= → використовуємо тему (зворотна сумісність)
+   * 2. ?project= без ?style= → дефолтна тема проекту
+   * 3. ?project= + ?style= → валідуємо належність теми до проекту
+   *    - якщо тема належить проекту → використовуємо її
+   *    - якщо ні → ігноруємо style, використовуємо дефолт проекту + console.warn
+   * 4. Fallback → перша тема
+   */
+  function selectTheme(themesConfig, params) {
     const themes = Array.isArray(themesConfig.themes) ? themesConfig.themes : []
-    if (params.themeName) {
-      const byName = themes.find(theme => theme.name === params.themeName)
-      // console.log('[bootstrap] Тема за назвою:', byName)
+
+    // Допоміжна функція: знайти дефолтну тему проекту
+    const findProjectDefault = projectName => {
+      // Спочатку шукаємо тему з isProjectDefault: true
+      const defaultTheme = themes.find(t => t.project === projectName && t.isProjectDefault)
+      if (defaultTheme) return defaultTheme
+
+      // Якщо дефолт не знайдено — беремо будь-яку тему проекту
+      return themes.find(t => t.project === projectName) || null
+    }
+
+    // Сценарій 1: Передано ТІЛЬКИ ?style= (без ?project=)
+    // Зворотна сумісність — використовуємо тему без валідації
+    if (params.themeName && !params.project) {
+      const byName = themes.find(t => t.name === params.themeName)
       if (byName) return byName
     }
-    // console.log('[bootstrap] Використовуємо першу тему:', themes[0])
-    return themes[0] || null
-  }
 
-  /** Встановлення прелоадера теми */
-  function applyThemePreloader(theme) {
-    const preloaderImgEl = document.querySelector('#preloader-bg img')
-    if (!preloaderImgEl) return
-    const preloaderImage = (theme.images || []).find(imagePath =>
-      /\/preloader\.(svg|png|webp|gif)$/i.test(imagePath)
-    )
-    // console.log('[bootstrap] Прелоадер теми:', preloaderImage)
-    if (preloaderImage) preloaderImgEl.src = preloaderImage
+    // Сценарій 2: Передано ТІЛЬКИ ?project= (без ?style=)
+    // Використовуємо дефолтну тему проекту
+    if (params.project && !params.themeName) {
+      const projectDefault = findProjectDefault(params.project)
+      if (projectDefault) return projectDefault
+    }
+
+    // Сценарій 3: Передано ОБИДВА параметри — валідуємо належність
+    if (params.project && params.themeName) {
+      const requestedTheme = themes.find(t => t.name === params.themeName)
+
+      if (requestedTheme) {
+        // Перевіряємо: чи належить тема до вказаного проекту?
+        if (requestedTheme.project === params.project) {
+          // ✅ Тема належить проекту — використовуємо її
+          return requestedTheme
+        } else {
+          // ❌ Тема НЕ належить проекту — ігноруємо style
+          console.warn(
+            `[Lootbox] Theme "${params.themeName}" belongs to project "${requestedTheme.project}", ` +
+              `not "${params.project}". Using default theme for "${params.project}" instead.`
+          )
+          const projectDefault = findProjectDefault(params.project)
+          if (projectDefault) return projectDefault
+        }
+      } else {
+        // Тема не знайдена — використовуємо дефолт проекту
+        console.warn(
+          `[Lootbox] Theme "${params.themeName}" not found. Using default theme for "${params.project}".`
+        )
+        const projectDefault = findProjectDefault(params.project)
+        if (projectDefault) return projectDefault
+      }
+    }
+
+    // Сценарій 4: Fallback — перша тема
+    return themes[0] || null
   }
 
   /** Встановлення data-theme атрибута */
@@ -138,6 +186,8 @@
     window.currentTheme = {
       styleId: theme.styleId,
       name: theme.name,
+      project: theme.project || null,
+      isProjectDefault: theme.isProjectDefault || false,
       sectors: params.sectors,
       sectorsType: params.sectorsType,
       isActive: params.active,
@@ -166,12 +216,7 @@
   const urlParams = readUrlParams()
   const themesConfig = getThemesConfig()
 
-  let selectedTheme = selectThemeByName(themesConfig, urlParams)
-
-  // applyThemePreloader(selectedTheme)
-  // ↑ ЗАКОМЕНТОВАНО: Прелоадер тепер встановлюється синхронно через інлайн-скрипт в index.html
-  // для миттєвого відображення без затримки. Це виправляє баг з білим фоном при жорсткому перезавантаженні.
-  // Функція applyThemePreloader залишена як fallback, але більше не викликається.
+  let selectedTheme = selectTheme(themesConfig, urlParams)
 
   setThemeDataAttribute(selectedTheme)
 

@@ -3,6 +3,8 @@ import type { ThemeConfig } from '../../types/theme'
 export const config: ThemeConfig = {
   name: 'KingWheel',
   styleId: 3,
+  project: 'king',
+  isProjectDefault: true,
   timings: {
     spinDuration: 8000,
     timeToPopup: 9000,

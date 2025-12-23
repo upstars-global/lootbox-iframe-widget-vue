@@ -421,14 +421,50 @@
         </div>
 
         <div class="control-group">
+          <label for="projectSelect">Проект:</label>
+          <select id="projectSelect" class="theme-select">
+            <option value="">— Без проекту —</option>
+            <option value="rocket">Rocket</option>
+            <option value="king">King</option>
+          </select>
+          <small
+            style="
+              color: #6c757d;
+              font-size: 12px;
+              margin-top: 4px;
+              display: block;
+            "
+          >
+            ℹ️ Якщо вибрано проект — буде використано дефолтну тему проекту
+            (якщо тема не вказана явно)
+          </small>
+        </div>
+
+        <div class="control-group">
           <label for="themeSelect">Тема:</label>
           <select id="themeSelect" class="theme-select">
-            <option value="RocketWheelLite">
-              RocketWheelLite (за замовчуванням)
+            <option value="">— Дефолт проекту —</option>
+            <option value="RocketWheelLite" data-project="rocket">
+              RocketWheelLite (Rocket)
             </option>
-            <option value="RocketWheelPro">RocketWheelPro</option>
-            <option value="KingWheel">KingWheel</option>
+            <option value="RocketWheelPro" data-project="rocket">
+              RocketWheelPro (Rocket)
+            </option>
+            <option value="KingWheel" data-project="king">
+              KingWheel (King)
+            </option>
           </select>
+          <small
+            id="themeWarning"
+            style="
+              color: #dc3545;
+              font-size: 12px;
+              margin-top: 4px;
+              display: none;
+            "
+          >
+            ⚠️ Тема не належить вибраному проекту — буде використано дефолт
+          </small>
         </div>
 
         <div class="control-group">
@@ -579,7 +615,8 @@
     <script>
       // Початкові параметри
       let currentParams = {
-        style: 'RocketWheelLite',
+        project: '',
+        style: '',
         sectors:
           '500 USD; 5,000 USD; 10 FS; 20 FS; 35 FS; 25 USD; 100 USD; 250 USD',
         sectors_type:
@@ -707,8 +744,8 @@
 
           const url = new URL(customUrl)
 
-          currentParams.style =
-            url.searchParams.get('style') || 'RocketWheelLite'
+          currentParams.project = url.searchParams.get('project') || ''
+          currentParams.style = url.searchParams.get('style') || ''
           currentParams.sectors = url.searchParams.get('sectors') || ''
           currentParams.sectors_type =
             url.searchParams.get('sectors_type') || ''
@@ -719,25 +756,26 @@
           )
 
           updateFormFields()
-
-          const themeSelect = document.getElementById('themeSelect')
-          if (themeSelect) {
-            themeSelect.value = currentParams.style
-          }
-
           widgetReady = false
-
           updateWidget()
         }
       }
 
       function updateFormFields() {
+        const projectSelect = document.getElementById('projectSelect')
+        const themeSelect = document.getElementById('themeSelect')
         const sectorsElement = document.getElementById('sectors')
         const sectorsTypeElement = document.getElementById('sectorsType')
         const activeCheckbox = document.getElementById('activeCheckbox')
         const fpsCheckbox = document.getElementById('fpsCheckbox')
         const vipLevelInput = document.getElementById('vipLevel')
 
+        if (projectSelect) {
+          projectSelect.value = currentParams.project || ''
+        }
+        if (themeSelect) {
+          themeSelect.value = currentParams.style || ''
+        }
         if (sectorsElement) {
           sectorsElement.textContent = currentParams.sectors
         }
@@ -773,12 +811,16 @@
       }
 
       function updateParams() {
+        const projectSelect = document.getElementById('projectSelect')
+        const themeSelect = document.getElementById('themeSelect')
         const sectorsElement = document.getElementById('sectors')
         const sectorsTypeElement = document.getElementById('sectorsType')
         const activeCheckbox = document.getElementById('activeCheckbox')
         const fpsCheckbox = document.getElementById('fpsCheckbox')
         const vipLevelInput = document.getElementById('vipLevel')
 
+        currentParams.project = projectSelect ? projectSelect.value : ''
+        currentParams.style = themeSelect ? themeSelect.value : ''
         currentParams.sectors = sectorsElement ? sectorsElement.textContent : ''
         currentParams.sectors_type = sectorsTypeElement
           ? sectorsTypeElement.textContent
@@ -871,6 +913,71 @@
         messageLog.innerHTML = ''
       }
 
+      /**
+       * Фільтрує теми в селекті відповідно до вибраного проекту.
+       * Якщо проект не вибрано — показує всі теми.
+       * Якщо вибрано проект — показує тільки теми цього проекту.
+       */
+      function filterThemesByProject() {
+        const projectSelect = document.getElementById('projectSelect')
+        const themeSelect = document.getElementById('themeSelect')
+        const themeWarning = document.getElementById('themeWarning')
+        const selectedProject = projectSelect.value
+        const options = themeSelect.querySelectorAll('option[data-project]')
+
+        options.forEach(option => {
+          const themeProject = option.getAttribute('data-project')
+
+          if (!selectedProject) {
+            // Проект не вибрано — показуємо всі теми
+            option.style.display = ''
+            option.disabled = false
+          } else if (themeProject === selectedProject) {
+            // Тема належить вибраному проекту — показуємо
+            option.style.display = ''
+            option.disabled = false
+          } else {
+            // Тема не належить проекту — ховаємо
+            option.style.display = 'none'
+            option.disabled = true
+          }
+        })
+
+        // Якщо поточна вибрана тема не належить проекту — скидаємо на дефолт
+        const currentThemeOption = themeSelect.selectedOptions[0]
+        if (currentThemeOption && currentThemeOption.disabled) {
+          themeSelect.value = ''
+        }
+
+        // Показуємо попередження якщо є конфлікт
+        updateThemeWarning()
+      }
+
+      /**
+       * Показує/ховає попередження про невідповідність теми проекту
+       */
+      function updateThemeWarning() {
+        const projectSelect = document.getElementById('projectSelect')
+        const themeSelect = document.getElementById('themeSelect')
+        const themeWarning = document.getElementById('themeWarning')
+
+        const selectedProject = projectSelect.value
+        const selectedTheme = themeSelect.value
+        const themeOption = themeSelect.querySelector(
+          `option[value="${selectedTheme}"]`
+        )
+
+        if (selectedProject && selectedTheme && themeOption) {
+          const themeProject = themeOption.getAttribute('data-project')
+          if (themeProject && themeProject !== selectedProject) {
+            themeWarning.style.display = 'block'
+            return
+          }
+        }
+
+        themeWarning.style.display = 'none'
+      }
+
       document.getElementById('sectors').addEventListener('input', updateParams)
       document
         .getElementById('sectorsType')
@@ -885,13 +992,20 @@
         .getElementById('vipLevel')
         .addEventListener('input', updateParams)
       document
+        .getElementById('projectSelect')
+        .addEventListener('change', function () {
+          filterThemesByProject()
+          updateParams()
+        })
+      document
         .getElementById('themeSelect')
         .addEventListener('change', function () {
-          if (!this.disabled) {
-            setTheme(this.value)
-          }
+          updateThemeWarning()
+          updateParams()
         })
 
+      // Ініціалізація
+      filterThemesByProject()
       updateWidget()
       updateButtonsState()
       initializeContentEditable()

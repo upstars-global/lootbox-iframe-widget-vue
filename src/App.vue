@@ -120,7 +120,6 @@
       alt=""
       :style="{ transform: `rotate(${randomAngle}deg)` }"
     />
-
     <img
       v-if="showWinAnimation"
       :src="themeImages.winanimation"

@@ -25,6 +25,8 @@ export interface FontSizesConfig {
 /**
  * ThemeConfig — конфігурація теми для lootbox колеса:
  * - name/styleId: ідентифікація теми
+ * - project: назва проекту (king, rocket, winspirits тощо)
+ * - isProjectDefault: чи є ця тема дефолтною для проекту
  * - timings: тривалість анімацій (обертання, показ результату, прелоадер)
  * - logic: логіка гри (кількість обертів, виграшний сектор)
  * - fontSizes: налаштування розмірів шрифтів (опціонально)
@@ -32,6 +34,8 @@ export interface FontSizesConfig {
 export interface ThemeConfig {
   name: string
   styleId: number
+  project: string
+  isProjectDefault: boolean
   timings: {
     spinDuration: number
     timeToPopup: number
