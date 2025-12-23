@@ -275,19 +275,76 @@ export const config: ThemeConfig = {
 
 ### Створення нової теми
 
-1. Створіть папку `src/themes/YourThemeName/`
-2. Додайте `config.ts` з обов'язковими полями:
-   - `name` — унікальна назва теми (PascalCase)
-   - `styleId` — унікальний числовий ID
-   - `project` — назва проекту (lowercase)
-   - `isProjectDefault` — `true` якщо це дефолтна тема проекту
-3. Створіть `theme.scss` зі стилями
-4. Додайте зображення в папку `images/` (обов'язково: `preloader.svg`)
-5. Налаштуйте анімації в `styles/_animations.scss`
-6. Визначте токени в `styles/_tokens.scss`
-7. **Оновіть `index.html`** — додайте preload для preloader.svg та маппінг в `projectDefaults`
+#### Крок 1: Створіть папку теми
 
-**Важливо:** Якщо це новий проект, оновіть `projectDefaults` в `index.html`:
+```
+src/themes/YourThemeName/
+├── config.ts           # Конфігурація теми
+├── theme.scss          # Головний файл стилів
+├── images/             # Зображення теми
+│   ├── preloader.svg   # Обов'язково!
+│   ├── wheelpointer.webp
+│   └── ...
+└── styles/
+    ├── _animations.scss
+    └── _tokens.scss
+```
+
+#### Крок 2: Створіть config.ts
+
+```typescript
+import type { ThemeConfig } from '../../types/theme'
+
+export const config: ThemeConfig = {
+  // === ІДЕНТИФІКАЦІЯ ===
+  name: 'YourThemeName',     // Унікальна назва теми (PascalCase)
+  styleId: 4,                // Унікальний числовий ID (не повторюється)
+
+  // === НАЛЕЖНІСТЬ ДО ПРОЕКТУ ===
+  project: 'yourproject',    // Назва проекту (lowercase)
+  isProjectDefault: true,    // true = ця тема буде застосована якщо
+                             // передано ?project=yourproject без ?style=
+
+  // === НАЛАШТУВАННЯ АНІМАЦІЇ ===
+  timings: {
+    spinDuration: 8000,      // Тривалість обертання (мс)
+    timeToPopup: 9000,       // Час до показу попапу (мс)
+    preloaderTime: 500,      // Час показу прелоадера (мс)
+  },
+
+  // === ЛОГІКА ГРИ ===
+  logic: {
+    numberOfSpins: 1,        // Кількість обертів
+    winSection: 0,           // Дефолтний виграшний сектор
+  },
+
+  // === ОПЦІОНАЛЬНО: кастомні розміри шрифтів ===
+  // fontSizes: { ... }
+}
+```
+
+**Пояснення полів project та isProjectDefault:**
+
+| Поле | Призначення |
+|------|-------------|
+| `project` | Визначає до якого проекту належить тема. Використовується для валідації: якщо передано `?project=rocket&style=KingWheel`, віджет проігнорує тему King (бо вона належить проекту `king`, а не `rocket`) і застосує дефолтну тему для Rocket. |
+| `isProjectDefault` | Якщо `true`, ця тема буде застосована коли передано тільки `?project=yourproject` без вказання конкретної теми. **Важливо:** Лише одна тема проекту може мати `isProjectDefault: true`. |
+
+#### Крок 3: Оновіть index.html
+
+Якщо це **новий проект** (не нова тема для існуючого проекту), потрібно:
+
+**3.1. Додати preload для прелоадера:**
+
+```html
+<!-- Preload preloader SVGs for all themes -->
+<link rel="preload" as="image" href="themes/RocketWheelLite/images/preloader.svg" />
+<link rel="preload" as="image" href="themes/RocketWheelPro/images/preloader.svg" />
+<link rel="preload" as="image" href="themes/KingWheel/images/preloader.svg" />
+<link rel="preload" as="image" href="themes/YourThemeName/images/preloader.svg" /> <!-- ← Додати -->
+```
+
+**3.2. Додати маппінг в projectDefaults:**
 
 ```javascript
 var projectDefaults = {
@@ -296,6 +353,57 @@ var projectDefaults = {
   yourproject: 'YourThemeName', // ← Додати новий проект
 }
 ```
+
+> **Навіщо projectDefaults?** Inline-скрипт в index.html виконується ДО завантаження themes-config.js, тому він не знає яка тема дефолтна для якого проекту. Цей маппінг дозволяє показати правильний прелоадер одразу.
+
+#### Крок 4: Оновіть test-lootbox.html (опціонально)
+
+Додайте новий проект в селект для тестування:
+
+```html
+<select id="projectSelect" class="theme-select">
+  <option value="">— Без проекту —</option>
+  <option value="rocket">Rocket</option>
+  <option value="king">King</option>
+  <option value="yourproject">YourProject</option> <!-- ← Додати -->
+</select>
+```
+
+І нову тему:
+
+```html
+<select id="themeSelect" class="theme-select">
+  <option value="">— Дефолт проекту —</option>
+  <option value="RocketWheelLite" data-project="rocket">RocketWheelLite (Rocket)</option>
+  <option value="RocketWheelPro" data-project="rocket">RocketWheelPro (Rocket)</option>
+  <option value="KingWheel" data-project="king">KingWheel (King)</option>
+  <option value="YourThemeName" data-project="yourproject">YourThemeName (YourProject)</option> <!-- ← Додати -->
+</select>
+```
+
+---
+
+### Додавання теми до існуючого проекту
+
+Якщо потрібно додати ще одну тему для вже існуючого проекту (наприклад, `RocketWheelDark` для проекту Rocket):
+
+1. Створіть тему як описано вище
+2. В `config.ts` вкажіть `project: 'rocket'` та `isProjectDefault: false`
+3. В `index.html` додайте тільки preload (projectDefaults оновлювати НЕ потрібно)
+4. Для використання вказуйте явно: `?project=rocket&style=RocketWheelDark`
+
+---
+
+### Чеклист створення теми
+
+- [ ] Створено папку `src/themes/YourThemeName/`
+- [ ] Створено `config.ts` з усіма обов'язковими полями
+- [ ] Вказано правильний `project` (lowercase)
+- [ ] Встановлено `isProjectDefault: true` якщо це єдина або дефолтна тема проекту
+- [ ] Створено `theme.scss`
+- [ ] Додано `preloader.svg` в `images/`
+- [ ] Оновлено `index.html` (preload + projectDefaults якщо новий проект)
+- [ ] Протестовано на `test-lootbox.html`
 
 ### SCSS структура
 
