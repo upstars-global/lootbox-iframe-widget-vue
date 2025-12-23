@@ -297,25 +297,25 @@ import type { ThemeConfig } from '../../types/theme'
 
 export const config: ThemeConfig = {
   // === ІДЕНТИФІКАЦІЯ ===
-  name: 'YourThemeName',     // Унікальна назва теми (PascalCase)
-  styleId: 4,                // Унікальний числовий ID (не повторюється)
+  name: 'YourThemeName', // Унікальна назва теми (PascalCase)
+  styleId: 4, // Унікальний числовий ID (не повторюється)
 
   // === НАЛЕЖНІСТЬ ДО ПРОЕКТУ ===
-  project: 'yourproject',    // Назва проекту (lowercase)
-  isProjectDefault: true,    // true = ця тема буде застосована якщо
-                             // передано ?project=yourproject без ?style=
+  project: 'yourproject', // Назва проекту (lowercase)
+  isProjectDefault: true, // true = ця тема буде застосована якщо
+  // передано ?project=yourproject без ?style=
 
   // === НАЛАШТУВАННЯ АНІМАЦІЇ ===
   timings: {
-    spinDuration: 8000,      // Тривалість обертання (мс)
-    timeToPopup: 9000,       // Час до показу попапу (мс)
-    preloaderTime: 500,      // Час показу прелоадера (мс)
+    spinDuration: 8000, // Тривалість обертання (мс)
+    timeToPopup: 9000, // Час до показу попапу (мс)
+    preloaderTime: 500, // Час показу прелоадера (мс)
   },
 
   // === ЛОГІКА ГРИ ===
   logic: {
-    numberOfSpins: 1,        // Кількість обертів
-    winSection: 0,           // Дефолтний виграшний сектор
+    numberOfSpins: 1, // Кількість обертів
+    winSection: 0, // Дефолтний виграшний сектор
   },
 
   // === ОПЦІОНАЛЬНО: кастомні розміри шрифтів ===
@@ -325,10 +325,10 @@ export const config: ThemeConfig = {
 
 **Пояснення полів project та isProjectDefault:**
 
-| Поле | Призначення |
-|------|-------------|
-| `project` | Визначає до якого проекту належить тема. Використовується для валідації: якщо передано `?project=rocket&style=KingWheel`, віджет проігнорує тему King (бо вона належить проекту `king`, а не `rocket`) і застосує дефолтну тему для Rocket. |
-| `isProjectDefault` | Якщо `true`, ця тема буде застосована коли передано тільки `?project=yourproject` без вказання конкретної теми. **Важливо:** Лише одна тема проекту може мати `isProjectDefault: true`. |
+| Поле               | Призначення                                                                                                                                                                                                                                 |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `project`          | Визначає до якого проекту належить тема. Використовується для валідації: якщо передано `?project=rocket&style=KingWheel`, віджет проігнорує тему King (бо вона належить проекту `king`, а не `rocket`) і застосує дефолтну тему для Rocket. |
+| `isProjectDefault` | Якщо `true`, ця тема буде застосована коли передано тільки `?project=yourproject` без вказання конкретної теми. **Важливо:** Лише одна тема проекту може мати `isProjectDefault: true`.                                                     |
 
 #### Крок 3: Оновіть index.html
 
@@ -341,7 +341,8 @@ export const config: ThemeConfig = {
 <link rel="preload" as="image" href="themes/RocketWheelLite/images/preloader.svg" />
 <link rel="preload" as="image" href="themes/RocketWheelPro/images/preloader.svg" />
 <link rel="preload" as="image" href="themes/KingWheel/images/preloader.svg" />
-<link rel="preload" as="image" href="themes/YourThemeName/images/preloader.svg" /> <!-- ← Додати -->
+<link rel="preload" as="image" href="themes/YourThemeName/images/preloader.svg" />
+<!-- ← Додати -->
 ```
 
 **3.2. Додати маппінг в projectDefaults:**
@@ -365,7 +366,8 @@ var projectDefaults = {
   <option value="">— Без проекту —</option>
   <option value="rocket">Rocket</option>
   <option value="king">King</option>
-  <option value="yourproject">YourProject</option> <!-- ← Додати -->
+  <option value="yourproject">YourProject</option>
+  <!-- ← Додати -->
 </select>
 ```
 
@@ -377,7 +379,8 @@ var projectDefaults = {
   <option value="RocketWheelLite" data-project="rocket">RocketWheelLite (Rocket)</option>
   <option value="RocketWheelPro" data-project="rocket">RocketWheelPro (Rocket)</option>
   <option value="KingWheel" data-project="king">KingWheel (King)</option>
-  <option value="YourThemeName" data-project="yourproject">YourThemeName (YourProject)</option> <!-- ← Додати -->
+  <option value="YourThemeName" data-project="yourproject">YourThemeName (YourProject)</option>
+  <!-- ← Додати -->
 </select>
 ```
 
