@@ -39,6 +39,26 @@ declare global {
           images: Record<string, string>
           timings: Record<string, number>
           logic: Record<string, unknown>
+          fontSizes: {
+            sum: {
+              short: string
+              medium: string
+              long: string
+              veryLong: string
+              extraLong: string
+              max: string
+            }
+            currency: {
+              short: string
+              long: string
+            }
+            bonus: {
+              default: string
+              short: string
+              medium: string
+              long: string
+            }
+          } | null
           readonly ready: boolean
         }
       | undefined

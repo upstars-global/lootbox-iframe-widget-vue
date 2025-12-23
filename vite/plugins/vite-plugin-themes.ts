@@ -56,6 +56,18 @@ export type ThemeConfig = {
   styleId: number
   timings: { spinDuration: number; timeToPopup: number; preloaderTime: number }
   logic: { numberOfSpins: number; winSection: number }
+  fontSizes?: {
+    sum: {
+      short: string
+      medium: string
+      long: string
+      veryLong: string
+      extraLong: string
+      max: string
+    }
+    currency: { short: string; long: string }
+    bonus: { default: string; short: string; medium: string; long: string }
+  }
 }
 
 /** Розширена тема у реєстрі (додаємо id та список явних URL зображень) */
@@ -198,7 +210,7 @@ function collectImages(themeId: string): {
 } {
   const imgDir = path.join(SRC_THEMES_DIR, themeId, 'images')
   const rels = walkFiles(imgDir, imgDir).sort()
-  const urls = rels.map((rel) => `${OUT_BASE}/${themeId}/images/${rel}`)
+  const urls = rels.map(rel => `${OUT_BASE}/${themeId}/images/${rel}`)
   const map: Record<string, string> = {}
   for (const rel of rels) {
     const base = rel.split('/').pop()!
@@ -216,8 +228,8 @@ function collectImages(themeId: string): {
 async function handleRegistry(res: any): Promise<void> {
   const ids = fs
     .readdirSync(SRC_THEMES_DIR)
-    .filter((d) => isThemeDir(path.join(SRC_THEMES_DIR, d)))
-    .filter((d) => hasTsConfig(path.join(SRC_THEMES_DIR, d))) // ← тільки з config.ts
+    .filter(d => isThemeDir(path.join(SRC_THEMES_DIR, d)))
+    .filter(d => hasTsConfig(path.join(SRC_THEMES_DIR, d))) // ← тільки з config.ts
 
   const themes: RegistryTheme[] = []
   for (const id of ids) {
@@ -322,7 +334,7 @@ export function themesPlugin(): Plugin {
 
       const ids = fs
         .readdirSync(SRC_THEMES_DIR)
-        .filter((d) => isThemeDir(path.join(SRC_THEMES_DIR, d)))
+        .filter(d => isThemeDir(path.join(SRC_THEMES_DIR, d)))
 
       const reg: Registry = { themes: [] }
 

@@ -148,6 +148,7 @@
       },
       timings: theme.timings || {},
       logic: theme.logic || {},
+      fontSizes: theme.fontSizes || null,
       images: imagesMap,
     }
 

@@ -120,6 +120,7 @@
       alt=""
       :style="{ transform: `rotate(${randomAngle}deg)` }"
     />
+
     <img
       v-if="showWinAnimation"
       :src="themeImages.winanimation"
@@ -163,27 +164,30 @@ const CENTER_BG_PAUSE_THRESHOLD: number = 0.3
 const OPACITY_OFFSET: number = 0.4
 const PRELOADER_FADE_DELAY: number = 500
 
-// Адаптивні розміри шрифтів залежно від довжини тексту
-const FONT_SIZES = {
-  SUM: {
-    SHORT: '10',
-    MEDIUM: '8',
-    LONG: '7',
-    VERY_LONG: '6',
-    EXTRA_LONG: '4',
-    MAX: '3',
+// Дефолтні розміри шрифтів (fallback якщо тема не має fontSizes)
+const DEFAULT_FONT_SIZES = {
+  sum: {
+    short: '10',
+    medium: '8',
+    long: '7',
+    veryLong: '6',
+    extraLong: '4',
+    max: '3',
   },
-  CURRENCY: {
-    SHORT: '3',
-    LONG: '2',
+  currency: {
+    short: '3',
+    long: '2',
   },
-  BONUS_TYPE: {
-    DEFAULT: '3.7',
-    SHORT: '3.7',
-    MEDIUM: '3',
-    LONG: '2',
+  bonus: {
+    default: '3.7',
+    short: '3.7',
+    medium: '3',
+    long: '2',
   },
 } as const
+
+// Адаптивні розміри шрифтів — беремо з теми або використовуємо дефолтні
+const FONT_SIZES = window.currentTheme?.fontSizes ?? DEFAULT_FONT_SIZES
 
 // Конфігурація теми з bootstrap.js (завантажується динамічно)
 const themeTimings = window.currentTheme?.timings
@@ -254,28 +258,29 @@ const sectorTransform = (index: number): { transform: string } => {
 /**
  * Адаптивний розмір шрифту залежно від довжини тексту
  * Запобігає переповненню тексту в секторах
+ * Використовує розміри з конфігурації теми або дефолтні
  */
 const getFontSize = (text: string | undefined, type: 'sum' | 'currency' | 'bonus'): string => {
-  if (!text) return FONT_SIZES.BONUS_TYPE.DEFAULT
+  if (!text) return FONT_SIZES.bonus.default
 
   const length = text.length
 
   switch (type) {
     case 'sum':
-      if (length < 3) return FONT_SIZES.SUM.SHORT
-      if (length < 5) return FONT_SIZES.SUM.MEDIUM
-      if (length < 8) return FONT_SIZES.SUM.LONG
-      if (length < 10) return FONT_SIZES.SUM.VERY_LONG
-      if (length < 12) return FONT_SIZES.SUM.EXTRA_LONG
-      return FONT_SIZES.SUM.MAX
+      if (length < 3) return FONT_SIZES.sum.short
+      if (length < 5) return FONT_SIZES.sum.medium
+      if (length < 8) return FONT_SIZES.sum.long
+      if (length < 10) return FONT_SIZES.sum.veryLong
+      if (length < 12) return FONT_SIZES.sum.extraLong
+      return FONT_SIZES.sum.max
 
     case 'currency':
-      return length < 9 ? FONT_SIZES.CURRENCY.SHORT : FONT_SIZES.CURRENCY.LONG
+      return length < 9 ? FONT_SIZES.currency.short : FONT_SIZES.currency.long
 
     case 'bonus':
-      if (length < 15) return FONT_SIZES.BONUS_TYPE.SHORT
-      if (length < 20) return FONT_SIZES.BONUS_TYPE.MEDIUM
-      return FONT_SIZES.BONUS_TYPE.LONG
+      if (length < 15) return FONT_SIZES.bonus.short
+      if (length < 20) return FONT_SIZES.bonus.medium
+      return FONT_SIZES.bonus.long
   }
 }
 
