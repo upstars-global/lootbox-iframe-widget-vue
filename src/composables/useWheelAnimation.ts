@@ -33,6 +33,7 @@ export function useWheelAnimation(
   gameState: GameState,
   spinDuration: Ref<number>,
   timeToPopup: Ref<number>,
+  winAnimationOffset: Ref<number>,
   sectionsData: Sector[]
 ) {
   const {
@@ -86,9 +87,7 @@ export function useWheelAnimation(
     const now = performance.now()
 
     // Динамічно визначаємо параметри анімації на основі поточного стану
-    const currentDuration = hasWinSection.value
-      ? SPIN_WITH_WIN_DURATION
-      : SPIN_WITHOUT_WIN_DURATION
+    const currentDuration = hasWinSection.value ? SPIN_WITH_WIN_DURATION : SPIN_WITHOUT_WIN_DURATION
     const currentWinner = hasWinSection.value ? winnerSection.value || 0 : 0
     const currentFinalAngle = calculateFinalAngle(startAngle, currentWinner)
 
@@ -110,10 +109,20 @@ export function useWheelAnimation(
       maskOpacity.value = 1
     }
 
+    // Показуємо win-анімацію раніше, якщо задано winAnimationOffset
+    // Це кастомна опція для кожної теми — дозволяє показати фанфари та winframe
+    // до повної зупинки колеса. Значення в мс: 0 = стандартно, 2000 = на 2 сек раніше
+    if (hasWinSection.value && winAnimationOffset.value > 0) {
+      const elapsed = now - start
+      const timeRemaining = currentDuration - elapsed
+      if (timeRemaining <= winAnimationOffset.value && !showWinAnimation.value) {
+        showWinAnimation.value = true
+        winAnimationOpacity.value = 1
+      }
+    }
+
     if (t < 1) {
-      animationId.value = requestAnimationFrame(() =>
-        handleAnimationFrame(start, startAngle)
-      )
+      animationId.value = requestAnimationFrame(() => handleAnimationFrame(start, startAngle))
       return
     }
     // Логіка завершення анімації
@@ -196,11 +205,10 @@ export function useWheelAnimation(
     showWinAnimation.value = false
     winAnimationOpacity.value = 1
     winnerSection.value = null // Скидаємо виграшний сектор перед новим спіном
-    
+
     // Генеруємо випадковий кут для різноманітності анімації
-    randomAngle.value = Math.round(
-      Math.random() * RANDOM_ANGLE_RANGE - RANDOM_ANGLE_OFFSET
-    )
+    // randomAngle.value = Math.round(Math.random() * RANDOM_ANGLE_RANGE - RANDOM_ANGLE_OFFSET)
+    randomAngle.value = 0
 
     const startAngle = angle.value
     const start = performance.now()
@@ -210,9 +218,7 @@ export function useWheelAnimation(
     maskOpacity.value = 0
     running.value = true
 
-    animationId.value = requestAnimationFrame(() =>
-      handleAnimationFrame(start, startAngle)
-    )
+    animationId.value = requestAnimationFrame(() => handleAnimationFrame(start, startAngle))
   }
 
   /**

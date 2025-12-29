@@ -40,6 +40,7 @@ export interface ThemeConfig {
     spinDuration: number
     timeToPopup: number
     preloaderTime: number
+    winAnimationOffset: number // Час (мс) на скільки раніше показувати win-анімацію (0 = стандартно)
   }
   logic: {
     numberOfSpins: number

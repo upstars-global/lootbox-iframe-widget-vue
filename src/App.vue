@@ -206,6 +206,7 @@ const animationId = ref<number | null>(null)
 const spinDuration = ref<number>(8000)
 const timeToPopup = ref<number>(4000)
 const preloaderTime = ref<number>(1500)
+const winAnimationOffset = ref<number>(0) // На скільки мс раніше показувати win-анімацію
 
 // Переможний сектор (встановлюється ззовні через postMessage)
 const winnerSection = ref<number | null>(null)
@@ -330,6 +331,7 @@ const { runWheel, setSpinEndCallback } = useWheelAnimation(
   },
   spinDuration,
   timeToPopup,
+  winAnimationOffset,
   sectionsData
 )
 
@@ -346,6 +348,7 @@ onMounted(() => {
     preloaderTime.value = themeTimings.preloaderTime
     spinDuration.value = themeTimings.spinDuration
     timeToPopup.value = themeTimings.timeToPopup
+    winAnimationOffset.value = themeTimings.winAnimationOffset
   }
 
   // Плавне приховування прелоадера

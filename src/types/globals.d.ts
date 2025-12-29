@@ -18,6 +18,7 @@ declare global {
           spinDuration: number
           timeToPopup: number
           preloaderTime: number
+          winAnimationOffset: number
         }
         logic: {
           numberOfSpins: number
