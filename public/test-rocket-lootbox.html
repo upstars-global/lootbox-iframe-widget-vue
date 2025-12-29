@@ -201,14 +201,12 @@
       .iframe-wrapper {
         width: 100%;
         height: 100%;
-        /* min-height: 470px;
-        height: 400px; */
         display: flex;
         align-items: center;
         justify-content: center;
         border: 1px solid #dee2e6;
         border-radius: 5px;
-        background: #000;
+        background: #000a12;
         resize: both;
         overflow: auto;
       }
@@ -216,9 +214,7 @@
       iframe {
         width: 100%;
         height: 100%;
-        /* min-height: 470px; */
         border: none;
-        border-radius: 8px;
       }
 
       .log-section {
@@ -548,7 +544,7 @@
             class="contenteditable-textarea"
             id="customUrl"
             contenteditable="true"
-            data-placeholder="Введіть URL http://localhost:5173/?style=1&..."
+            data-placeholder="Введіть URL ./index.html?style=RocketWheelLite&..."
           ></div>
           <button
             class="btn btn-primary apply-custom-url-btn"
@@ -798,7 +794,7 @@
       }
 
       function updateWidget() {
-        const url = new URL('http://localhost:5173/')
+        const url = new URL('./index.html', window.location.href)
 
         // Додаємо параметри
         Object.entries(currentParams).forEach(([key, value]) => {

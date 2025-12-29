@@ -46,4 +46,5 @@ export interface ThemeConfig {
     winSection: number
   }
   fontSizes?: FontSizesConfig
+  backgroundColor?: string // Колір фону для теми (опціонально)
 }

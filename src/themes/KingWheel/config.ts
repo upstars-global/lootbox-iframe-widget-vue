@@ -5,6 +5,7 @@ export const config: ThemeConfig = {
   styleId: 3,
   project: 'king',
   isProjectDefault: true,
+  backgroundColor: '#ffffff',
   timings: {
     spinDuration: 8000,
     timeToPopup: 9000,

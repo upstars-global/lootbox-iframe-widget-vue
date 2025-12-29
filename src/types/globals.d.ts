@@ -13,6 +13,7 @@ declare global {
         styleId: number
         project: string
         isProjectDefault: boolean
+        backgroundColor?: string
         timings: {
           spinDuration: number
           timeToPopup: number
@@ -35,6 +36,7 @@ declare global {
           name: string
           project: string | null
           isProjectDefault: boolean
+          backgroundColor?: string
           stylesReady: boolean
           imagesReady: boolean
           sectors: string | null

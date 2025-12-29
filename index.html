@@ -51,7 +51,7 @@
         overflow: hidden;
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
-        background-color: #000a12;
+        background-color: var(--theme-bg-color, #000a12);
       }
 
       /* CRITICAL: Protection against the "white square" during hard reload.
@@ -120,7 +120,7 @@
         display: flex;
         justify-content: center;
         align-items: center;
-        background-color: #000a12;
+        background-color: var(--theme-bg-color, #000a12);
         transition: opacity 0.5s linear;
       }
 
@@ -145,6 +145,49 @@
         display: none;
       }
     </style>
+    <!--
+      Synchronous script to set background BEFORE body rendering (prevents FOUC - Flash of Unstyled Content)
+      
+      Why it's needed:
+      - bootstrap.js loads asynchronously and sets theme background from config.ts
+      - During async load, body renders with default background causing visible flash
+      - This inline script executes synchronously BEFORE body renders, setting correct background immediately
+      
+      How it works:
+      1. Reads URL params: ?style=KingWheel or ?project=king
+      2. Determines theme (explicit style > project default > RocketWheelLite)
+      3. Sets --theme-bg-color CSS variable from hardcoded mapping
+      4. Body renders with correct background from the start
+      
+      Note: themeBgColors must match backgroundColor values in theme config.ts files
+    -->
+    <script>
+      ;(function () {
+        var params = new URLSearchParams(location.search)
+        var style = params.get('style')
+        var project = params.get('project')
+        var theme = style
+        if (!theme && project) {
+          var projectDefaults = {
+            rocket: 'RocketWheelLite',
+            king: 'KingWheel',
+            thor: 'ThorWheel',
+          }
+          theme = projectDefaults[project] || 'RocketWheelLite'
+        }
+        if (!theme) theme = 'RocketWheelLite'
+        var themeBgColors = {
+          KingWheel: '#ffffff',
+          RocketWheelLite: '#000a12',
+          RocketWheelPro: '#000a12',
+          ThorWheel: '#000a12',
+        }
+        document.documentElement.style.setProperty(
+          '--theme-bg-color',
+          themeBgColors[theme] || '#000a12'
+        )
+      })()
+    </script>
   </head>
 
   <body>
@@ -180,6 +223,16 @@
 
         document.getElementById('preloader-img').src =
           'themes/' + theme + '/images/preloader.svg'
+
+        // 1.1. Set background color based on theme (prevents FOUC)
+        var themeBgColors = {
+          KingWheel: '#ffffff',
+          RocketWheelLite: '#000a12',
+          RocketWheelPro: '#000a12',
+          ThorWheel: '#000a12',
+        }
+        var bgColor = themeBgColors[theme] || '#000a12'
+        document.documentElement.style.setProperty('--theme-bg-color', bgColor)
 
         // 2. PROTECTION from "white square" during hard reload
         // When the browser begins reload, it clears image cache but DOM elements stay.

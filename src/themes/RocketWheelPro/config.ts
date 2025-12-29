@@ -5,6 +5,7 @@ export const config: ThemeConfig = {
   styleId: 2,
   project: 'rocket',
   isProjectDefault: false,
+  backgroundColor: '#000a12',
   timings: {
     spinDuration: 8000,
     timeToPopup: 9000,

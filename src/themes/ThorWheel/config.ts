@@ -5,6 +5,7 @@ export const config: ThemeConfig = {
   styleId: 4,
   project: 'thor',
   isProjectDefault: true,
+  backgroundColor: '#000a12',
   timings: {
     spinDuration: 8000,
     timeToPopup: 9000,
