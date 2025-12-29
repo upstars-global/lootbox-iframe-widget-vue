@@ -425,7 +425,8 @@
           <select id="projectSelect" class="theme-select">
             <option value="">— Без проекту —</option>
             <option value="rocket">Rocket</option>
-            <option value="king" selected>King</option>
+            <option value="king">King</option>
+            <option value="thor">Thor</option>
           </select>
           <small
             style="
@@ -450,8 +451,11 @@
             <option value="RocketWheelPro" data-project="rocket">
               RocketWheelPro (Rocket)
             </option>
-            <option value="KingWheel" data-project="king" selected>
+            <option value="KingWheel" data-project="king">
               KingWheel (King)
+            </option>
+            <option value="ThorWheel" data-project="thor">
+              ThorWheel (Thor)
             </option>
           </select>
           <small
@@ -615,8 +619,8 @@
     <script>
       // Початкові параметри
       let currentParams = {
-        project: 'king',
-        style: 'KingWheel',
+        project: '',
+        style: '',
         sectors:
           '500 USD; 5,000 USD; 10 FS; 20 FS; 35 FS; 25 USD; 100 USD; 250 USD',
         sectors_type:
@@ -1006,7 +1010,6 @@
 
       // Ініціалізація
       filterThemesByProject()
-      updateParams()
       updateWidget()
       updateButtonsState()
       initializeContentEditable()

@@ -425,7 +425,7 @@
           <select id="projectSelect" class="theme-select">
             <option value="">— Без проекту —</option>
             <option value="rocket">Rocket</option>
-            <option value="king">King</option>
+            <option value="king" selected>King</option>
             <option value="thor">Thor</option>
           </select>
           <small
@@ -451,7 +451,7 @@
             <option value="RocketWheelPro" data-project="rocket">
               RocketWheelPro (Rocket)
             </option>
-            <option value="KingWheel" data-project="king">
+            <option value="KingWheel" data-project="king" selected>
               KingWheel (King)
             </option>
             <option value="ThorWheel" data-project="thor">
@@ -617,10 +617,10 @@
     </div>
 
     <script>
-      // Початкові параметри
+      // Початкові параметри (для King проекту)
       let currentParams = {
-        project: '',
-        style: '',
+        project: 'king',
+        style: 'KingWheel',
         sectors:
           '500 USD; 5,000 USD; 10 FS; 20 FS; 35 FS; 25 USD; 100 USD; 250 USD',
         sectors_type:
@@ -1010,9 +1010,9 @@
 
       // Ініціалізація
       filterThemesByProject()
+      updateFormFields() // Відображаємо currentParams в UI елементах
       updateWidget()
       updateButtonsState()
-      initializeContentEditable()
     </script>
   </body>
 </html>

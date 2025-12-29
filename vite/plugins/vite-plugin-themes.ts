@@ -152,8 +152,10 @@ async function compileTypeScriptConfig(tsPath: string, themeId: string): Promise
   }
 
   // Швидкий однофайловий бандл → тимчасовий .mjs → dynamic import
+  // Додаємо timestamp для унікальності та уникнення кешу Node.js
+  const timestamp = Date.now()
   const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'themes-config-'))
-  const tmpFile = path.join(tmpDir, `config-${themeId}.mjs`)
+  const tmpFile = path.join(tmpDir, `config-${themeId}-${timestamp}.mjs`)
 
   await esbuild.build({
     entryPoints: [tsPath],
@@ -167,7 +169,8 @@ async function compileTypeScriptConfig(tsPath: string, themeId: string): Promise
     tsconfig: path.resolve(ROOT, 'tsconfig.json'),
   })
 
-  return import(pathToFileURL(tmpFile).href)
+  // Додаємо query параметр для cache-busting
+  return import(`${pathToFileURL(tmpFile).href}?t=${timestamp}`)
 }
 
 /** Імпорт скомпільованого конфігу з модуля */

@@ -617,10 +617,10 @@
     </div>
 
     <script>
-      // Початкові параметри
+      // Початкові параметри (для Rocket проекту)
       let currentParams = {
-        project: '',
-        style: '',
+        project: 'rocket',
+        style: 'RocketWheelLite',
         sectors:
           '500 USD; 5,000 USD; 10 FS; 20 FS; 35 FS; 25 USD; 100 USD; 250 USD',
         sectors_type:
@@ -1010,9 +1010,9 @@
 
       // Ініціалізація
       filterThemesByProject()
+      updateFormFields() // Відображаємо currentParams в UI елементах
       updateWidget()
       updateButtonsState()
-      initializeContentEditable()
     </script>
   </body>
 </html>
