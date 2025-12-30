@@ -9,7 +9,6 @@ export const config: ThemeConfig = {
   timings: {
     spinDuration: 8000,
     timeToPopup: 9000,
-    preloaderTime: 500,
     winAnimationOffset: 0, // Стандартна поведінка (0 = показати після зупинки колеса)
   },
   logic: {

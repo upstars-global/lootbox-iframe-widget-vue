@@ -9,7 +9,6 @@ export const config: ThemeConfig = {
   timings: {
     spinDuration: 8000,
     timeToPopup: 9000,
-    preloaderTime: 500,
     winAnimationOffset: 2000, // Показувати win-анімацію на 2 сек раніше
   },
   logic: {

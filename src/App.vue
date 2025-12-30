@@ -144,6 +144,7 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 
+import { useImagePreloader } from './composables/useImagePreloader'
 import { usePostMessageBus } from './composables/usePostMessageBus'
 import { useWheelAnimation } from './composables/useWheelAnimation'
 import FpsMonitor from './components/FpsMonitor.vue'
@@ -205,7 +206,6 @@ const animationId = ref<number | null>(null)
 // Таймінги анімації (можуть бути перевизначені з теми)
 const spinDuration = ref<number>(8000)
 const timeToPopup = ref<number>(4000)
-const preloaderTime = ref<number>(1500)
 const winAnimationOffset = ref<number>(0) // На скільки мс раніше показувати win-анімацію
 
 // Переможний сектор (встановлюється ззовні через postMessage)
@@ -341,29 +341,43 @@ setSpinEndCallback(prize => {
   postToParent('spinEnd', { prize, timestamp: Date.now() })
 })
 
+// Composable для відстеження реального завантаження зображень
+const { waitForImages } = useImagePreloader()
+
+/**
+ * Плавно ховає прелоадер з fade-out анімацією
+ */
+const hidePreloader = (): void => {
+  const preloaderBg = document.querySelector('#preloader-bg') as HTMLElement
+  if (preloaderBg) {
+    preloaderBg.style.opacity = '0'
+    setTimeout(() => {
+      preloaderBg.style.display = 'none'
+    }, PRELOADER_FADE_DELAY)
+  }
+}
+
 // Ініціалізація компонента
-onMounted(() => {
+onMounted(async () => {
   // Завантаження конфігурації теми (якщо доступна)
   if (themeTimings) {
-    preloaderTime.value = themeTimings.preloaderTime
     spinDuration.value = themeTimings.spinDuration
     timeToPopup.value = themeTimings.timeToPopup
     winAnimationOffset.value = themeTimings.winAnimationOffset
   }
 
-  // Плавне приховування прелоадера
-  setTimeout(() => {
-    const preloaderBg = document.querySelector('#preloader-bg') as HTMLElement
-    if (preloaderBg) {
-      preloaderBg.style.opacity = '0'
-      setTimeout(() => {
-        preloaderBg.style.display = 'none'
-      }, PRELOADER_FADE_DELAY)
-    }
-  }, preloaderTime.value)
-
   running.value = false
-  postToParent('lootboxReady') // Сигнал готовності до батьківського вікна
+
+  // Чекаємо РЕАЛЬНОГО завантаження всіх зображень колеса
+  // Це вирішує проблему: прелоадер ховався по таймеру, а не по факту завантаження
+  // Fallback таймаут 15 секунд — на випадок якщо якесь зображення зламане
+  await waitForImages('.loot-box-spin-wheel-container img', 15000)
+
+  // Тільки ПІСЛЯ завантаження — ховаємо прелоадер
+  hidePreloader()
+
+  // Тільки ПІСЛЯ завантаження — повідомляємо батьківське вікно
+  postToParent('lootboxReady')
 })
 
 onUnmounted(() => {

@@ -56,7 +56,7 @@ export type ThemeConfig = {
   styleId: number
   project: string
   isProjectDefault: boolean
-  timings: { spinDuration: number; timeToPopup: number; preloaderTime: number }
+  timings: { spinDuration: number; timeToPopup: number; winAnimationOffset: number }
   logic: { numberOfSpins: number; winSection: number }
   fontSizes?: {
     sum: {
@@ -140,7 +140,7 @@ function assertThemeConfig(cfg: any, themeId: string): asserts cfg is ThemeConfi
     l = cfg.logic
   if (typeof t.spinDuration !== 'number') fail('timings.spinDuration must be number')
   if (typeof t.timeToPopup !== 'number') fail('timings.timeToPopup must be number')
-  if (typeof t.preloaderTime !== 'number') fail('timings.preloaderTime must be number')
+  if (typeof t.winAnimationOffset !== 'number') fail('timings.winAnimationOffset must be number')
   if (typeof l.numberOfSpins !== 'number') fail('logic.numberOfSpins must be number')
   if (typeof l.winSection !== 'number') fail('logic.winSection must be number')
 }

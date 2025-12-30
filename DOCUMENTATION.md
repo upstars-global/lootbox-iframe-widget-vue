@@ -220,7 +220,7 @@ export const config: ThemeConfig = {
   timings: {
     spinDuration: 8000,
     timeToPopup: 9000,
-    preloaderTime: 500,
+    winAnimationOffset: 0,
   },
   logic: {
     numberOfSpins: 1,
@@ -241,7 +241,7 @@ export const config: ThemeConfig = {
   timings: {
     spinDuration: 8000,
     timeToPopup: 9000,
-    preloaderTime: 500,
+    winAnimationOffset: 0,
   },
   logic: {
     numberOfSpins: 1,
@@ -309,7 +309,7 @@ export const config: ThemeConfig = {
   timings: {
     spinDuration: 8000, // Тривалість обертання (мс)
     timeToPopup: 9000, // Час до показу попапу (мс)
-    preloaderTime: 500, // Час показу прелоадера (мс)
+    winAnimationOffset: 0, // На скільки мс раніше показувати win-анімацію (0 = стандартно)
   },
 
   // === ЛОГІКА ГРИ ===
