@@ -10,10 +10,34 @@
  */
 export function useImagePreloader() {
   /**
+   * Перевіряє чи потрібно чекати на це зображення
+   * Пропускаємо: порожні src, приховані елементи (display: none)
+   */
+  const shouldWaitForImage = (img: HTMLImageElement): boolean => {
+    // Пропускаємо зображення без src або з порожнім src
+    if (!img.src || img.src === '' || img.src === 'about:blank') {
+      return false
+    }
+
+    // Пропускаємо приховані зображення (display: none в CSS темі)
+    const style = getComputedStyle(img)
+    if (style.display === 'none' || style.visibility === 'hidden') {
+      return false
+    }
+
+    return true
+  }
+
+  /**
    * Чекає завантаження одного зображення
    * Використовує decode() API з fallback на onload/onerror
    */
   const waitForOneImage = (img: HTMLImageElement): Promise<void> => {
+    // Пропускаємо зображення які не потрібно чекати
+    if (!shouldWaitForImage(img)) {
+      return Promise.resolve()
+    }
+
     // Якщо зображення вже завантажене (з кешу) — одразу resolve
     if (img.complete && img.naturalWidth > 0) {
       return Promise.resolve()
