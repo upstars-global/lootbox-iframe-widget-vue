@@ -122,7 +122,8 @@
     />
     <img
       v-if="showWinAnimation"
-      :src="themeImages.winanimation"
+      :key="winAnimationKey"
+      :src="`${themeImages.winanimation}?t=${winAnimationKey}`"
       class="win-animation"
       alt=""
       :style="{ opacity: winAnimationOpacity }"
@@ -142,7 +143,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 
 import { useImagePreloader } from './composables/useImagePreloader'
 import { usePostMessageBus } from './composables/usePostMessageBus'
@@ -202,6 +203,10 @@ const motionBlurOpacity = ref<number>(0)
 const maskOpacity = ref<number>(0)
 const winAnimationOpacity = ref<number>(1)
 const animationId = ref<number | null>(null)
+
+// Унікальний ключ для примусового перезавантаження SVG анімації
+// Вирішує проблему: CSS @keyframes всередині SVG кешуються браузером і не перезапускаються
+const winAnimationKey = ref<number>(0)
 
 // Таймінги анімації (можуть бути перевизначені з теми)
 const spinDuration = ref<number>(8000)
@@ -339,6 +344,14 @@ const { runWheel, setSpinEndCallback } = useWheelAnimation(
 setSpinEndCallback(prize => {
   // Відправляємо у parent сайт: деталі призу (після зупинки)
   postToParent('spinEnd', { prize, timestamp: Date.now() })
+})
+
+// Оновлюємо ключ анімації при кожному показі win-анімації
+// Це примушує браузер перезавантажити SVG і перезапустити CSS @keyframes анімації
+watch(showWinAnimation, newVal => {
+  if (newVal) {
+    winAnimationKey.value = Date.now()
+  }
 })
 
 // Composable для відстеження реального завантаження зображень
