@@ -339,11 +339,11 @@
 
 .win-animation {
   position: absolute;
-  top: 0;
+  top: -8%;
   left: 50%;
   z-index: 9;
   width: auto;
-  height: 78%;
+  height: 108%;
   transform: translate(-50%);
   transition: opacity 0.5s ease-out;
 }

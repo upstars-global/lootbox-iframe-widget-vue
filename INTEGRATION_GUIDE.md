@@ -169,6 +169,7 @@ Query-параметри для URL iframe
 - Примітка: Скрипт автоматично встановлює `_fs_run_in_iframe = true` для коректної роботи в iframe
 
 Приклад повного URL з FullStory:
+
 ```
 ?project=alpa&fs_org=FWWXX&sectors=500%20USD;1000%20USD&sectors_type=Bonus%20Prize;Bonus%20Prize
 ```
