@@ -227,9 +227,4 @@
 
   const imageMap = buildImageMap(selectedTheme.images)
   exposeThemeRuntime(selectedTheme, urlParams, imageMap) // window.currentTheme = { ... }
-
-  // Встановлюємо CSS змінну для фону теми
-  if (selectedTheme.backgroundColor) {
-    document.documentElement.style.setProperty('--theme-bg-color', selectedTheme.backgroundColor)
-  }
 })()

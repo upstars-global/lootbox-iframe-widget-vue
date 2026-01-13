@@ -297,17 +297,7 @@
         document.getElementById('preloader-img').src =
           'themes/' + theme + '/images/preloader.svg'
 
-        // 1.1. Set background color based on theme (prevents FOUC)
-        var themeBgColors = {
-          KingWheel: '#F8F7FA',
-          RocketWheelLite: '#000a12',
-          RocketWheelPro: '#000a12',
-          ThorWheel: '#000a12',
-        }
-        var bgColor = themeBgColors[theme] || '#000a12'
-        document.documentElement.style.setProperty('--theme-bg-color', bgColor)
-
-        // 2. PROTECTION from "white square" during hard reload
+        // PROTECTION from "white square" during hard reload
         // When the browser begins reload, it clears image cache but DOM elements stay.
         // Remove data-theme-ready="1" attribute → CSS rule automatically hides body.
         function hideContent() {
