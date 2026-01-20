@@ -4,6 +4,14 @@ export {}
 declare global {
   interface Window {
     /**
+     * FullStory SDK (завантажується динамічно якщо передано fs_org параметр)
+     */
+    FS?: {
+      event: (name: string, properties?: Record<string, unknown>) => void
+      identify: (uid: string, properties?: Record<string, unknown>) => void
+      setUserVars: (properties: Record<string, unknown>) => void
+    }
+    /**
      * Конфігурація всіх тем (генерується плагіном у themes/themes-config.js)
      */
     THEMES_CONFIG?: {

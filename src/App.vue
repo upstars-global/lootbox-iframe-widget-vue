@@ -145,6 +145,7 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 
+import { useAnalytics } from './composables/useAnalytics'
 import { useImagePreloader } from './composables/useImagePreloader'
 import { usePostMessageBus } from './composables/usePostMessageBus'
 import { useWheelAnimation } from './composables/useWheelAnimation'
@@ -192,6 +193,11 @@ const FONT_SIZES = window.currentTheme?.fontSizes ?? DEFAULT_FONT_SIZES
 
 // Конфігурація теми з bootstrap.js (завантажується динамічно)
 const themeTimings = window.currentTheme?.timings
+
+// Аналітика — відправка подій напряму в FullStory з iframe
+const { track } = useAnalytics()
+const currentTheme = window.currentTheme?.name ?? 'unknown'
+const currentProject = window.currentTheme?.project ?? 'unknown'
 
 // Стан анімації колеса
 const running = ref<boolean>(false)
@@ -307,6 +313,8 @@ const { postToParent } = usePostMessageBus<LootboxMessages>(
     // Слухаємо: команда запуску колеса від сайту
     startSpin: () => {
       runWheel()
+      // Аналітика: відправляємо подію напряму в FullStory
+      track('Spin Started', { theme: currentTheme, project: currentProject })
     },
 
     // Слухаємо: команда відправки виграшного сектора
@@ -342,8 +350,16 @@ const { runWheel, setSpinEndCallback } = useWheelAnimation(
 
 // Callback після завершення анімації
 setSpinEndCallback(prize => {
-  // Відправляємо у parent сайт: деталі призу (після зупинки)
+  // Старий спосіб: відправляємо у parent сайт (залишаємо для зворотної сумісності)
   postToParent('spinEnd', { prize, timestamp: Date.now() })
+
+  // Новий спосіб: аналітика напряму в FullStory з iframe
+  track('Spin Ended', {
+    prize,
+    sector: winnerSection.value,
+    theme: currentTheme,
+    project: currentProject,
+  })
 })
 
 // Оновлюємо ключ анімації при кожному показі win-анімації
@@ -391,6 +407,9 @@ onMounted(async () => {
 
   // Тільки ПІСЛЯ завантаження — повідомляємо батьківське вікно
   postToParent('lootboxReady')
+
+  // Аналітика: відправляємо подію напряму в FullStory
+  track('Widget Loaded', { theme: currentTheme, project: currentProject })
 })
 
 onUnmounted(() => {
