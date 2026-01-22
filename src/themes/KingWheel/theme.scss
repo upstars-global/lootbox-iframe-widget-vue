@@ -21,6 +21,10 @@
     background-position: center;
     background-repeat: no-repeat;
     pointer-events: none;
+
+    @media (max-width: 754px) {
+      display: none;
+    }
   }
 }
 
@@ -35,6 +39,14 @@
   overflow: hidden;
   transition-delay: 3s;
   transition: opacity 4s linear;
+
+  @media (max-width: 754px) {
+    width: 81%;
+    height: 81%;
+    transform: translateX(-50%);
+    left: 50%;
+    top: 19.4%;
+  }
 }
 
 .wheel-sectors {
@@ -53,6 +65,12 @@
   z-index: 4;
   width: 100%;
   height: auto;
+
+  @media (max-width: 754px) {
+    width: 135%;
+    left: 50%;
+    transform: translateX(-50%);
+  }
 }
 
 .wheel-bg {
@@ -89,6 +107,11 @@
   width: 21%;
   height: auto;
   aspect-ratio: 137/105;
+
+  @media (max-width: 754px) {
+    top: 12%;
+    width: 28%;
+  }
 }
 
 .wheel-center {
@@ -100,6 +123,11 @@
   width: 22%;
   height: auto;
   aspect-ratio: 1/1;
+
+  @media (max-width: 754px) {
+    width: 27%;
+    top: 47%;
+  }
 }
 
 .wheel-pointer-shadow {
@@ -124,6 +152,12 @@
   overflow: hidden;
   border-radius: 100%;
   transform: translateX(-50%);
+
+  @media (max-width: 754px) {
+    width: 30%;
+    height: 30%;
+    top: 45%;
+  }
 }
 
 .center-bg {
@@ -198,10 +232,7 @@
 }
 
 .win-frame {
-  // display: none;
   top: 14.7%;
-  // left: 38.2%;
-  // left: 37.9%;
   left: 38.59%;
   left: 38%;
 
@@ -272,6 +303,12 @@
   width: 100%;
   height: auto;
   aspect-ratio: 31 / 30;
+
+  @media (max-width: 754px) {
+    left: 50%;
+    transform: translateX(-50%);
+    width: 116%;
+  }
 }
 
 .lamp {
@@ -281,6 +318,12 @@
   z-index: 0;
   width: inherit;
   height: inherit;
+
+  @media (max-width: 754px) {
+    left: 50%;
+    transform: translateX(-50%);
+    width: 116%;
+  }
 }
 
 .lamp-waiting-animation-1 {
@@ -316,6 +359,11 @@
   z-index: 0;
   width: 72.6vmin;
   height: auto;
+
+  @media (max-width: 754px) {
+    width: 98%;
+    top: 12vmin;
+  }
 }
 
 .win-animation {

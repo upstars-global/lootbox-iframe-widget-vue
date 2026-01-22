@@ -186,8 +186,15 @@
           themeBgColors[theme] || '#000a12'
         )
 
-        // FullStory initialization (only if fs_org parameter is provided)
-        var fsOrg = params.get('fs_org')
+        // FullStory initialization
+        // Маппінг project → FullStory Org ID
+        var fsOrgMap = {
+          rocket: 'FWWXX',
+          king: 'o-207RBN-na1',
+          thor: 'THOR_ORG_ID', // TODO: замінити на реальний
+        }
+
+        var fsOrg = project && fsOrgMap[project]
         if (fsOrg) {
           window['_fs_run_in_iframe'] = true
           window['_fs_debug'] = false
