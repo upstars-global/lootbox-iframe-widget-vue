@@ -22,9 +22,9 @@
     background-repeat: no-repeat;
     pointer-events: none;
 
-    @media (max-width: 754px) {
-      display: none;
-    }
+    // @media (max-width: 754px) {
+    //   display: none;
+    // }
   }
 }
 
@@ -40,13 +40,13 @@
   transition-delay: 3s;
   transition: opacity 4s linear;
 
-  @media (max-width: 754px) {
-    width: 81%;
-    height: 81%;
-    transform: translateX(-50%);
-    left: 50%;
-    top: 19.4%;
-  }
+  // @media (max-width: 754px) {
+  //   width: 81%;
+  //   height: 81%;
+  //   transform: translateX(-50%);
+  //   left: 50%;
+  //   top: 19.4%;
+  // }
 }
 
 .wheel-sectors {
@@ -66,11 +66,11 @@
   width: 100%;
   height: auto;
 
-  @media (max-width: 754px) {
-    width: 135%;
-    left: 50%;
-    transform: translateX(-50%);
-  }
+  // @media (max-width: 754px) {
+  //   width: 135%;
+  //   left: 50%;
+  //   transform: translateX(-50%);
+  // }
 }
 
 .wheel-bg {
@@ -108,10 +108,10 @@
   height: auto;
   aspect-ratio: 137/105;
 
-  @media (max-width: 754px) {
-    top: 12%;
-    width: 28%;
-  }
+  // @media (max-width: 754px) {
+  //   top: 12%;
+  //   width: 28%;
+  // }
 }
 
 .wheel-center {
@@ -124,10 +124,10 @@
   height: auto;
   aspect-ratio: 1/1;
 
-  @media (max-width: 754px) {
-    width: 27%;
-    top: 47%;
-  }
+  // @media (max-width: 754px) {
+  //   width: 27%;
+  //   top: 47%;
+  // }
 }
 
 .wheel-pointer-shadow {
@@ -153,11 +153,11 @@
   border-radius: 100%;
   transform: translateX(-50%);
 
-  @media (max-width: 754px) {
-    width: 30%;
-    height: 30%;
-    top: 45%;
-  }
+  // @media (max-width: 754px) {
+  //   width: 30%;
+  //   height: 30%;
+  //   top: 45%;
+  // }
 }
 
 .center-bg {
@@ -304,11 +304,11 @@
   height: auto;
   aspect-ratio: 31 / 30;
 
-  @media (max-width: 754px) {
-    left: 50%;
-    transform: translateX(-50%);
-    width: 116%;
-  }
+  // @media (max-width: 754px) {
+  //   left: 50%;
+  //   transform: translateX(-50%);
+  //   width: 116%;
+  // }
 }
 
 .lamp {
@@ -319,11 +319,11 @@
   width: inherit;
   height: inherit;
 
-  @media (max-width: 754px) {
-    left: 50%;
-    transform: translateX(-50%);
-    width: 116%;
-  }
+  // @media (max-width: 754px) {
+  //   left: 50%;
+  //   transform: translateX(-50%);
+  //   width: 116%;
+  // }
 }
 
 .lamp-waiting-animation-1 {
@@ -360,10 +360,10 @@
   width: 72.6vmin;
   height: auto;
 
-  @media (max-width: 754px) {
-    width: 98%;
-    top: 12vmin;
-  }
+  // @media (max-width: 754px) {
+  //   width: 98%;
+  //   top: 12vmin;
+  // }
 }
 
 .win-animation {
