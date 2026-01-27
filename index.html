@@ -94,11 +94,11 @@
       }
 
       /* FOUC (Flash Of Unstyled Content) protection:
-         If the theme is not ready (no CSS and not all images are loaded), hide the body.
+         If the theme is not ready (no CSS and not all images are loaded), hide the app.
          bootstrap.js sets data-theme-ready="1" — so content appears at once, without flicker.
-         If you don't want to hide all content — you can remove this block.
+         Preloader (#preloader-bg) is visible immediately for better UX on slow devices.
       */
-      html:not([data-theme-ready='1']) body {
+      html:not([data-theme-ready='1']) #app {
         visibility: hidden;
       }
 
