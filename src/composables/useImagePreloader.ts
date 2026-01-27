@@ -44,20 +44,23 @@ export function useImagePreloader() {
     }
 
     return new Promise(resolve => {
+      // Callback після paint — гарантує що зображення реально відрендерено
+      const resolveAfterPaint = () => requestAnimationFrame(() => resolve())
+
       // Сучасний спосіб: decode() API
       if (img.decode) {
         img
           .decode()
-          .then(() => resolve())
+          .then(resolveAfterPaint)
           .catch(() => {
             // Fallback: чекаємо load/error події
-            img.addEventListener('load', () => resolve(), { once: true })
-            img.addEventListener('error', () => resolve(), { once: true })
+            img.addEventListener('load', resolveAfterPaint, { once: true })
+            img.addEventListener('error', resolveAfterPaint, { once: true })
           })
       } else {
         // Для старих браузерів
-        img.addEventListener('load', () => resolve(), { once: true })
-        img.addEventListener('error', () => resolve(), { once: true })
+        img.addEventListener('load', resolveAfterPaint, { once: true })
+        img.addEventListener('error', resolveAfterPaint, { once: true })
       }
     })
   }
