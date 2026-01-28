@@ -222,8 +222,12 @@
   setThemeDataAttribute(selectedTheme)
 
   const cssReady = loadThemeStylesheet(selectedTheme)
-  await waitForAllImages(selectedTheme.images, IMAGE_LOAD_TIMEOUT_MS)
+  // Виключаємо winanimation з початкового завантаження — вона завантажиться на фоні після появи колеса
+  const criticalImages = (selectedTheme.images || []).filter(url => !url.includes('winanimation'))
+  await waitForAllImages(criticalImages, IMAGE_LOAD_TIMEOUT_MS)
   await cssReady
+  // Чекаємо завантаження шрифтів, щоб уникнути "стрибка" тексту після появи колеса
+  await document.fonts.ready
 
   const imageMap = buildImageMap(selectedTheme.images)
   exposeThemeRuntime(selectedTheme, urlParams, imageMap) // window.currentTheme = { ... }
