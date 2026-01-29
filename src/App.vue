@@ -353,12 +353,20 @@ setSpinEndCallback(prize => {
   // Старий спосіб: відправляємо у parent сайт (залишаємо для зворотної сумісності)
   postToParent('spinEnd', { prize, timestamp: Date.now() })
 
-  // Новий спосіб: аналітика напряму в FullStory з iframe
+  // Отримуємо дані виграшного сектора для розширеної аналітики
+  const winningSector = winnerSection.value ?? 0
+  const sectorData = sectionsData[winningSector]
+
+  // Новий спосіб: аналітика напряму в FullStory/GA4 з iframe
   track('Spin Ended', {
     prize,
-    sector: winnerSection.value,
+    sector: winningSector,
     theme: currentTheme,
     project: currentProject,
+    // Розширені параметри для аналітики призів
+    prize_type: sectorData?.type ?? 'unknown',
+    prize_value: sectorData?.prizeText ?? '',
+    prize_currency: sectorData?.prizeCurrency ?? '',
   })
 })
 

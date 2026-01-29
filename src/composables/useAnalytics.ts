@@ -20,6 +20,9 @@ const GA_WORKER_URL = 'https://still-band-a01d.upstars-marbella.workers.dev'
 // Ключ для збереження client_id в localStorage
 const GA_CLIENT_ID_KEY = 'ga_client_id'
 
+// Ключ для збереження session_id в sessionStorage
+const GA_SESSION_ID_KEY = 'analytics_session_id'
+
 /**
  * Генерує або отримує збережений client_id для GA4
  */
@@ -36,6 +39,49 @@ const getClientId = (): string => {
     return crypto.randomUUID()
   }
 }
+
+/**
+ * Генерує або отримує session_id для поточної сесії
+ * Зберігається в sessionStorage — живе до закриття вкладки
+ */
+const getSessionId = (): string => {
+  try {
+    let sessionId = sessionStorage.getItem(GA_SESSION_ID_KEY)
+    if (!sessionId) {
+      sessionId = crypto.randomUUID()
+      sessionStorage.setItem(GA_SESSION_ID_KEY, sessionId)
+    }
+    return sessionId
+  } catch {
+    // Fallback для private mode / iframe without storage
+    return crypto.randomUUID()
+  }
+}
+
+/**
+ * Отримує домен батьківського сайту з document.referrer
+ * Потрібно для аналітики: на якому сайті крутили колесо
+ */
+const getHost = (): string => {
+  try {
+    if (document.referrer) {
+      return new URL(document.referrer).hostname
+    }
+    return 'direct'
+  } catch {
+    return 'unknown'
+  }
+}
+
+/**
+ * Загальні параметри для всіх подій аналітики
+ * Автоматично додаються до кожного track() виклику
+ */
+const getCommonParams = (): Record<string, string> => ({
+  session_id: getSessionId(),
+  host: getHost(),
+  env: import.meta.env.DEV ? 'dev' : 'prod',
+})
 
 export function useAnalytics() {
   /**
@@ -90,11 +136,16 @@ export function useAnalytics() {
   }
 
   /**
-   * Універсальний трекінг
+   * Універсальний трекінг з автоматичним додаванням загальних параметрів
+   * Кожна подія отримує: session_id, host, env
    */
   const track = (eventName: string, properties?: Record<string, unknown>): void => {
-    trackFullStory(eventName, properties)
-    trackGA4(eventName, properties)
+    const enrichedProperties = {
+      ...getCommonParams(),
+      ...(properties ?? {}),
+    }
+    trackFullStory(eventName, enrichedProperties)
+    trackGA4(eventName, enrichedProperties)
   }
 
   return {
