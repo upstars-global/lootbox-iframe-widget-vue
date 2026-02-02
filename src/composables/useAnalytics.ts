@@ -118,6 +118,7 @@ export function useAnalytics() {
         },
         body: JSON.stringify({
           client_id: getClientId(),
+          user_agent: navigator.userAgent, // Для визначення браузера в GA4
           events: [
             {
               name: ga4EventName,
