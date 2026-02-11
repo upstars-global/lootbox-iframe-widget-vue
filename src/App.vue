@@ -121,9 +121,8 @@
       :style="{ transform: `rotate(${randomAngle}deg)` }"
     />
     <img
-      v-if="showWinAnimation"
-      :key="winAnimationKey"
-      :src="`${themeImages.winanimation}?t=${winAnimationKey}`"
+      v-if="showWinAnimation && winAnimationSrc"
+      :src="winAnimationSrc"
       class="win-animation"
       alt=""
       :style="{ opacity: winAnimationOpacity }"
@@ -149,6 +148,7 @@ import { useAnalytics } from './composables/useAnalytics'
 import { useImagePreloader } from './composables/useImagePreloader'
 import { usePostMessageBus } from './composables/usePostMessageBus'
 import { useWheelAnimation } from './composables/useWheelAnimation'
+import { useWinAnimationPreloader } from './composables/useWinAnimationPreloader'
 import FpsMonitor from './components/FpsMonitor.vue'
 
 import type { LootboxMessages, Sector } from './types'
@@ -210,9 +210,8 @@ const maskOpacity = ref<number>(0)
 const winAnimationOpacity = ref<number>(1)
 const animationId = ref<number | null>(null)
 
-// Унікальний ключ для примусового перезавантаження SVG анімації
-// Вирішує проблему: CSS @keyframes всередині SVG кешуються браузером і не перезапускаються
-const winAnimationKey = ref<number>(0)
+// URL для win-анімації (створюється через Blob URL для перезапуску @keyframes)
+const winAnimationSrc = ref<string>('')
 
 // Таймінги анімації (можуть бути перевизначені з теми)
 const spinDuration = ref<number>(8000)
@@ -370,11 +369,22 @@ setSpinEndCallback(prize => {
   })
 })
 
-// Оновлюємо ключ анімації при кожному показі win-анімації
-// Це примушує браузер перезавантажити SVG і перезапустити CSS @keyframes анімації
-watch(showWinAnimation, newVal => {
-  if (newVal) {
-    winAnimationKey.value = Date.now()
+// Передзавантаження win-анімації через Blob URL
+// SVG завантажується один раз у пам'ять, при кожному показі створюється унікальний Blob URL
+// Це вирішує проблему: @keyframes перезапускаються БЕЗ мережевого запиту
+const {
+  preload: preloadWinAnimation,
+  createFreshUrl: createWinAnimationUrl,
+  revokeUrl: revokeWinAnimationUrl,
+} = useWinAnimationPreloader(themeImages.winanimation)
+
+// Створюємо Blob URL при показі win-анімації, звільняємо при приховуванні
+watch(showWinAnimation, show => {
+  if (show) {
+    winAnimationSrc.value = createWinAnimationUrl()
+  } else if (winAnimationSrc.value) {
+    revokeWinAnimationUrl(winAnimationSrc.value)
+    winAnimationSrc.value = ''
   }
 })
 
@@ -418,6 +428,11 @@ onMounted(async () => {
 
   // Аналітика: відправляємо подію напряму в FullStory
   track('Widget Loaded', { theme: currentTheme, project: currentProject })
+
+  // Передзавантаження win-анімації у фоні ПІСЛЯ критичних асетів
+  // Не блокує UI — завантаження йде паралельно
+  // Спін триває 14 секунд — SVG точно встигне завантажитись
+  preloadWinAnimation()
 })
 
 onUnmounted(() => {
