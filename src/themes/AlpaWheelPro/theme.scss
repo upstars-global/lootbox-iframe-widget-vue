@@ -77,13 +77,16 @@
 
 .wheel-center {
   position: absolute;
-  top: 46%;
-  left: 41.5%;
+  top: 55%;
+  left: 50%;
   z-index: 11;
-  width: 17%;
+  width: 21.3%; /* Figma center ≈22.4% of wheelframe (878px → 197px) */
   height: auto;
   aspect-ratio: 1/1;
+  transform: translate(-50%, -50%);
   filter: drop-shadow(2px 4px 7px rgba(0, 0, 0, 0.5));
+  object-fit: contain;
+  object-position: center;
 }
 
 .wheel-pointer-shadow {
@@ -99,11 +102,11 @@
 
 .center-frame {
   position: absolute;
-  top: 54.6%;
+  top: 55%;
   left: 50%;
   z-index: 12;
-  height: 13.5%;
-  width: 13.5%;
+  height: 17%;
+  width: 17%;
   overflow: hidden;
   border-radius: 100%;
   transform: translate(-50%, -50%);
@@ -115,6 +118,8 @@
   left: 0;
   width: 100%;
   height: 100%;
+  object-fit: contain;
+  object-position: center;
   transition: all 3s linear;
   animation: centerBgAnimation 20s linear infinite;
   aspect-ratio: 1/1;
