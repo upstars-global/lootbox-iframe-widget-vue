@@ -1,0 +1,21 @@
+/**
+ * Кольори тексту секторів — Alpa Wheel Light.
+ *
+ * --color-primary-5   Prize            (.loot-box-sum)
+ * --color-warning     USD/FS           (.loot-box-currency)
+ * --color-primary-2   Cash/Bonus Prize (.loot-box-prize-type)
+ * --color-win-highlight  спалах тексту переможного сектора
+ */
+[data-theme='AlpaWheelLight'] {
+  --color-primary-5: #ffffad;
+  --color-warning: #fdd835;
+  --color-primary-2: #ffbb42;
+  --color-win-highlight: #ffa000;
+
+  /* Позиції тексту секторів (viewBox units) — крутити для підгонки */
+  --sector-label-radius: 42;
+  --sector-sum-x: 87;
+  --sector-sum-y: 52;
+  --sector-currency-x: 86.7;
+  --sector-currency-y: 56;
+}

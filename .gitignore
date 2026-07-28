@@ -34,3 +34,6 @@ DEVELOPMENT_PLAN.md
 
 # Vite
 .vite/
+
+# Scratch space (design references, baseline screenshots)
+.tmp/

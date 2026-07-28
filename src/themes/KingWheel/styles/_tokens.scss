@@ -7,4 +7,11 @@
   --darck_ellow: #fdd835;
   --gadient_start: #fdd835;
   --gadient_end: #fdd835;
+
+  /* Позиції тексту секторів (viewBox units) — прод-значення, не змінювати без QA */
+  --sector-label-radius: 41;
+  --sector-sum-x: 87;
+  --sector-sum-y: 52;
+  --sector-currency-x: 86.4;
+  --sector-currency-y: 56;
 }

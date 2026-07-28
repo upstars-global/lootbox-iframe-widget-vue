@@ -1,0 +1,21 @@
+/**
+ * Дефолтні позиції тексту секторів (viewBox 0 0 100 100).
+ * Перевизначаються в [data-theme='...'] — див. _tokens.scss кожної теми.
+ *
+ * Правило: менше radius / sum-x / currency-x → текст ближче до центру колеса.
+ * Одиниці — viewBox (0–100), без px/%.
+ *
+ * Історична довідка (міграція зі старих CSS-transform):
+ * у SVG `transform: translate(Npx)` = N одиниць viewBox, а `translate(N%)` = N
+ * одиниць (бо transform-box: view-box). Тому старі значення переносяться так:
+ *   label:    radius = 37 + N   (translate(Npx) на .loot-box-prize-type)
+ *   sum:      sum-x = 89 − N    (translate(−Npx))
+ *   currency: currency-x = 88.7 − N
+ */
+:root {
+  --sector-label-radius: 37;
+  --sector-sum-x: 89;
+  --sector-sum-y: 52;
+  --sector-currency-x: 88.7;
+  --sector-currency-y: 56;
+}

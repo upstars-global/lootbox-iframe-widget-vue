@@ -35,6 +35,28 @@
     }
   }
 
+  /**
+   * Нормалізація застарілих імен проекту та теми (Rocket → Alpa).
+   *
+   * Мапи аліасів визначені один раз в index.html (window.__lootboxBoot), щоб
+   * ранній резолв теми для прелоадера й вибір теми тут не розʼїхались. Фолбек на
+   * локальні копії потрібен на випадок, коли bootstrap.js підключають окремо.
+   */
+  function normalizeLegacyParams(params) {
+    const boot = window.__lootboxBoot || {}
+    const legacyProjects = boot.legacyProjects || { rocket: 'alpa' }
+    const legacyThemes = boot.legacyThemes || {
+      RocketWheelLite: 'AlpaWheelLight',
+      RocketWheelPro: 'AlpaWheelPro',
+      RocketWheelMAX: 'AlpaWheelMax',
+    }
+    return {
+      ...params,
+      project: (params.project && legacyProjects[params.project]) || params.project,
+      themeName: (params.themeName && legacyThemes[params.themeName]) || params.themeName,
+    }
+  }
+
   /** Отримання конфігурації тем */
   function getThemesConfig() {
     const themesConfig = window.THEMES_CONFIG || { themes: [] }
@@ -409,7 +431,7 @@
 
   // === ГОЛОВНА ЛОГІКА ===
 
-  const urlParams = readUrlParams()
+  const urlParams = normalizeLegacyParams(readUrlParams())
   const themesConfig = getThemesConfig()
 
   let selectedTheme = selectTheme(themesConfig, urlParams)

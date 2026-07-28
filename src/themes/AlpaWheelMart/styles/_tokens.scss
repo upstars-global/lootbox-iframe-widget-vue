@@ -1,0 +1,20 @@
+/**
+ * Кольори тексту секторів — Alpa Wheel Mart.
+ *
+ * --color-primary-5   Prize            (.loot-box-sum)
+ * --color-warning     USD/FS           (.loot-box-currency)
+ * --color-primary-2   Cash/Bonus Prize (.loot-box-prize-type)
+ * --color-win-highlight  спалах тексту переможного сектора
+ */
+[data-theme='AlpaWheelMart'] {
+  --color-primary-5: #ffd138;
+  --color-warning: #f29300;
+  --color-primary-2: #ffd138;
+  --color-win-highlight: #59e0ff;
+
+  --sector-label-radius: 42;
+  --sector-sum-x: 87;
+  --sector-sum-y: 52;
+  --sector-currency-x: 86.7;
+  --sector-currency-y: 56;
+}

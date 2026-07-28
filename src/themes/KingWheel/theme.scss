@@ -1,5 +1,6 @@
 /* Тема KingWheel */
 @use './styles/animations';
+@use '../_shared/sectorTextDefaults';
 @use './styles/tokens';
 @use './styles/promo';
 
@@ -229,7 +230,6 @@
   font-family: 'Poppins', sans-serif;
   font-weight: 700;
   letter-spacing: -0.1px;
-  transform: translate(4px);
 }
 
 .loot-box-sum {
@@ -240,7 +240,6 @@
   fill: var(--color-primary-5);
   font-family: 'Poppins', sans-serif;
   font-weight: 800;
-  transform: translate(-2px);
 }
 
 .loot-box-currency {
@@ -251,7 +250,6 @@
   fill: var(--color-white);
   font-family: 'Poppins', sans-serif;
   font-weight: 800;
-  transform: translate(-2.3%);
 }
 
 .sector {

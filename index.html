@@ -7,15 +7,44 @@
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <!-- Dynamic preload for active theme's preloader.svg (must be early in <head>) -->
+    <!--
+      Ранній резолв теми + legacy-аліаси. Виконується найпершим, бо від результату
+      залежать preload preloader.svg, колір фону та src прелоадера в <body>.
+
+      Проект Rocket перейменовано на Alpa (теми RocketWheel* → AlpaWheel*). На проді
+      вже роздані iframe-посилання зі старими значеннями ?project=rocket / ?style=RocketWheel*,
+      тому старі імена нормалізуються в нові тут і в bootstrap.js (через window.__lootboxBoot).
+      Мапи аліасів живуть в одному місці — не дублювати їх у скриптах нижче.
+    -->
     <script>
       ;(function () {
-        var params = new URLSearchParams(location.search)
-        var theme = params.get('style')
-        if (!theme) {
-          var project = params.get('project')
-          theme = project === 'king' ? 'KingWheel' : project === 'thor' ? 'ThorWheel' : 'RocketWheelLite'
+        var LEGACY_PROJECTS = { rocket: 'alpa' }
+        var LEGACY_THEMES = {
+          RocketWheelLite: 'AlpaWheelLight',
+          RocketWheelPro: 'AlpaWheelPro',
+          RocketWheelMAX: 'AlpaWheelMax',
         }
+        // Мають збігатися з isProjectDefault: true у config.ts відповідних тем
+        var PROJECT_DEFAULTS = { alpa: 'AlpaWheelLight', king: 'KingWheel', thor: 'ThorWheel' }
+        var FALLBACK_THEME = 'AlpaWheelLight'
+
+        var params = new URLSearchParams(location.search)
+        var style = params.get('style')
+        var project = params.get('project')
+
+        style = (style && LEGACY_THEMES[style]) || style
+        project = (project && LEGACY_PROJECTS[project]) || project
+
+        var theme = style || (project && PROJECT_DEFAULTS[project]) || FALLBACK_THEME
+
+        window.__lootboxBoot = {
+          style: style,
+          project: project,
+          theme: theme,
+          legacyProjects: LEGACY_PROJECTS,
+          legacyThemes: LEGACY_THEMES,
+        }
+
         var link = document.createElement('link')
         link.rel = 'preload'
         link.as = 'image'
@@ -148,33 +177,23 @@
       - This inline script executes synchronously BEFORE body renders, setting correct background immediately
       
       How it works:
-      1. Reads URL params: ?style=KingWheel or ?project=king
-      2. Determines theme (explicit style > project default > RocketWheelLite)
-      3. Sets --theme-bg-color CSS variable from hardcoded mapping
-      4. Body renders with correct background from the start
+      1. Takes the already resolved theme/project from window.__lootboxBoot (see script above)
+      2. Sets --theme-bg-color CSS variable from hardcoded mapping
+      3. Body renders with correct background from the start
       
       Note: themeBgColors must match backgroundColor values in theme config.ts files
     -->
     <script>
       ;(function () {
-        var params = new URLSearchParams(location.search)
-        var style = params.get('style')
-        var project = params.get('project')
-        var theme = style
-        if (!theme && project) {
-          var projectDefaults = {
-            rocket: 'RocketWheelLite',
-            king: 'KingWheel',
-            thor: 'ThorWheel',
-          }
-          theme = projectDefaults[project] || 'RocketWheelLite'
-        }
-        if (!theme) theme = 'RocketWheelLite'
+        var boot = window.__lootboxBoot
+        var theme = boot.theme
+        var project = boot.project
         var themeBgColors = {
           KingWheel: '#F8F7FA',
-          RocketWheelLite: '#000a12',
-          RocketWheelPro: '#000a12',
-          RocketWheelMAX: '#000a12',
+          AlpaWheelLight: '#000a12',
+          AlpaWheelPro: '#000a12',
+          AlpaWheelMax: '#000a12',
+          AlpaWheelMart: '#000a12',
           ThorWheel: '#000a12',
         }
         document.documentElement.style.setProperty(
@@ -183,9 +202,9 @@
         )
 
         // FullStory initialization
-        // Маппінг project → FullStory Org ID
+        // Маппінг project → FullStory Org ID (project вже нормалізований: rocket → alpa)
         var fsOrgMap = {
-          rocket: 'FWWXX',
+          alpa: 'FWWXX',
           king: 'o-207RBN-na1',
           thor: 'THOR_ORG_ID', // TODO: замінити на реальний
         }
@@ -274,31 +293,11 @@
     <div id="app"></div>
     <script>
       ;(function () {
-        // 1. SYNCHRONOUS preloader src assignment for instant display
-        var params = new URLSearchParams(location.search)
-        var style = params.get('style')
-        var project = params.get('project')
-
-        // Determine theme for preloader:
-        // - If ?style= is provided, use it
-        // - If only ?project= is provided, use project default theme
-        // - Fallback to RocketWheelLite
-        var theme = style
-        if (!theme && project) {
-          // Project default themes mapping (must match config.ts isProjectDefault: true)
-          var projectDefaults = {
-            rocket: 'RocketWheelLite',
-            king: 'KingWheel',
-            thor: 'ThorWheel',
-          }
-          theme = projectDefaults[project] || 'RocketWheelLite'
-        }
-        if (!theme) {
-          theme = 'RocketWheelLite'
-        }
-
+        // 1. SYNCHRONOUS preloader src assignment for instant display.
+        // Тема вже визначена в <head> (window.__lootboxBoot) — той самий шлях,
+        // що й у <link rel="preload">, тож картинка береться з кешу.
         document.getElementById('preloader-img').src =
-          'themes/' + theme + '/images/preloader.svg'
+          'themes/' + window.__lootboxBoot.theme + '/images/preloader.svg'
 
         // PROTECTION from "white square" during hard reload
         // When the browser begins reload, it clears image cache but DOM elements stay.

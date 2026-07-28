@@ -1,5 +1,7 @@
 <template>
   <div class="loot-box-spin-wheel-container">
+    <!-- Фонове світло під колесом: є лише в темах, де дизайн його передбачає (AlpaWheelMart) -->
+    <img v-if="themeImages.bglight" :src="themeImages.bglight" class="wheel-bg-light" alt="" />
     <img :src="themeImages.wheelouterglow" class="wheel-outer-glow" alt="" />
     <div class="lamps">
       <img
@@ -20,7 +22,13 @@
         ]"
         alt=""
       />
-      <img :src="themeImages.lampsholders" class="lamp-holders" alt="" />
+      <!-- Тримачі лампочок є не в усіх темах: в Alpa-колесах дизайн їх не передбачає -->
+      <img
+        v-if="themeImages.lampsholders"
+        :src="themeImages.lampsholders"
+        class="lamp-holders"
+        alt=""
+      />
     </div>
     <img :src="themeImages.wheelframe" class="wheel-frame" alt="" />
     <div class="wheel-sectors-mask">
@@ -36,7 +44,7 @@
         <img :src="themeImages.wheelsectorsbg" class="wheel-bg" alt="" />
         <svg class="bonus-type" viewBox="0 0 100 100" width="100" height="100">
           <defs>
-            <path id="circle" d=" M 50, 50 m -37, 0 a 37,37 0 1,1 74,0 a 37,37 0 1,1 -74,0" />
+            <path id="circle" :d="labelArcPath" />
           </defs>
           <g
             v-for="(section, index) in sectionsData"
@@ -55,8 +63,8 @@
             </text>
             <text
               class="loot-box-sum"
-              :x="SUM_PRIZE_POSITION_X"
-              :y="SUM_PRIZE_POSITION_Y"
+              :x="sectorTextLayout.sumX"
+              :y="sectorTextLayout.sumY"
               :font-size="getFontSize(section.prizeText, 'sum')"
               text-anchor="end"
             >
@@ -64,8 +72,8 @@
             </text>
             <text
               class="loot-box-currency"
-              :x="CURRENCY_POSITION_X"
-              :y="CURRENCY_POSITION_Y"
+              :x="sectorTextLayout.currencyX"
+              :y="sectorTextLayout.currencyY"
               :font-size="getFontSize(section.prizeText, 'currency')"
               text-anchor="end"
             >
@@ -171,13 +179,17 @@ import FpsMonitor from './components/FpsMonitor.vue'
 
 import type { LootboxMessages, Sector } from './types'
 import { processSectorsFromUrl } from './utils/sectors-parser'
+import {
+  buildLabelArcPath,
+  readSectorTextLayout,
+  type SectorTextLayout,
+} from './utils/sector-text-layout'
 
-// Позиціонування тексту в секторах (SVG координати)
-const SUM_PRIZE_POSITION_X = 89
-const SUM_PRIZE_POSITION_Y = 52
-const CURRENCY_POSITION_X = 88.7
-const CURRENCY_POSITION_Y = 56
 const SECTOR_ANGLE: number = 45
+
+/** Позиції тексту секторів — читаються з CSS-змінних теми (--sector-*) */
+const sectorTextLayout = ref<SectorTextLayout>(readSectorTextLayout())
+const labelArcPath = computed(() => buildLabelArcPath(sectorTextLayout.value.labelRadius))
 
 // Пороги для анімаційних ефектів
 const CENTER_BG_PAUSE_THRESHOLD: number = 0.3
@@ -438,6 +450,8 @@ const hidePreloader = (): void => {
 
 // Ініціалізація компонента
 onMounted(async () => {
+  sectorTextLayout.value = readSectorTextLayout()
+
   // Завантаження конфігурації теми (якщо доступна)
   if (themeTimings) {
     spinDuration.value = themeTimings.spinDuration

@@ -30,16 +30,22 @@ Projects/lootbox-iframe-widget-vue/
 │   ├── types/               # TypeScript типи
 │   ├── utils/               # Утиліти (парсинг секторів)
 │   ├── themes/              # Теми дизайну
-│   │   ├── RocketWheelLite/ # Тема Rocket Lite (дефолт для rocket)
+│   │   ├── _shared/         # Спільні конфіги тем (не є темою)
+│   │   │   └── alpaFontSizes.ts
+│   │   ├── AlpaWheelLight/ # Тема Alpa Light (дефолт для alpa)
 │   │   │   ├── config.ts
 │   │   │   ├── theme.scss
 │   │   │   ├── images/
 │   │   │   └── styles/
-│   │   ├── RocketWheelPro/  # Тема Rocket Pro
+│   │   ├── AlpaWheelPro/  # Тема Alpa Pro
 │   │   │   ├── config.ts
 │   │   │   ├── theme.scss
 │   │   │   ├── images/
 │   │   │   └── styles/
+│   │   ├── AlpaWheelMax/    # Тема Alpa MAX
+│   │   │   └── ...
+│   │   ├── AlpaWheelMart/   # Тема Alpa Mart
+│   │   │   └── ...
 │   │   ├── KingWheel/       # Тема King (дефолт для king)
 │   │   │   ├── config.ts
 │   │   │   ├── theme.scss
@@ -59,10 +65,16 @@ Projects/lootbox-iframe-widget-vue/
 │   │   └── bootstrap.js     # Копія з public/js/
 │   └── themes/              # Генеровані файли тем (з src/themes/)
 │       ├── themes-config.js # Конфігурація всіх тем + A/B тести
-│       ├── RocketWheelLite/
+│       ├── AlpaWheelLight/
 │       │   ├── theme.css
 │       │   └── images/
-│       ├── RocketWheelPro/
+│       ├── AlpaWheelPro/
+│       │   ├── theme.css
+│       │   └── images/
+│       ├── AlpaWheelMax/
+│       │   ├── theme.css
+│       │   └── images/
+│       ├── AlpaWheelMart/
 │       │   ├── theme.css
 │       │   └── images/
 │       ├── KingWheel/
@@ -105,20 +117,22 @@ Projects/lootbox-iframe-widget-vue/
 
 ### Мультипроектна архітектура
 
-Віджет підтримує роботу з **кількома проектами** (Rocket, King, Thor тощо). Кожен проект може мати свої теми з різним дизайном.
+Віджет підтримує роботу з **кількома проектами** (Alpa, King, Thor тощо). Кожен проект може мати свої теми з різним дизайном.
 
 **Ключові концепції:**
 
-- **Проект (`project`)** — логічна група тем (наприклад, `rocket`, `king`, `thor`)
-- **Тема** — конкретний дизайн колеса (наприклад, `RocketWheelLite`, `KingWheel`, `ThorWheel`)
+- **Проект (`project`)** — логічна група тем (наприклад, `alpa`, `king`, `thor`)
+- **Тема** — конкретний дизайн колеса (наприклад, `AlpaWheelLight`, `KingWheel`, `ThorWheel`)
 - **Дефолтна тема проекту** — тема, яка застосовується якщо не вказано конкретну тему
 
 **Приклад структури:**
 
 ```
-Проект Rocket:
-├── RocketWheelLite (дефолт для Rocket)
-└── RocketWheelPro
+Проект Alpa:
+├── AlpaWheelLight (дефолт для Alpa)
+├── AlpaWheelPro
+├── AlpaWheelMax
+└── AlpaWheelMart
 
 Проект King:
 └── KingWheel (дефолт для King)
@@ -140,20 +154,25 @@ Projects/lootbox-iframe-widget-vue/
 
 ```
 src/themes/
-├── RocketWheelLite/
+├── _shared/                 # Не тема: директорії з "_" плагін ігнорує
+│   ├── alpaFontSizes.ts     # Спільні кеглі тексту секторів для колес Alpa
+│   └── sectorTextDefaults.scss  # Дефолтні позиції тексту секторів (viewBox)
+├── AlpaWheelLight/
 │   ├── config.ts
 │   ├── theme.scss
 │   ├── images/
 │   └── styles/
 │       ├── _animations.scss
 │       └── _tokens.scss
-├── RocketWheelPro/
+├── AlpaWheelPro/
 │   ├── config.ts
 │   ├── theme.scss
 │   ├── images/
 │   └── styles/
 │       ├── _animations.scss
 │       └── _tokens.scss
+├── AlpaWheelMax/            # Структура ідентична
+├── AlpaWheelMart/           # Структура ідентична
 ├── KingWheel/
 │   ├── config.ts
 │   ├── theme.scss
@@ -169,6 +188,114 @@ src/themes/
         ├── _animations.scss
         └── _tokens.scss
 ```
+
+### Позиції тексту секторів
+
+На кожному секторі рендеряться **три тексти**:
+
+```
+        ┌─────────────┐
+        │ Bonus Prize │  ← .loot-box-prize-type (дуга по колу радіуса R)
+        │             │
+        │     500     │  ← .loot-box-sum       (x, y у viewBox)
+        │     USD     │  ← .loot-box-currency  (x, y у viewBox)
+        └─────────────┘
+             сектор
+```
+
+Кожен сектор — це `<g class="sector">` у SVG з `viewBox="0 0 100 100"`, повернутий на `index × 45°`. Координати задаються в **viewBox-одиницях** (0–100, де 50 = центр колеса, 100 = зовнішній край). Ніяких `px` і ніяких CSS `transform` на тексті.
+
+#### Головний файл — тільки один
+
+```
+src/themes/<НазваТеми>/styles/_tokens.scss
+```
+
+Наприклад, для `AlpaWheelMart`:
+
+```scss
+[data-theme='AlpaWheelMart'] {
+  /* ... кольори ... */
+
+  --sector-label-radius: 42;   /* дуга «Bonus Prize» */
+  --sector-sum-x: 87;          /* «500» — правий край (text-anchor="end") */
+  --sector-sum-y: 52;          /* «500» — вертикаль */
+  --sector-currency-x: 86.7;   /* «USD» — правий край */
+  --sector-currency-y: 56;     /* «USD» — вертикаль */
+}
+```
+
+**Правило:** менше значення → текст **ближче до центру** колеса, далі від зовнішнього краю. Більше → до краю.
+
+Крок 1–2 одиниці viewBox — помітний, але невеликий зсув.
+
+**Після правки збережи файл і натисни F5.** JS читає значення один раз при mount, HMR може не оновити SVG-атрибути.
+
+#### Поточні значення по темах
+
+| Тема | radius | sum-x | currency-x | Стан |
+|---|---|---|---|---|
+| `_shared/sectorTextDefaults.scss` (дефолт) | 37 | 89 | 88.7 | fallback |
+| AlpaWheel Light / Pro / Max / Mart | 42 | 87 | 86.7 | можна крутити |
+| KingWheel | 41 | 87 | 86.4 | **прод — не чіпати без QA** |
+| ThorWheel | 42 | 87 | 86.4 | **прод — не чіпати без QA** |
+
+#### Інфраструктура (для розуміння, не для правки)
+
+Ланцюжок від файлу до пікселя на екрані:
+
+```
+_tokens.scss                    ← ★ тут значення
+    ↓ (Vite build)
+dist/themes/<Theme>/theme.css
+    ↓ (bootstrap.js додає <link> і data-theme на <html> iframe)
+:root / [data-theme='...']      ← CSS custom properties у DOM
+    ↓ (getComputedStyle)
+utils/sector-text-layout.ts     ← readSectorTextLayout() читає 5 змінних
+    ↓ (Vue reactive)
+App.vue                         ← :x, :y на <text>, :d на <path>
+    ↓
+SVG-рендер у браузері
+```
+
+Файли за ролями:
+
+| Файл | Роль | Правити для підгонки? |
+|---|---|---|
+| `src/themes/<Theme>/styles/_tokens.scss` | Значення `--sector-*` для теми | **Так** |
+| `src/themes/_shared/sectorTextDefaults.scss` | Дефолти (`:root`) | Тільки для нової теми |
+| `src/utils/sector-text-layout.ts` | Читає CSS → числа для Vue | Ні |
+| `src/App.vue` | SVG-розмітка, підставляє `:x`, `:y`, `:d` | Ні |
+| `src/themes/<Theme>/theme.scss` | Збирає CSS теми (`@use`) | Ні для позицій |
+| `public/js/bootstrap.js` | Ставить `data-theme`, вантажить `theme.css` | Ні |
+
+#### Як перевірити в DevTools
+
+1. Відкрити test-сторінку (`test-lootbox.html?style=AlpaWheelMart&active=true`, для King/Thor — `test-king-lootbox.html` / `test-thor-lootbox.html`)
+2. В Elements знайти **iframe** віджета (не батьківську сторінку)
+3. Всередині iframe вибрати `<html data-theme="...">`
+4. Вкладка **Computed** → фільтр `sector` → побачиш `--sector-label-radius: 42` і т.д.
+5. На конкретному `<text class="loot-box-sum">` перевір атрибути `x` і `y` — вони мають дорівнювати значенням зі змінних.
+
+#### Обмеження (важливо)
+
+- `x`, `y`, `r` на SVG-елементах **не можна** задавати через CSS (`.loot-box-sum { x: var(...) }`) — браузер інтерпретує їх як px, текст зникає з viewBox. Тому значення читає JS і ставить як SVG-атрибути.
+- Для дуги «Bonus Prize» використовується `<path>` (не `<circle>`) — `textPath` рендериться тільки на `<path>`. Path будується функцією `buildLabelArcPath(radius)` у `sector-text-layout.ts`.
+- Не додавай `transform: translate(...)` на `.loot-box-prize-type`, `.loot-box-sum`, `.loot-box-currency` — це старий спосіб зсуву, замінений на viewBox-змінні. Змішувати їх не можна.
+
+#### Історія міграції
+
+До рефактора зсув робили через CSS `transform: translate(Npx)` прямо в `theme.scss` кожної теми. Це давало неконсистентні значення (King: 4px, Thor: 5px, Alpa: 7px), не масштабувалось однаково і мало прихований підводний камінь: у SVG `translate(Npx)` = **N одиниць viewBox**, не CSS-пікселів.
+
+Формула переносу у нові змінні:
+
+```
+label:    --sector-label-radius   = 37   + N   (translate(Npx) на підписі)
+sum:      --sector-sum-x          = 89   − N   (translate(−Npx))
+currency: --sector-currency-x     = 88.7 − N   (translate(−N%))
+```
+
+Звідси King = `37+4 = 41`, Thor = `37+5 = 42`, Alpa = `35+7 = 42`.
 
 ### Динамічне завантаження
 
@@ -234,14 +361,16 @@ await waitThemeReady() // Vue ініціалізація
 ### Приклад конфігурації теми
 
 ```typescript
-// src/themes/RocketWheelLite/config.ts
+// src/themes/AlpaWheelLight/config.ts
 import type { ThemeConfig } from '../../types/theme'
+import { alpaFontSizes } from '../_shared/alpaFontSizes'
 
 export const config: ThemeConfig = {
-  name: 'RocketWheelLite',
+  name: 'AlpaWheelLight',
   styleId: 1,
-  project: 'rocket', // Належність до проекту
-  isProjectDefault: true, // Дефолтна тема для проекту Rocket
+  project: 'alpa', // Належність до проекту
+  isProjectDefault: true, // Дефолтна тема для проекту Alpa
+  backgroundColor: '#000a12',
   timings: {
     spinDuration: 8000,
     timeToPopup: 9000,
@@ -251,6 +380,8 @@ export const config: ThemeConfig = {
     numberOfSpins: 1,
     winSection: 0,
   },
+  // Усі колеса Alpa мають однакові кеглі — конфіг винесено у src/themes/_shared
+  fontSizes: alpaFontSizes,
 }
 ```
 
@@ -287,7 +418,7 @@ export const config: ThemeConfig = {
 | ------------------ | ------- | ---------------------------------- |
 | `name`             | string  | Унікальна назва теми               |
 | `styleId`          | number  | Унікальний числовий ID             |
-| `project`          | string  | Назва проекту (rocket, king, тощо) |
+| `project`          | string  | Назва проекту (alpa, king, тощо) |
 | `isProjectDefault` | boolean | Чи є ця тема дефолтною для проекту |
 | `timings`          | object  | Налаштування часу анімацій         |
 | `logic`            | object  | Логіка гри                         |
@@ -352,37 +483,52 @@ export const config: ThemeConfig = {
 
 | Поле               | Призначення                                                                                                                                                                                                                                 |
 | ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `project`          | Визначає до якого проекту належить тема. Використовується для валідації: якщо передано `?project=rocket&style=KingWheel`, віджет проігнорує тему King (бо вона належить проекту `king`, а не `rocket`) і застосує дефолтну тему для Rocket. |
+| `project`          | Визначає до якого проекту належить тема. Використовується для валідації: якщо передано `?project=alpa&style=KingWheel`, віджет проігнорує тему King (бо вона належить проекту `king`, а не `alpa`) і застосує дефолтну тему для Alpa. |
 | `isProjectDefault` | Якщо `true`, ця тема буде застосована коли передано тільки `?project=yourproject` без вказання конкретної теми. **Важливо:** Лише одна тема проекту може мати `isProjectDefault: true`.                                                     |
 
 #### Крок 3: Оновіть index.html
 
-Якщо це **новий проект** (не нова тема для існуючого проекту), потрібно:
+Перший inline-скрипт у `<head>` резолвить активну тему ще до завантаження
+`themes-config.js` і кладе результат у `window.__lootboxBoot`. Від нього залежать
+`<link rel="preload">` для `preloader.svg`, колір фону та `src` прелоадера в `<body>`.
+Preload генерується динамічно для однієї резолвленої теми, тож нічого додавати не треба.
 
-**3.1. Додати preload для прелоадера:**
-
-```html
-<!-- Preload preloader SVGs for all themes -->
-<link rel="preload" as="image" href="themes/RocketWheelLite/images/preloader.svg" />
-<link rel="preload" as="image" href="themes/RocketWheelPro/images/preloader.svg" />
-<link rel="preload" as="image" href="themes/KingWheel/images/preloader.svg" />
-<link rel="preload" as="image" href="themes/ThorWheel/images/preloader.svg" />
-<link rel="preload" as="image" href="themes/YourThemeName/images/preloader.svg" />
-<!-- ← Додати -->
-```
-
-**3.2. Додати маппінг в projectDefaults:**
+**3.1. Якщо це новий проект — додати маппінг в `PROJECT_DEFAULTS`:**
 
 ```javascript
-var projectDefaults = {
-  rocket: 'RocketWheelLite',
+var PROJECT_DEFAULTS = {
+  alpa: 'AlpaWheelLight',
   king: 'KingWheel',
   thor: 'ThorWheel',
   yourproject: 'YourThemeName', // ← Додати новий проект
 }
 ```
 
-> **Навіщо projectDefaults?** Inline-скрипт в index.html виконується ДО завантаження themes-config.js, тому він не знає яка тема дефолтна для якого проекту. Цей маппінг дозволяє показати правильний прелоадер одразу.
+> Значення мають збігатися з темами, у яких `isProjectDefault: true`.
+
+**3.2. Додати колір фону теми в `themeBgColors`:**
+
+```javascript
+var themeBgColors = {
+  AlpaWheelLight: '#000a12',
+  // ...
+  YourThemeName: '#000a12', // ← має збігатися з backgroundColor у config.ts
+}
+```
+
+**3.3. Якщо стару назву проекту/теми вже роздано на прод — додати аліас:**
+
+```javascript
+var LEGACY_PROJECTS = { rocket: 'alpa' }
+var LEGACY_THEMES = {
+  RocketWheelLite: 'AlpaWheelLight',
+  RocketWheelPro: 'AlpaWheelPro',
+  RocketWheelMAX: 'AlpaWheelMax',
+}
+```
+
+Мапи живуть тільки в `index.html`; `bootstrap.js` читає їх із `window.__lootboxBoot`
+і нормалізує URL-параметри перед вибором теми. Не дублюйте їх у інших місцях.
 
 #### Крок 4: Оновіть test-lootbox.html (опціонально)
 
@@ -391,7 +537,7 @@ var projectDefaults = {
 ```html
 <select id="projectSelect" class="theme-select">
   <option value="">— Без проекту —</option>
-  <option value="rocket">Rocket</option>
+  <option value="alpa">Alpa</option>
   <option value="king">King</option>
   <option value="thor">Thor</option>
   <option value="yourproject">YourProject</option>
@@ -404,8 +550,10 @@ var projectDefaults = {
 ```html
 <select id="themeSelect" class="theme-select">
   <option value="">— Дефолт проекту —</option>
-  <option value="RocketWheelLite" data-project="rocket">RocketWheelLite (Rocket)</option>
-  <option value="RocketWheelPro" data-project="rocket">RocketWheelPro (Rocket)</option>
+  <option value="AlpaWheelLight" data-project="alpa">AlpaWheelLight (Alpa)</option>
+  <option value="AlpaWheelPro" data-project="alpa">AlpaWheelPro (Alpa)</option>
+  <option value="AlpaWheelMax" data-project="alpa">AlpaWheelMax (Alpa)</option>
+  <option value="AlpaWheelMart" data-project="alpa">AlpaWheelMart (Alpa)</option>
   <option value="KingWheel" data-project="king">KingWheel (King)</option>
   <option value="ThorWheel" data-project="thor">ThorWheel (Thor)</option>
   <option value="YourThemeName" data-project="yourproject">YourThemeName (YourProject)</option>
@@ -417,12 +565,12 @@ var projectDefaults = {
 
 ### Додавання теми до існуючого проекту
 
-Якщо потрібно додати ще одну тему для вже існуючого проекту (наприклад, `RocketWheelDark` для проекту Rocket):
+Якщо потрібно додати ще одну тему для вже існуючого проекту (наприклад, `AlpaWheelDark` для проекту Alpa):
 
 1. Створіть тему як описано вище
-2. В `config.ts` вкажіть `project: 'rocket'` та `isProjectDefault: false`
+2. В `config.ts` вкажіть `project: 'alpa'` та `isProjectDefault: false`
 3. В `index.html` додайте тільки preload (projectDefaults оновлювати НЕ потрібно)
-4. Для використання вказуйте явно: `?project=rocket&style=RocketWheelDark`
+4. Для використання вказуйте явно: `?project=alpa&style=AlpaWheelDark`
 
 ---
 
@@ -632,8 +780,8 @@ watch(showWinAnimation, show => {
 
 Проект підтримує 8 основних параметрів:
 
-- **`project`** - назва проекту (string, наприклад: `rocket`, `king`)
-- **`style`** - назва теми (string, наприклад: `RocketWheelLite`, `KingWheel`)
+- **`project`** - назва проекту (string, наприклад: `alpa`, `king`)
+- **`style`** - назва теми (string, наприклад: `AlpaWheelLight`, `KingWheel`)
 - **`ab`** - активація A/B тестування (boolean, `true` для активації)
 - **`sectors`** - список секторів з призами
 - **`sectors_type`** - типи призів для кожного сектора
@@ -664,9 +812,9 @@ watch(showWinAnimation, show => {
 **Приклад валідації:**
 
 ```
-?project=rocket&style=KingWheel
-// ⚠️ KingWheel належить проекту "king", не "rocket"
-// Результат: RocketWheelLite (дефолт для rocket) + warning в консоль
+?project=alpa&style=KingWheel
+// ⚠️ KingWheel належить проекту "king", не "alpa"
+// Результат: AlpaWheelLight (дефолт для alpa) + warning в консоль
 ```
 
 ### Приклади використання
@@ -676,16 +824,16 @@ watch(showWinAnimation, show => {
 ?project=king&sectors=100%20FS;5,000%20USD
 
 # Використання конкретної теми проекту (A/B вимкнено)
-?project=rocket&style=RocketWheelPro&sectors=500%20USD
+?project=alpa&style=AlpaWheelPro&sectors=500%20USD
 
 # Зворотна сумісність (без project)
-?style=RocketWheelLite&sectors=100%20FS
+?style=AlpaWheelLight&sectors=100%20FS
 
 # A/B тестування (тема обирається автоматично)
-?project=rocket&ab=true&sectors=500%20USD;1,000%20USD
+?project=alpa&ab=true&sectors=500%20USD;1,000%20USD
 
 # Повний приклад з A/B тестуванням та user_id
-?project=rocket&ab=true&user_id=12345&sectors=500%20USD;1,000%20USD&sectors_type=Bonus%20Prize;Bonus%20Prize
+?project=alpa&ab=true&user_id=12345&sectors=500%20USD;1,000%20USD&sectors_type=Bonus%20Prize;Bonus%20Prize
 
 # Приклад з FullStory інтеграцією
 ?project=alpa&fs_org=FWWXX&sectors=500%20USD;1,000%20USD&sectors_type=Bonus%20Prize;Bonus%20Prize
@@ -722,11 +870,11 @@ export interface ABTest {
 export type ABTestsConfig = Record<string, ABTest>
 
 export const abTests: ABTestsConfig = {
-  rocket: {
-    testId: 'rocket_theme_v1',
+  alpa: {
+    testId: 'alpa_theme_v1',
     variants: [
-      { id: 'A', theme: 'RocketWheelLite', weight: 50 },
-      { id: 'B', theme: 'RocketWheelPro', weight: 50 },
+      { id: 'A', theme: 'AlpaWheelLight', weight: 50 },
+      { id: 'B', theme: 'AlpaWheelPro', weight: 50 },
     ],
   },
 }
@@ -763,7 +911,7 @@ A/B тестування **вмикається** тільки якщо:
 
 **Приклад URL з A/B тестуванням:**
 ```
-?project=rocket&ab=true&sectors=500%20USD;1000%20USD
+?project=alpa&ab=true&sectors=500%20USD;1000%20USD
 ```
 
 ### Коли A/B тест НЕ застосовується
@@ -780,7 +928,7 @@ A/B тестування **вимикається** якщо:
 ```javascript
 // В консолі браузера
 window.currentTheme.abTest
-// { testId: 'rocket_theme_v1', variantId: 'A' } або null
+// { testId: 'alpa_theme_v1', variantId: 'A' } або null
 ```
 
 ### Додавання нового A/B тесту
@@ -790,11 +938,11 @@ window.currentTheme.abTest
 
 ```typescript
 export const abTests: ABTestsConfig = {
-  rocket: {
-    testId: 'rocket_theme_v1',
+  alpa: {
+    testId: 'alpa_theme_v1',
     variants: [
-      { id: 'A', theme: 'RocketWheelLite', weight: 50 },
-      { id: 'B', theme: 'RocketWheelPro', weight: 50 },
+      { id: 'A', theme: 'AlpaWheelLight', weight: 50 },
+      { id: 'B', theme: 'AlpaWheelPro', weight: 50 },
     ],
   },
   // Новий тест для проекту king
