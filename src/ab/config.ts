@@ -25,11 +25,17 @@ export interface ABTest {
 export type ABTestsConfig = Record<string, ABTest>
 
 export const abTests: ABTestsConfig = {
-  rocket: {
-    testId: 'rocket_theme_v1',
+  // Ключ = нормалізована назва проекту. Старий ?project=rocket приводиться
+  // до 'alpa' у bootstrap.js, тож старі посилання теж потрапляють у цей тест.
+  //
+  // testId оновлено (rocket_theme_v1 → alpa_theme_v1) навмисно: теми повністю
+  // перемальовані під нові сегменти, тому попередні заміри незіставні, а нова
+  // сіль хешу заново перерозподіляє користувачів між варіантами.
+  alpa: {
+    testId: 'alpa_theme_v1',
     variants: [
-      { id: 'A', theme: 'RocketWheelLite', weight: 50 },
-      { id: 'B', theme: 'RocketWheelPro', weight: 50 },
+      { id: 'A', theme: 'AlpaWheelLight', weight: 50 },
+      { id: 'B', theme: 'AlpaWheelPro', weight: 50 },
     ],
   },
   // Приклад для іншого проекту:

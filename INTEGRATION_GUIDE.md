@@ -2,12 +2,12 @@
 
 Цей документ містить всю необхідну інформацію для інтеграції віджета лутбокса через iframe. Лутбокс комунікує з батьківським сайтом через PostMessage API, а тексти та стан встановлюються через query параметри.
 
-**Підтримка мультипроектності:** Віджет підтримує роботу з різними проектами (Rocket, King, Thor тощо). Кожен проект має свою дефолтну тему.
+**Підтримка мультипроектності:** Віджет підтримує роботу з різними проектами (Alpa, King, Thor тощо). Кожен проект має свою дефолтну тему.
 
 Приклади посилань на iframe:
 
-Для проекту Rocket:
-https://rocketplay-bonuses.club/lootbox/index.html?project=rocket
+Для проекту Alpa:
+https://rocketplay-bonuses.club/lootbox/index.html?project=alpa
 
 Для проекту King:
 http://cdn-wl.s3.amazonaws.com/common/lootbox/king/index.html?project=king
@@ -98,7 +98,7 @@ Query-параметри для URL iframe
 - Тип: String
 - Опис: Назва проекту для визначення дефолтної теми
 - Доступні значення:
-  - 'rocket' - проект Rocket (дефолтна тема: RocketWheelLite)
+  - 'alpa' - проект Alpa (дефолтна тема: AlpaWheelLight)
   - 'king' - проект King (дефолтна тема: KingWheel)
   - 'thor' - проект Thor (дефолтна тема: ThorWheel)
 - Приклад: '?project=king'
@@ -109,7 +109,7 @@ Query-параметри для URL iframe
 - Тип: Boolean
 - За замовчуванням: не встановлено (A/B вимкнено)
 - Опис: Активує A/B тестування для проекту
-- Приклад: '?project=rocket&ab=true'
+- Приклад: '?project=alpa&ab=true'
 - ⚠️ Важливо: A/B тестування працює ТІЛЬКИ якщо:
   - Передано `?ab=true`
   - Вказано `?project=`
@@ -121,12 +121,28 @@ Query-параметри для URL iframe
 - Тип: String
 - Опис: Назва теми візуального оформлення
 - Доступні на даний момент значення:
-  - 'RocketWheelLite' - тема для Rocket Wheel Lite (дефолт для проекту Rocket)
-  - 'RocketWheelPro' - тема для Rocket Wheel Pro
+  - 'AlpaWheelLight' - тема для Alpa Wheel Light (дефолт для проекту Alpa)
+  - 'AlpaWheelPro' - тема для Alpa Wheel Pro
+  - 'AlpaWheelMax' - тема для Alpa Wheel MAX
+  - 'AlpaWheelMart' - тема для Alpa Wheel Mart
   - 'KingWheel' - тема для King (дефолт для проекту King)
   - 'ThorWheel' - тема для Thor (дефолт для проекту Thor)
-- Приклад: '?style=RocketWheelPro' або '?project=rocket&style=RocketWheelPro'
+- Приклад: '?style=AlpaWheelPro' або '?project=alpa&style=AlpaWheelPro'
 - ⚠️ Важливо: Явне вказання `?style=` вимикає A/B тестування — користувач отримає саме вказану тему
+
+**Legacy-назви (Rocket → Alpa)**
+
+Проект `rocket` перейменовано на `alpa`, теми `RocketWheel*` — на `AlpaWheel*`. Старі
+посилання продовжують працювати: значення нормалізуються автоматично на старті віджета.
+
+| Старе значення            | Нове значення     |
+| ------------------------- | ----------------- |
+| `?project=rocket`         | `?project=alpa`   |
+| `?style=RocketWheelLite`  | `AlpaWheelLight`  |
+| `?style=RocketWheelPro`   | `AlpaWheelPro`    |
+| `?style=RocketWheelMAX`   | `AlpaWheelMax`    |
+
+Нові інтеграції варто робити одразу на нових назвах.
 
 'user_id'
 
@@ -228,5 +244,5 @@ Query-параметри для URL iframe
 ```javascript
 // В консолі браузера (всередині iframe)
 window.currentTheme.abTest
-// Результат: { testId: 'rocket_theme_v1', variantId: 'A' } або null
+// Результат: { testId: 'alpa_theme_v1', variantId: 'A' } або null
 ```
