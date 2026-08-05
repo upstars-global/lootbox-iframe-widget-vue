@@ -135,12 +135,12 @@ Query-параметри для URL iframe
 Проект `rocket` перейменовано на `alpa`, теми `RocketWheel*` — на `AlpaWheel*`. Старі
 посилання продовжують працювати: значення нормалізуються автоматично на старті віджета.
 
-| Старе значення            | Нове значення     |
-| ------------------------- | ----------------- |
-| `?project=rocket`         | `?project=alpa`   |
-| `?style=RocketWheelLite`  | `AlpaWheelLight`  |
-| `?style=RocketWheelPro`   | `AlpaWheelPro`    |
-| `?style=RocketWheelMAX`   | `AlpaWheelMax`    |
+| Старе значення           | Нове значення    |
+| ------------------------ | ---------------- |
+| `?project=rocket`        | `?project=alpa`  |
+| `?style=RocketWheelLite` | `AlpaWheelLight` |
+| `?style=RocketWheelPro`  | `AlpaWheelPro`   |
+| `?style=RocketWheelMAX`  | `AlpaWheelMax`   |
 
 Нові інтеграції варто робити одразу на нових назвах.
 
@@ -230,12 +230,12 @@ Query-параметри для URL iframe
 
 Віджет автоматично відправляє аналітичні події до FullStory (якщо активовано) та Google Analytics 4.
 
-| Подія | Коли відправляється | Ключові параметри |
-|-------|---------------------|-------------------|
-| `Widget Loaded` | Після завантаження всіх ресурсів | `theme`, `project` |
-| `Lootbox View` | При відображенні віджета | `theme`, `project` |
-| `Spin Started` | При отриманні `startSpin` | `theme`, `project` |
-| `Spin Ended` | Після зупинки колеса | `prize`, `sector`, `theme`, `project` |
+| Подія           | Коли відправляється              | Ключові параметри                     |
+| --------------- | -------------------------------- | ------------------------------------- |
+| `Widget Loaded` | Після завантаження всіх ресурсів | `theme`, `project`                    |
+| `Lootbox View`  | При відображенні віджета         | `theme`, `project`                    |
+| `Spin Started`  | При отриманні `startSpin`        | `theme`, `project`                    |
+| `Spin Ended`    | Після зупинки колеса             | `prize`, `sector`, `theme`, `project` |
 
 **A/B параметри:** Якщо активний A/B тест, до кожної події автоматично додаються `ab_test_id` та `ab_variant`.
 
