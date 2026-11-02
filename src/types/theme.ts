@@ -23,6 +23,20 @@ export interface FontSizesConfig {
 }
 
 /**
+ * ThemeSeason — один сезон теми (наприклад, VIP-сезон у AlpaWheelMax).
+ *
+ * Сезон активний від свого `start` (включно) до `start` наступного сезону.
+ * `end` (не включно) потрібен лише там, де після сезону нічого не йде.
+ * Дати — ISO-8601 з явною зоною (`Z` або `+hh:mm`): без зони рядок читається
+ * як місцевий час пристрою, і межа сезону поїде.
+ */
+export interface ThemeSeason {
+  id: string // kebab-case, він же суфікс файлу: wheelpointer--<id>.webp
+  start: string
+  end?: string
+}
+
+/**
  * ThemeConfig — конфігурація теми для lootbox колеса:
  * - name/styleId: ідентифікація теми
  * - project: назва проекту (king, alpa, thor тощо)
@@ -49,4 +63,6 @@ export interface ThemeConfig {
   backgroundColor?: string // Колір фону для теми (опціонально)
   /** Опціональний період сезонного промо (ISO-8601 з offset) */
   promoPeriod?: { start: string; end: string }
+  /** Опціональні сезони: підміна зображень за датою (див. ThemeSeason) */
+  seasons?: ThemeSeason[]
 }

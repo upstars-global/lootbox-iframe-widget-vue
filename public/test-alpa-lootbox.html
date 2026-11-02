@@ -419,10 +419,7 @@
         <div class="control-group">
           <label for="projectSelect">Проект:</label>
           <select id="projectSelect" class="theme-select">
-            <option value="">— Без проекту —</option>
             <option value="alpa">Alpa</option>
-            <option value="king">King</option>
-            <option value="thor">Thor</option>
           </select>
           <small
             style="
@@ -452,12 +449,6 @@
             </option>
             <option value="AlpaWheelMart" data-project="alpa">
               AlpaWheelMart (Alpa)
-            </option>
-            <option value="KingWheel" data-project="king">
-              KingWheel (King)
-            </option>
-            <option value="ThorWheel" data-project="thor">
-              ThorWheel (Thor)
             </option>
           </select>
           <small
@@ -527,6 +518,39 @@
           >
             ℹ️ Параметр зарезервований на майбутнє. Наразі не впливає на
             візуальний вид колеса.
+          </small>
+        </div>
+
+        <div class="control-group">
+          <label for="seasonSelect">VIP сезон (тільки AlpaWheelMax):</label>
+          <select id="seasonSelect">
+            <option value="">авто — за датою (UTC)</option>
+            <option value="none">none — базовий вигляд</option>
+            <option value="milky-way">milky-way</option>
+            <option value="orion-nebula">orion-nebula</option>
+            <option value="eagle-nebula">eagle-nebula</option>
+            <option value="andromeda">andromeda</option>
+          </select>
+          <label for="seasonAt" style="margin-top: 8px"
+            >Дата для перевірки межі сезону (UTC):</label
+          >
+          <input
+            type="text"
+            id="seasonAt"
+            placeholder="2027-01-04T10:01:00Z"
+            autocomplete="off"
+          />
+          <small
+            style="
+              color: #6c757d;
+              font-size: 12px;
+              margin-top: 4px;
+              display: block;
+            "
+          >
+            ℹ️ За сезоном міняються поінтер і кристал у центрі. Список додає
+            <code>season</code> до URL, дата — <code>season_at</code> (діє,
+            коли сезон «авто»). На проді параметри не потрібні.
           </small>
         </div>
 
@@ -622,7 +646,7 @@
       // Початкові параметри (для Alpa проекту)
       let currentParams = {
         project: 'alpa',
-        style: 'AlpaWheelLight',
+        style: 'AlpaWheelMax',
         sectors:
           '500 USD; 5,000 USD; 10 FS; 20 FS; 35 FS; 25 USD; 100 USD; 250 USD',
         sectors_type:
@@ -630,6 +654,8 @@
         active: true,
         fps: false,
         vip_level: 0,
+        season: '',
+        season_at: '',
       }
 
       let widgetReady = false
@@ -713,6 +739,7 @@
         activeCheckbox.disabled = isSpinning
         if (fpsCheckbox) fpsCheckbox.disabled = isSpinning
         if (vipLevelInput) vipLevelInput.disabled = isSpinning
+        updateSeasonControls()
 
         if (sectorsInput) {
           sectorsInput.classList.toggle('spinning', isSpinning)
@@ -760,6 +787,8 @@
           currentParams.vip_level = parseInt(
             url.searchParams.get('vip_level') || '0'
           )
+          currentParams.season = url.searchParams.get('season') || ''
+          currentParams.season_at = url.searchParams.get('season_at') || ''
 
           updateFormFields()
           widgetReady = false
@@ -797,9 +826,21 @@
         if (vipLevelInput) {
           vipLevelInput.value = currentParams.vip_level
         }
+        document.getElementById('seasonSelect').value =
+          currentParams.season || ''
+        document.getElementById('seasonAt').value =
+          currentParams.season_at || ''
+      }
+
+      // Сезони є лише в AlpaWheelMax — на інших темах поля неактивні
+      function updateSeasonControls() {
+        const off = isSpinning || currentParams.style !== 'AlpaWheelMax'
+        document.getElementById('seasonSelect').disabled = off
+        document.getElementById('seasonAt').disabled = off
       }
 
       function updateWidget() {
+        updateSeasonControls()
         const url = new URL('./index.html', window.location.href)
 
         // Додаємо параметри
@@ -836,6 +877,10 @@
         currentParams.vip_level = vipLevelInput
           ? parseInt(vipLevelInput.value) || 0
           : 0
+        currentParams.season = document.getElementById('seasonSelect').value
+        currentParams.season_at = document
+          .getElementById('seasonAt')
+          .value.trim()
 
         updateWidget()
       }
@@ -997,6 +1042,12 @@
       document
         .getElementById('vipLevel')
         .addEventListener('input', updateParams)
+      document
+        .getElementById('seasonSelect')
+        .addEventListener('change', updateParams)
+      document
+        .getElementById('seasonAt')
+        .addEventListener('change', updateParams)
       document
         .getElementById('projectSelect')
         .addEventListener('change', function () {
