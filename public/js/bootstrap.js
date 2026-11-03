@@ -199,6 +199,28 @@
     // console.log('[bootstrap] Всі зображення завантажені')
   }
 
+  /**
+   * Шрифти колеса (Google Fonts, <link id="google-fonts"> в index.html).
+   * Файли шрифтів браузер качає лише тоді, коли текст уже в DOM, тому запускаємо
+   * завантаження заздалегідь — щойно прийде CSS Google. Повертає Promise, який
+   * виконується, коли шрифти завантажились (або не вдалося); null — немає чого чекати.
+   */
+  const THEME_FONTS = ['800 10px Poppins', '900 10px "Roboto Slab"', '700 10px Rubik']
+
+  function loadThemeFonts() {
+    const link = document.getElementById('google-fonts')
+    if (!link || !document.fonts) return null
+    const load = () => Promise.all(THEME_FONTS.map(f => document.fonts.load(f))).catch(() => {})
+    if (link.media === 'all') return load()
+    return new Promise(resolve => link.addEventListener('load', () => resolve(load()), { once: true }))
+  }
+
+  /** Чи вже прийшов CSS Google Fonts (index.html перемикає media на all після load) */
+  function isFontsCssLoaded() {
+    const link = document.getElementById('google-fonts')
+    return !!link && link.media === 'all'
+  }
+
   /** Ключ зображення без розширення з URL (basename → ключ для мапи images) */
   function imageKeyFromUrl(url) {
     const base = (url.split('/').pop() || '').trim()
@@ -553,6 +575,8 @@
 
   // === ГОЛОВНА ЛОГІКА ===
 
+  const bootStart = performance.now()
+  const fontsReady = loadThemeFonts()
   const urlParams = normalizeLegacyParams(readUrlParams())
   const themesConfig = getThemesConfig()
 
@@ -602,6 +626,12 @@
   await waitForAllImages(criticalImages, IMAGE_LOAD_TIMEOUT_MS)
   if (!(await cssReady)) {
     throw new Error(`не завантажився themes/${selectedTheme.name}/theme.css`)
+  }
+  // Шрифти: якщо CSS Google вже прийшов — чекаємо файли шрифтів у межах того ж ліміту
+  // від старту; якщо ні — не чекаємо (старт не залежить від швидкості Google)
+  if (fontsReady && isFontsCssLoaded()) {
+    const timeLeft = Math.max(0, IMAGE_LOAD_TIMEOUT_MS - (performance.now() - bootStart))
+    await Promise.race([fontsReady, new Promise(r => setTimeout(r, timeLeft))])
   }
 
   const imageMap = applySeasonToImageMap(buildImageMap(themeImageUrls, isPromo), seasonId)
