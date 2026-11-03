@@ -26,6 +26,12 @@
         }
         // Мають збігатися з isProjectDefault: true у config.ts відповідних тем
         var PROJECT_DEFAULTS = { alpa: 'AlpaWheelLight', king: 'KingWheel', thor: 'ThorWheel' }
+        // Теми кожного проекту — мають збігатися з project у config.ts тем
+        var PROJECT_THEMES = {
+          alpa: ['AlpaWheelLight', 'AlpaWheelPro', 'AlpaWheelMax', 'AlpaWheelMart'],
+          king: ['KingWheel'],
+          thor: ['ThorWheel'],
+        }
         var FALLBACK_THEME = 'AlpaWheelLight'
 
         var params = new URLSearchParams(location.search)
@@ -35,7 +41,20 @@
         style = (style && LEGACY_THEMES[style]) || style
         project = (project && LEGACY_PROJECTS[project]) || project
 
-        var theme = style || (project && PROJECT_DEFAULTS[project]) || FALLBACK_THEME
+        // style беремо, лише якщо тема відома і належить переданому проекту — за тим самим
+        // правилом тему вибирає bootstrap.js, тож прелоадер і фон не розходяться з колесом
+        var projectThemes = project && PROJECT_THEMES[project]
+        var styleKnown = false
+        for (var p in PROJECT_THEMES) {
+          if (PROJECT_THEMES[p].indexOf(style) !== -1) styleKnown = true
+        }
+        var theme = projectThemes
+          ? projectThemes.indexOf(style) !== -1
+            ? style
+            : PROJECT_DEFAULTS[project]
+          : styleKnown
+            ? style
+            : FALLBACK_THEME
 
         window.__lootboxBoot = {
           style: style,
