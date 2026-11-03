@@ -329,10 +329,17 @@
           document.documentElement.removeAttribute('data-theme-ready')
         }
 
-        // Listen to all possible reload events
+        // Listen to all possible reload events (no 'unload': it can keep the host page out of bfcache)
         window.addEventListener('beforeunload', hideContent, { capture: true })
         window.addEventListener('pagehide', hideContent, { capture: true })
-        window.addEventListener('unload', hideContent, { capture: true })
+
+        // Restored from bfcache ("back"): pagehide removed the attribute — put it back
+        // if the theme had been ready, otherwise #app stays hidden with no preloader
+        window.addEventListener('pageshow', function (e) {
+          if (e.persisted && window.currentTheme) {
+            document.documentElement.setAttribute('data-theme-ready', '1')
+          }
+        })
 
         // 3. AUTOMATIC hiding of broken images
         document.addEventListener(
