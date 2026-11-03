@@ -140,6 +140,10 @@ export function useWheelAnimation(
   // false — winnerSection прийшов після зупинки або до першого спіну: він для наступного спіну.
   let winnerShown = false
 
+  // Таймери win-стану попереднього спіну (spinEnd, fade-out, приховування, скидання);
+  // новий спін їх скасовує, щоб вони не спрацювали посеред нього
+  const winTimers: ReturnType<typeof setTimeout>[] = []
+
   /**
    * Дії після зупинки колеса: анімація виграшу + виклик callback'ів
    *
@@ -170,20 +174,26 @@ export function useWheelAnimation(
 
     // Відправляємо spinEnd за 3 секунди до приховування анімації
     const spinEndDelay = timeToPopup.value - 3000
-    setTimeout(() => {
-      onSpinEnd?.(prize)
-    }, spinEndDelay)
+    winTimers.push(
+      setTimeout(() => {
+        onSpinEnd?.(prize)
+      }, spinEndDelay)
+    )
 
     // Плавне зникнення анімації за 500мс перед приховуванням
     const fadeOutDelay = timeToPopup.value - 500
-    setTimeout(() => {
-      winAnimationOpacity.value = 0
-    }, fadeOutDelay)
+    winTimers.push(
+      setTimeout(() => {
+        winAnimationOpacity.value = 0
+      }, fadeOutDelay)
+    )
 
     // Приховуємо візуальну анімацію виграшу після timeToPopup
-    setTimeout(() => {
-      showWinAnimation.value = false
-    }, timeToPopup.value)
+    winTimers.push(
+      setTimeout(() => {
+        showWinAnimation.value = false
+      }, timeToPopup.value)
+    )
 
     // Загальна затримка = час показу анімації + час утримання позиції
     const totalDelay = timeToPopup.value + RESET_DELAY
@@ -191,10 +201,12 @@ export function useWheelAnimation(
     // Скидаємо всі стани після повної затримки
     // winAnimationStarted залишається true протягом всього часу, щоб запобігти
     // застосуванню класу waiting-spin-animation, який скидає позицію колеса
-    setTimeout(() => {
-      winAnimationStarted.value = false
-      maskOpacity.value = 0
-    }, totalDelay)
+    winTimers.push(
+      setTimeout(() => {
+        winAnimationStarted.value = false
+        maskOpacity.value = 0
+      }, totalDelay)
+    )
   }
 
   /**
@@ -208,6 +220,9 @@ export function useWheelAnimation(
    * 5. Запуск покадрової анімації
    */
   const spinTo = () => {
+    winTimers.forEach(id => clearTimeout(id))
+    winTimers.length = 0
+
     // Скидаємо стани попередньої анімації виграшу
     // Це важливо, щоб клас winSector прибрався з попереднього виграшного сектора
     winAnimationStarted.value = false
