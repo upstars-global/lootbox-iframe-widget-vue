@@ -52,9 +52,12 @@
         document.head.appendChild(link)
       })()
     </script>
+    <!-- Неблокуюче підключення: media="print" не затримує скрипти нижче, після завантаження → all -->
     <link
       href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Roboto+Slab:wght@900&family=Rubik:wght@700&display=swap"
       rel="stylesheet"
+      media="print"
+      onload="this.media='all'"
     />
     <style>
       *,
