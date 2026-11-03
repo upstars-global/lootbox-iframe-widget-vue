@@ -136,6 +136,10 @@ export function useWheelAnimation(
   // Callbacks для подій (встановлюються ззовні)
   let onSpinEnd: WheelAnimationCallbacks['onSpinEnd'] = undefined
 
+  // true — winnerSection уже показаний (колесо на ньому зупинилось), наступний спін його скидає.
+  // false — winnerSection прийшов після зупинки або до першого спіну: він для наступного спіну.
+  let winnerShown = false
+
   /**
    * Дії після зупинки колеса: анімація виграшу + виклик callback'ів
    *
@@ -153,6 +157,7 @@ export function useWheelAnimation(
     showWinAnimation.value = true
     winAnimationOpacity.value = 1
     running.value = false
+    winnerShown = true
 
     // Використовуємо виграшний сектор з gameState
     // Даних сектора може не бути (призів менше 8 або список порожній) —
@@ -208,7 +213,11 @@ export function useWheelAnimation(
     winAnimationStarted.value = false
     showWinAnimation.value = false
     winAnimationOpacity.value = 1
-    winnerSection.value = null // Скидаємо виграшний сектор перед новим спіном
+    // Скидаємо виграшний сектор попереднього спіну; сектор, що прийшов до startSpin, лишаємо
+    if (winnerShown) {
+      winnerSection.value = null
+      winnerShown = false
+    }
 
     // Генеруємо випадковий кут для різноманітності анімації
     // randomAngle.value = Math.round(Math.random() * RANDOM_ANGLE_RANGE - RANDOM_ANGLE_OFFSET)
@@ -235,9 +244,19 @@ export function useWheelAnimation(
     if (!running.value) spinTo()
   }
 
+  /**
+   * Публічний метод: встановлює виграшний сектор (уже провалідований).
+   * Сектор, що прийшов до startSpin, не губиться — його використає наступний спін.
+   */
+  const setWinner = (sector: number) => {
+    winnerSection.value = sector
+    winnerShown = false
+  }
+
   return {
     spinTo,
     runWheel,
+    setWinner,
     setSpinEndCallback: (callback: (prize: string) => void) => {
       onSpinEnd = callback
     },

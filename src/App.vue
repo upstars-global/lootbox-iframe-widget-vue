@@ -379,7 +379,7 @@ const { postToParent } = usePostMessageBus<LootboxMessages>(
     // Слухаємо: команда відправки виграшного сектора
     winSector: sector => {
       const validSector = validateWinnerSection(sector)
-      if (validSector !== null) winnerSection.value = validSector
+      if (validSector !== null) setWinner(validSector)
     },
   },
   {
@@ -388,7 +388,7 @@ const { postToParent } = usePostMessageBus<LootboxMessages>(
 )
 
 // Анімація колеса з двофазною логікою
-const { runWheel, setSpinEndCallback } = useWheelAnimation(
+const { runWheel, setWinner, setSpinEndCallback } = useWheelAnimation(
   {
     running,
     winAnimationStarted,
