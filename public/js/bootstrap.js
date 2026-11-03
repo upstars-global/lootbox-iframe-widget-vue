@@ -23,6 +23,10 @@
     // Будь-яке інше значення → null → працює дата з theme.promoPeriod.
     const promoRaw = searchParams.get('promo')
     const promo = promoRaw === 'force' || promoRaw === 'disable' ? promoRaw : null
+    // ?season=<id>|none — примусовий сезон теми (QA або батьківський сайт),
+    // ?season_at=<ISO UTC> — підставити «зараз» для перевірки меж сезонів (QA).
+    // Діють лише на теми з seasons у config.ts, див. resolveSeason().
+    const season = (searchParams.get('season') || '').trim().toLowerCase() || null
     return {
       themeName: searchParams.get('style') || null,
       project: searchParams.get('project') || null,
@@ -32,6 +36,8 @@
       userId: searchParams.get('user_id') || null,
       ab: searchParams.get('ab') === 'true',
       promo, // 'force' | 'disable' | null — override промо, див. isPromoActive()
+      season, // id сезону | 'none' | null — override сезону, див. resolveSeason()
+      seasonAt: searchParams.get('season_at') || null,
     }
   }
 
@@ -321,6 +327,116 @@
     return map
   }
 
+  // ──────────────────────────────────────────────────────────────────────────
+  // Сезони теми (AlpaWheelMax — VIP-сезони)
+  //
+  // Тема може оголосити в config.ts список seasons: [{ id, start, end? }].
+  // Сезонний файл лежить поруч із базовим: images/<ключ>--<id>.<ext>
+  // (wheelpointer--milky-way.webp). В активному сезоні він стає під ключ
+  // <ключ>, тож Vue без жодних умов бере themeImages.wheelpointer. Немає
+  // файлу для сезону — лишається базовий.
+  //
+  // Окремо від промо KingWheel навмисно: промо — це вмикач «є / нема» з
+  // власними винятками, а сезонів N, і активний рівно один. Теми без seasons
+  // проходять крізь цей блок без змін (той самий масив зображень).
+  // ──────────────────────────────────────────────────────────────────────────
+
+  const SEASON_SEPARATOR = '--'
+
+  function getSeasons(theme) {
+    return theme && Array.isArray(theme.seasons) ? theme.seasons : []
+  }
+
+  /**
+   * Активний сезон теми: id або null (базові зображення).
+   *
+   * Пріоритети:
+   *   1. ?season=none → null
+   *   2. ?season=<id> → цей сезон (невідомий id → console.warn і далі за датою)
+   *   3. дата: сезон з найпізнішим start <= зараз; діє до start наступного
+   *      сезону або до власного end (не включно)
+   *
+   * Порівнюються абсолютні моменти часу: start/end записані в UTC ("…Z"),
+   * Date.now() теж не залежить від часового поясу пристрою — сезон
+   * перемикається в одну мить для всіх. Обчислюється один раз при завантаженні.
+   */
+  function resolveSeason(theme, params) {
+    const seasons = getSeasons(theme)
+    if (!seasons.length) return null
+    if (params.season === 'none') return null
+    if (params.season) {
+      if (seasons.some(s => s.id === params.season)) return params.season
+      console.warn(
+        `[Lootbox] Unknown season "${params.season}" for theme "${theme.name}". Using the date.`
+      )
+    }
+
+    let now = Date.now()
+    if (params.seasonAt) {
+      const forcedNow = Date.parse(params.seasonAt)
+      if (Number.isNaN(forcedNow)) {
+        console.warn(`[Lootbox] Invalid season_at "${params.seasonAt}". Using the device clock.`)
+      } else {
+        now = forcedNow
+      }
+    }
+
+    let current = null
+    for (const s of seasons) {
+      const start = Date.parse(s.start)
+      if (Number.isNaN(start) || start > now) continue
+      if (!current || start > current.start) current = { id: s.id, start, end: s.end }
+    }
+    if (!current) return null
+    if (current.end) {
+      const end = Date.parse(current.end)
+      if (!Number.isNaN(end) && now >= end) return null
+    }
+    return current.id
+  }
+
+  /** 'wheelpointer--milky-way' → { base: 'wheelpointer', id: 'milky-way' } | null */
+  function splitSeasonKey(key, seasons) {
+    const i = key.lastIndexOf(SEASON_SEPARATOR)
+    if (i <= 0) return null
+    const id = key.slice(i + SEASON_SEPARATOR.length)
+    return seasons.some(s => s.id === id) ? { base: key.slice(0, i), id } : null
+  }
+
+  /**
+   * Лишити зображення активного сезону: файли інших сезонів викидаємо, а
+   * базовий файл, який сезон перекриває, — теж (щоб не качати пару).
+   */
+  function filterSeasonImages(imageUrls, theme, seasonId) {
+    const seasons = getSeasons(theme)
+    if (!seasons.length) return imageUrls
+    const overridden = new Set()
+    const kept = []
+    for (const url of imageUrls || []) {
+      const variant = splitSeasonKey(imageKeyFromUrl(url), seasons)
+      if (!variant) {
+        kept.push(url)
+      } else if (variant.id === seasonId) {
+        kept.push(url)
+        overridden.add(variant.base)
+      }
+    }
+    return kept.filter(url => !overridden.has(imageKeyFromUrl(url)))
+  }
+
+  /** Перекласти сезонні ключі мапи на базові: wheelpointer--<id> → wheelpointer */
+  function applySeasonToImageMap(map, seasonId) {
+    if (!seasonId) return map
+    const suffix = SEASON_SEPARATOR + seasonId
+    for (const key of Object.keys(map)) {
+      if (key.endsWith(suffix)) {
+        map[key.slice(0, -suffix.length)] = map[key]
+        delete map[key]
+      }
+    }
+    return map
+  }
+
   // === A/B ТЕСТУВАННЯ ===
 
   /** Детерміністичний хеш рядка (FNV-1a) → число */
@@ -398,7 +514,7 @@
   }
 
   /** Експорт рантайму теми для Vue */
-  function exposeThemeRuntime(theme, params, imagesMap, abResult, isPromo) {
+  function exposeThemeRuntime(theme, params, imagesMap, abResult, isPromo, seasonId) {
     window.currentTheme = {
       styleId: theme.styleId,
       name: theme.name,
@@ -406,6 +522,7 @@
       isProjectDefault: theme.isProjectDefault || false,
       backgroundColor: theme.backgroundColor || null,
       isPromoActive: !!isPromo,
+      season: seasonId || null,
       sectors: params.sectors,
       sectorsType: params.sectorsType,
       isActive: params.active,
@@ -462,12 +579,23 @@
     document.documentElement.removeAttribute('data-king-promo')
   }
 
+  // Сезон теми (AlpaWheelMax — VIP-сезони): теж один раз при ініціалізації.
+  // Далі працюємо зі списком зображень, з якого прибрано чужі сезони та
+  // перекриті базові файли; для тем без seasons це той самий масив.
+  const seasonId = resolveSeason(selectedTheme, urlParams)
+  if (seasonId) {
+    document.documentElement.setAttribute('data-season', seasonId)
+  } else {
+    document.documentElement.removeAttribute('data-season')
+  }
+  const themeImageUrls = filterSeasonImages(selectedTheme.images, selectedTheme, seasonId)
+
   const cssReady = loadThemeStylesheet(selectedTheme)
   // Прелоад без winanimation і з урахуванням промо (див. pickPreloadImages)
-  const criticalImages = pickPreloadImages(selectedTheme.images, isPromo)
+  const criticalImages = pickPreloadImages(themeImageUrls, isPromo)
   await waitForAllImages(criticalImages, IMAGE_LOAD_TIMEOUT_MS)
   await cssReady
 
-  const imageMap = buildImageMap(selectedTheme.images, isPromo)
-  exposeThemeRuntime(selectedTheme, urlParams, imageMap, abResult, isPromo) // window.currentTheme = { ... }
+  const imageMap = applySeasonToImageMap(buildImageMap(themeImageUrls, isPromo), seasonId)
+  exposeThemeRuntime(selectedTheme, urlParams, imageMap, abResult, isPromo, seasonId) // window.currentTheme = { ... }
 })()

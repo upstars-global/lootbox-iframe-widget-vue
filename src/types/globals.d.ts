@@ -32,6 +32,7 @@ declare global {
           winSection: number
         }
         promoPeriod?: { start: string; end: string }
+        seasons?: Array<{ id: string; start: string; end?: string }>
         images: string[]
       }>
       abTests?: Record<
@@ -64,6 +65,7 @@ declare global {
           isActive: boolean
           userId: string | null
           isPromoActive: boolean
+          season: string | null
           images: Record<string, string>
           timings: Record<string, number>
           logic: Record<string, unknown>

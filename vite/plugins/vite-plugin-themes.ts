@@ -59,6 +59,7 @@ export type ThemeConfig = {
   timings: { spinDuration: number; timeToPopup: number; winAnimationOffset: number }
   logic: { numberOfSpins: number; winSection: number }
   promoPeriod?: { start: string; end: string }
+  seasons?: Array<{ id: string; start: string; end?: string }>
   fontSizes?: {
     sum: {
       short: string
@@ -128,6 +129,11 @@ function walkFiles(dir: string, root: string, acc: string[] = []): string[] {
   return acc
 }
 
+const SEASON_ID_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
+const SEASON_UTC_RE = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/
+/** Роздільник сезонного файлу: <ключ>--<id сезону>.<ext> (той самий у bootstrap.js) */
+const SEASON_SEPARATOR = '--'
+
 /** Легка runtime‑перевірка форми конфігу (страховка від «битих» даних) */
 function assertThemeConfig(cfg: any, themeId: string): asserts cfg is ThemeConfig {
   const fail = (m: string) => {
@@ -155,6 +161,71 @@ function assertThemeConfig(cfg: any, themeId: string): asserts cfg is ThemeConfi
     const endStr = pp.end as string
     if (Number.isNaN(Date.parse(startStr))) fail('promoPeriod.start must be a valid date string')
     if (Number.isNaN(Date.parse(endStr))) fail('promoPeriod.end must be a valid date string')
+  }
+  if (cfg.seasons !== undefined) {
+    if (!Array.isArray(cfg.seasons) || cfg.seasons.length === 0) {
+      fail('"seasons" must be a non-empty array when set')
+    }
+    const seasons = cfg.seasons as Array<{ id?: unknown; start?: unknown; end?: unknown }>
+    const seenIds = new Set<string>()
+    // Тільки UTC ("…Z"): рядок без зони Date.parse читає як місцевий час пристрою,
+    // і межа сезону зсунеться на зміщення поясу.
+    const parseUtc = (value: unknown, field: string): number => {
+      if (typeof value !== 'string' || !SEASON_UTC_RE.test(value)) {
+        fail(`${field} must be a UTC ISO-8601 string like "2027-01-04T10:01:00Z"`)
+      }
+      const ms = Date.parse(value as string)
+      if (Number.isNaN(ms)) fail(`${field} must be a valid date`)
+      return ms
+    }
+    let prevStart = -Infinity
+    seasons.forEach((s, i) => {
+      const at = `seasons[${i}]`
+      if (!s || typeof s !== 'object') fail(`${at} must be an object`)
+      if (typeof s.id !== 'string' || !SEASON_ID_RE.test(s.id) || s.id === 'none') {
+        fail(`${at}.id must be kebab-case (a-z, 0-9, "-") and not "none"`)
+      }
+      if (seenIds.has(s.id as string)) fail(`${at}.id "${s.id}" is duplicated`)
+      seenIds.add(s.id as string)
+      const start = parseUtc(s.start, `${at}.start`)
+      if (start <= prevStart) fail(`${at}.start must be later than the previous season start`)
+      prevStart = start
+      if (s.end !== undefined) {
+        const end = parseUtc(s.end, `${at}.end`)
+        if (end <= start) fail(`${at}.end must be later than ${at}.start`)
+        const next = seasons[i + 1]
+        if (next && typeof next.start === 'string' && end > Date.parse(next.start)) {
+          fail(`${at}.end must not be later than the next season start`)
+        }
+      }
+    })
+  }
+}
+
+/**
+ * Перевірка сезонних зображень теми: кожен файл "<ключ>--<id>" має посилатися
+ * на оголошений сезон і на наявне базове зображення. Без неї одруківка в імені
+ * (wheelpointer--milkyway.webp) мовчки показала б базову картинку.
+ */
+function assertSeasonAssets(themeId: string, cfg: ThemeConfig, rels: string[]): void {
+  if (!cfg.seasons) return
+  const ids = new Set(cfg.seasons.map(s => s.id))
+  const keyOf = (rel: string) => (rel.split('/').pop() || '').replace(/\.[^.]+$/, '')
+  const keys = rels.map(keyOf)
+  const baseKeys = new Set(keys.filter(k => !k.includes(SEASON_SEPARATOR)))
+  for (const key of keys) {
+    const i = key.lastIndexOf(SEASON_SEPARATOR)
+    if (i < 0) continue
+    const base = key.slice(0, i)
+    const id = key.slice(i + SEASON_SEPARATOR.length)
+    if (!ids.has(id)) {
+      throw new Error(
+        `[themes] ${themeId}/images: "${key}" — season "${id}" is not declared in config.seasons`
+      )
+    }
+    if (!baseKeys.has(base)) {
+      throw new Error(`[themes] ${themeId}/images: "${key}" — no base image "${base}" to override`)
+    }
   }
 }
 
@@ -281,7 +352,8 @@ async function handleRegistry(res: any): Promise<void> {
   const themes: RegistryTheme[] = []
   for (const id of ids) {
     const cfg = await readThemeConfig(id)
-    const { urls } = collectImages(id)
+    const { rels, urls } = collectImages(id)
+    assertSeasonAssets(id, cfg, rels)
     themes.push({ id, ...cfg, images: urls })
   }
   themes.sort((a, b) => a.styleId - b.styleId)
@@ -407,7 +479,8 @@ export function themesPlugin(): Plugin {
 
         // 3) Конфіг (TS) + images → у реєстр
         const cfg = await readThemeConfig(id)
-        const { urls } = collectImages(id)
+        const { rels: imageRels, urls } = collectImages(id)
+        assertSeasonAssets(id, cfg, imageRels)
         reg.themes.push({ id, ...cfg, images: urls })
       }
 
