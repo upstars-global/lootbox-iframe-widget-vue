@@ -347,14 +347,16 @@ const getFontSize = (text: string | undefined, type: 'sum' | 'currency' | 'bonus
 
 /**
  * Валідація переможного сектора від бекенда
- * Захист від некорректних даних та fallback на сектор 0
+ * Число-рядок ("5") приводиться до числа. Невірне значення → null:
+ * виграшний сектор не змінюється, колесо чекає на коректний номер.
  */
-const validateWinnerSection = (value: number): number => {
-  if (value >= 0 && value <= 7 && Number.isInteger(value)) {
-    return value
+const validateWinnerSection = (value: unknown): number | null => {
+  const sector = typeof value === 'string' && value.trim() !== '' ? Number(value) : value
+  if (typeof sector === 'number' && Number.isInteger(sector) && sector >= 0 && sector <= 7) {
+    return sector
   }
   console.error('Невірний winnerSection від бекенда:', value)
-  return 0
+  return null
 }
 
 // Комунікація з батьківським вікном через postMessage
@@ -369,7 +371,8 @@ const { postToParent } = usePostMessageBus<LootboxMessages>(
 
     // Слухаємо: команда відправки виграшного сектора
     winSector: sector => {
-      winnerSection.value = validateWinnerSection(sector)
+      const validSector = validateWinnerSection(sector)
+      if (validSector !== null) winnerSection.value = validSector
     },
   },
   {
