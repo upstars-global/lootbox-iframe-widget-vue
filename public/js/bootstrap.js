@@ -145,14 +145,16 @@
     document.documentElement.setAttribute('data-theme', theme.name)
   }
 
-  /** Завантаження CSS теми */
+  /** Завантаження CSS теми: Promise → true (завантажився) | false (помилка завантаження) */
   function loadThemeStylesheet(theme) {
     const href = `themes/${theme.name}/theme.css`
     const linkEl = document.createElement('link')
     linkEl.rel = 'stylesheet'
     linkEl.href = href
-    // Promise який чекає завантаження CSS файлу
-    const ready = new Promise(resolve => linkEl.addEventListener('load', resolve, { once: true }))
+    const ready = new Promise(resolve => {
+      linkEl.addEventListener('load', () => resolve(true), { once: true })
+      linkEl.addEventListener('error', () => resolve(false), { once: true })
+    })
     document.head.appendChild(linkEl)
     return ready
   }
@@ -566,6 +568,10 @@
     }
   }
 
+  if (!selectedTheme) {
+    throw new Error('тему не знайдено (немає themes/themes-config.js або тем у ньому)')
+  }
+
   setThemeDataAttribute(selectedTheme)
 
   // Промо-режим (KingWheel): обчислюємо ОДИН раз при ініціалізації.
@@ -594,8 +600,15 @@
   // Прелоад без winanimation і з урахуванням промо (див. pickPreloadImages)
   const criticalImages = pickPreloadImages(themeImageUrls, isPromo)
   await waitForAllImages(criticalImages, IMAGE_LOAD_TIMEOUT_MS)
-  await cssReady
+  if (!(await cssReady)) {
+    throw new Error(`не завантажився themes/${selectedTheme.name}/theme.css`)
+  }
 
   const imageMap = applySeasonToImageMap(buildImageMap(themeImageUrls, isPromo), seasonId)
   exposeThemeRuntime(selectedTheme, urlParams, imageMap, abResult, isPromo, seasonId) // window.currentTheme = { ... }
-})()
+})().catch(function (error) {
+  // Старт не вдався: тему не показуємо, прелоадер лишається, main.ts не монтує app
+  // і «lootboxReady» не відправляється (див. main.ts → waitThemeReady)
+  console.error('[bootstrap] Тема не завантажилась:', error)
+  document.documentElement.setAttribute('data-theme-failed', '1')
+})

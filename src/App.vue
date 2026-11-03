@@ -487,6 +487,9 @@ onMounted(async () => {
   // Fallback таймаут 15 секунд — на випадок якщо якесь зображення зламане
   await waitForImages('.loot-box-spin-wheel-container img', 15000)
 
+  // Без теми колесо порожнє — не ховаємо прелоадер і не повідомляємо сайт
+  if (!window.currentTheme) return
+
   // Тільки ПІСЛЯ завантаження — ховаємо прелоадер
   hidePreloader()
 
