@@ -155,9 +155,13 @@ export function useWheelAnimation(
     running.value = false
 
     // Використовуємо виграшний сектор з gameState
+    // Даних сектора може не бути (призів менше 8 або список порожній) —
+    // тоді приз порожній, але таймери і spinEnd ставляться завжди
     const winningSector = winnerSection.value || 0
     const winningSectorData = sectionsData[winningSector]
-    const prize = `${winningSectorData.prizeText} ${winningSectorData.prizeCurrency}`
+    const prize = winningSectorData
+      ? `${winningSectorData.prizeText} ${winningSectorData.prizeCurrency}`.trim()
+      : ''
 
     // Відправляємо spinEnd за 3 секунди до приховування анімації
     const spinEndDelay = timeToPopup.value - 3000
