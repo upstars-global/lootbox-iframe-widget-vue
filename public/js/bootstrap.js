@@ -79,7 +79,7 @@
    * 3. ?project= + ?style= → валідуємо належність теми до проекту
    *    - якщо тема належить проекту → використовуємо її
    *    - якщо ні → ігноруємо style, використовуємо дефолт проекту + console.warn
-   * 4. Fallback → перша тема
+   * 4. Fallback → тема з index.html (window.__lootboxBoot.theme), інакше перша
    */
   function selectTheme(themesConfig, params) {
     const themes = Array.isArray(themesConfig.themes) ? themesConfig.themes : []
@@ -136,8 +136,20 @@
       }
     }
 
-    // Сценарій 4: Fallback — перша тема
-    return themes[0] || null
+    // Сценарій 4: Fallback — тема, яку вже вибрав index.html (від неї прелоадер і фон),
+    // а не перша за сортуванням styleId; перша — лише якщо такої теми немає
+    const bootTheme = window.__lootboxBoot && window.__lootboxBoot.theme
+    const fallback = themes.find(t => t.name === bootTheme) || themes[0] || null
+    if (fallback && params.project && !themes.some(t => t.project === params.project)) {
+      console.error(
+        `[Lootbox] Unknown project "${params.project}". Using fallback theme "${fallback.name}".`
+      )
+    } else if (fallback && params.themeName && !params.project) {
+      console.warn(
+        `[Lootbox] Theme "${params.themeName}" not found. Using fallback theme "${fallback.name}".`
+      )
+    }
+    return fallback
   }
 
   /** Встановлення data-theme атрибута */
