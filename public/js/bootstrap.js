@@ -485,18 +485,32 @@
     return hash
   }
 
+  /** UUID v4: crypto.randomUUID є лише в secure context (https, localhost) — інакше з getRandomValues */
+  function uuid() {
+    if (typeof crypto.randomUUID === 'function') return crypto.randomUUID()
+    var b = crypto.getRandomValues(new Uint8Array(16))
+    b[6] = (b[6] & 0x0f) | 0x40
+    b[8] = (b[8] & 0x3f) | 0x80
+    var h = Array.prototype.map
+      .call(b, function (x) {
+        return (x + 256).toString(16).slice(1)
+      })
+      .join('')
+    return [h.slice(0, 8), h.slice(8, 12), h.slice(12, 16), h.slice(16, 20), h.slice(20)].join('-')
+  }
+
   /** Отримати або створити стабільний userId для A/B розподілу */
   function getOrCreateABUserId() {
     var key = 'ab_user_id'
     try {
       var id = localStorage.getItem(key)
       if (!id) {
-        id = crypto.randomUUID()
+        id = uuid()
         localStorage.setItem(key, id)
       }
       return id
     } catch {
-      return crypto.randomUUID()
+      return uuid()
     }
   }
 
@@ -598,7 +612,13 @@
   // та НЕ вказано конкретну тему (?style=)
   var abResult = null
   if (urlParams.project && urlParams.ab && !urlParams.themeName) {
-    abResult = resolveABVariant(themesConfig, urlParams.project, urlParams.userId)
+    try {
+      abResult = resolveABVariant(themesConfig, urlParams.project, urlParams.userId)
+    } catch (error) {
+      // Збій A/B не має ламати старт: показуємо тему без тесту
+      console.error('[Lootbox A/B] Не вдалося визначити варіант:', error)
+      abResult = null
+    }
     if (abResult) {
       selectedTheme = abResult.theme
     }

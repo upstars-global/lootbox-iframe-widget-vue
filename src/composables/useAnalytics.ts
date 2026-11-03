@@ -26,6 +26,16 @@ const GA_CLIENT_ID_KEY = 'ga_client_id'
 // Ключ для збереження session_id в sessionStorage
 const GA_SESSION_ID_KEY = 'analytics_session_id'
 
+/** UUID v4: crypto.randomUUID є лише в secure context (https, localhost) — інакше з getRandomValues */
+const uuid = (): string => {
+  if (typeof crypto.randomUUID === 'function') return crypto.randomUUID()
+  const b = crypto.getRandomValues(new Uint8Array(16))
+  b[6] = (b[6]! & 0x0f) | 0x40
+  b[8] = (b[8]! & 0x3f) | 0x80
+  const h = Array.from(b, x => x.toString(16).padStart(2, '0')).join('')
+  return `${h.slice(0, 8)}-${h.slice(8, 12)}-${h.slice(12, 16)}-${h.slice(16, 20)}-${h.slice(20)}`
+}
+
 /**
  * Генерує або отримує збережений client_id для GA4
  */
@@ -33,13 +43,13 @@ const getClientId = (): string => {
   try {
     let clientId = localStorage.getItem(GA_CLIENT_ID_KEY)
     if (!clientId) {
-      clientId = crypto.randomUUID()
+      clientId = uuid()
       localStorage.setItem(GA_CLIENT_ID_KEY, clientId)
     }
     return clientId
   } catch {
     // Fallback для private mode / iframe without storage
-    return crypto.randomUUID()
+    return uuid()
   }
 }
 
@@ -51,13 +61,13 @@ const getSessionId = (): string => {
   try {
     let sessionId = sessionStorage.getItem(GA_SESSION_ID_KEY)
     if (!sessionId) {
-      sessionId = crypto.randomUUID()
+      sessionId = uuid()
       sessionStorage.setItem(GA_SESSION_ID_KEY, sessionId)
     }
     return sessionId
   } catch {
     // Fallback для private mode / iframe without storage
-    return crypto.randomUUID()
+    return uuid()
   }
 }
 
