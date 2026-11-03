@@ -71,6 +71,7 @@ export type ThemeConfig = {
     currency: { short: string; long: string }
     bonus: { default: string; short: string; medium: string; long: string }
   }
+  promoFontSizes?: ThemeConfig['fontSizes']
 }
 
 /** Розширена тема у реєстрі (додаємо id та список явних URL зображень) */

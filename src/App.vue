@@ -61,6 +61,17 @@
                 {{ section.type }}
               </textPath>
             </text>
+            <!-- Тінь суми: прихована за замовчуванням, тема вмикає та зсуває її у своїх стилях -->
+            <text
+              class="loot-box-sum-shadow"
+              :x="sectorTextLayout.sumX"
+              :y="sectorTextLayout.sumY"
+              :font-size="getFontSize(section.prizeText, 'sum')"
+              text-anchor="end"
+              aria-hidden="true"
+            >
+              {{ section.prizeText }}
+            </text>
             <text
               class="loot-box-sum"
               :x="sectorTextLayout.sumX"
@@ -109,13 +120,13 @@
       alt=""
     />
     <!--
-      Літнє промо KingWheel: анімація овечки поверх центру колеса лише під час win-стану.
-      Прив'язано до showWinAnimation, тому зникає одночасно з win-frame/winanimation
-      (≈ timeToPopup = 9с, ~4 цикли SVG-анімації 2.15с — без правок самого SVG).
+      Промо KingWheel: анімація поверх центру колеса лише під час win-стану — якщо в темі є
+      файл promo-center-anim. Прив'язано до showWinAnimation, тому зникає одночасно з
+      win-frame/winanimation (≈ timeToPopup = 9с).
       isPromoActive виставляється у bootstrap.js (window.currentTheme.isPromoActive).
     -->
     <img
-      v-if="isPromoActive && showWinAnimation"
+      v-if="isPromoActive && showWinAnimation && themeImages['promo-center-anim']"
       :src="themeImages['promo-center-anim']"
       class="wheel-center-sheep"
       alt=""
@@ -510,4 +521,9 @@ onUnmounted(() => {
   - index.html (базові)
   - bootstrap.js (завантаження) → themes/{theme}/theme.css
 */
+
+/* Тінь суми є лише в темах, які її вмикають (напр. промо KingWheel) */
+.loot-box-sum-shadow {
+  display: none;
+}
 </style>

@@ -199,16 +199,18 @@
   }
 
   // ──────────────────────────────────────────────────────────────────────────
-  // Сезонне промо (KingWheel — "Літнє промо")
+  // Сезонне промо (KingWheel)
   //
   // Ідея: одна тема (KingWheel) має два візуальні стани — класика та промо.
-  // У period (theme.promoPeriod) на колесі автоматично з'являється літній
-  // дизайн + анімація овечки в момент виграшу. Поза періодом — класика.
+  // У period (theme.promoPeriod) на колесі автоматично з'являється промо-
+  // дизайн (і, якщо є promo-center-anim, анімація поверх центру в момент
+  // виграшу). Поза періодом — класика.
   // Жодних змін на батьківському сайті чи редеплою не треба: при кожному
   // завантаженні iframe bootstrap.js перераховує isPromoActive і:
   //   1) виставляє/знімає <html data-king-promo="active"> → стилі _promo.scss
   //   2) підмінює мапу зображень promo-X → X → Vue не знає про режим
-  //   3) кладе isPromoActive у window.currentTheme → App.vue вмикає овечку
+  //   3) кладе isPromoActive у window.currentTheme → App.vue вмикає промо-оверлей
+  //   4) бере кеглі тексту секторів з theme.promoFontSizes, якщо вони задані
   //
   // Хардкод 'KingWheel' навмисний: промо запитували саме під цю тему. Якщо
   // знадобиться промо для іншої теми — узагальнити через флаг у config.ts
@@ -415,7 +417,8 @@
       },
       timings: theme.timings || {},
       logic: theme.logic || {},
-      fontSizes: theme.fontSizes || null,
+      // У промо диск секторів може мати інший розмір, тому кеглі — свої (promoFontSizes)
+      fontSizes: (isPromo && theme.promoFontSizes) || theme.fontSizes || null,
       images: imagesMap,
       abTest: abResult ? { testId: abResult.testId, variantId: abResult.variantId } : null,
     }
@@ -448,10 +451,10 @@
 
   setThemeDataAttribute(selectedTheme)
 
-  // Промо-режим (KingWheel "Літнє промо"): обчислюємо ОДИН раз при ініціалізації.
+  // Промо-режим (KingWheel): обчислюємо ОДИН раз при ініціалізації.
   // Атрибут на <html> керує промо-стилями (themes/KingWheel/styles/_promo.scss),
   // а сам прапорець isPromo передається у buildImageMap/exposeThemeRuntime,
-  // щоб Vue (App.vue) теж знав про режим (для overlay овечки на win-стані).
+  // щоб Vue (App.vue) теж знав про режим (для overlay на win-стані).
   const isPromo = isPromoActive(selectedTheme, urlParams)
   if (isPromo) {
     document.documentElement.setAttribute('data-king-promo', 'active')

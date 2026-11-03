@@ -49,4 +49,6 @@ export interface ThemeConfig {
   backgroundColor?: string // Колір фону для теми (опціонально)
   /** Опціональний період сезонного промо (ISO-8601 з offset) */
   promoPeriod?: { start: string; end: string }
+  /** Кеглі тексту секторів на час промо (якщо промо-диск іншого розміру, ніж у класиці) */
+  promoFontSizes?: FontSizesConfig
 }

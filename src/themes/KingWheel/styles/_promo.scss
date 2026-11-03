@@ -1,73 +1,105 @@
-/* Літнє промо KingWheel — активується лише з [data-king-promo='active'] на <html> (bootstrap.js) */
+/* Сезонне промо KingWheel — активується лише з [data-king-promo='active'] на <html> (bootstrap.js).
+   Усі промо-картинки зведені на одне полотно 1755×1755 = весь віджет; відсотки нижче —
+   координати шарів на цьому полотні (центр колеса — 875.2 × 825.5). */
 
 :root[data-king-promo='active'] {
+  /* Позиції тексту секторів (viewBox) для промо-диска */
+  --sector-label-radius: 43;
+  --sector-sum-x: 88.1;
+  --sector-sum-y: 51.2;
+  --sector-currency-x: 87.55;
+  --sector-currency-y: 56.5;
+
+  /* Граффіті за колесом — на все полотно */
   .loot-box-spin-wheel-container {
     &:before {
-      top: 50%;
-      left: 50%;
-      width: 85%;
-      height: 85%;
       background-image: url('./images/promo-wheelframebg.webp');
-      background-size: cover;
-      background-position: center;
-      background-repeat: no-repeat;
-      transform: translate(-50%, -50%);
+      background-size: 100% 100%;
     }
 
+    /* Кільце по краю секторів — нерухоме, щоб відблиск металу не крутився разом із секторами */
     &:after {
       content: '';
       position: absolute;
-      top: 13.5%;
-      left: 15.8%;
+      top: 8.5185%;
+      left: 11.3504%;
       z-index: 5;
-      width: 68%;
-      height: 68%;
-      background-image: url('./images/promo-sectorborder.webp');
-      background-size: cover;
-      background-position: center;
+      width: 77.037%;
+      height: 77.037%;
+      background-image: url('./images/promo-sectorborder.svg');
+      background-size: 100% 100%;
       background-repeat: no-repeat;
       pointer-events: none;
     }
   }
 
+  /* Лампи світять поверх рами: колби намальовані на самій рамі */
+  .lamps {
+    top: 0;
+    z-index: 6;
+    aspect-ratio: 1 / 1;
+  }
+
+  /* Диск секторів закінчується під кільцем (радіус 655 з 1755) */
   .wheel-sectors-mask {
-    top: 14.5%;
-    left: 16.7%;
-    width: 66%;
-    height: 66%;
+    top: 9.7151%;
+    left: 12.547%;
+    width: 74.6439%;
+    height: 74.6439%;
+  }
+
+  /* Картинки секторів «centered» (сектор по центру зверху) — без доворота;
+     більші за маску, щоб розділювачі мали ширину як на макеті */
+  .wheel-bg {
+    top: -4.1985%;
+    left: -4.1985%;
+    width: 108.3969%;
+    transform: none;
   }
 
   .wheel-pointer {
-    top: 8%;
-    width: 28%;
+    top: 0.8547%;
+    left: 50.057%;
+    width: 16.4672%;
+    aspect-ratio: auto;
+  }
+
+  /* Тінь вказівника затемнює те, що під нею (як на макеті) */
+  .wheel-pointer-shadow {
+    display: block;
+    top: 5.9259%;
+    left: 50.0855%;
+    width: 18.0057%;
+    aspect-ratio: auto;
+    mix-blend-mode: multiply;
   }
 
   .wheel-center {
-    top: 36%;
-    width: 23%;
+    top: 37.6068%;
+    left: 49.943%;
+    width: 18.9744%;
   }
 
+  /* Синє світіння під медальйоном */
   .center-frame {
-    top: 35.5%;
-    height: 24.5%;
-    width: 24.5%;
+    top: 35.698%;
+    left: 49.943%;
+    width: 22.792%;
+    height: 22.792%;
   }
 
-  .center-bg {
-    display: none;
+  /* Рамка виграшного сектора: вершина в центрі колеса, край — по кільцю */
+  .win-frame {
+    top: 9.4302%;
+    left: 49.8689%;
+    width: 28.8148vmin;
+    mix-blend-mode: normal;
   }
 
   .purple-wave {
-    top: 12.5%;
-  }
-
-  .win-frame {
-    left: 49.5%;
-    width: 26vmin;
-  }
-
-  .lamps {
-    top: 0.2%;
+    top: 9.7151%;
+    left: 49.8689%;
+    width: 74.6439%;
   }
 
   .sector:nth-of-type(odd) .loot-box-prize-type {
@@ -78,17 +110,42 @@
     fill: #4627ea;
   }
 
-  /* Овечка поверх центру під час win-анімації (див. App.vue).
-     Ширина/top збігаються з .wheel-center у цьому ж блоці — інакше оверлей на 1% вужчий і «диск» виглядає меншим.
-     Коли анімована овечка в DOM — ховаємо статичну (.wheel-center), щоб
-     при русі голови/корони не було видно другий шар під оверлеєм. */
+  .loot-box-sum {
+    fill: #00ff00;
+    stroke: #000092;
+    stroke-width: 0.71px;
+    stroke-linejoin: round;
+  }
+
+  /* Об'ємна тінь суми: та сама сума темним кольором, зсув уздовж тексту вниз */
+  .loot-box-sum-shadow {
+    display: inline;
+    fill: #000092;
+    stroke: #000092;
+    stroke-width: 0.71px;
+    stroke-linejoin: round;
+    paint-order: stroke;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 800;
+    transform: translate(0, 0.5px);
+  }
+
+  .loot-box-currency {
+    fill: var(--color-white);
+    stroke: #000092;
+    stroke-width: 0.52px;
+    stroke-linejoin: round;
+  }
+
+  /* Анімація поверх центру під час виграшу (якщо в темі є promo-center-anim, див. App.vue).
+     Ширина/top збігаються з .wheel-center — інакше оверлей виглядатиме меншим за диск. */
   .wheel-center-sheep {
     position: absolute;
-    top: 36%;
-    left: 50%;
+    top: 37.6068%;
+    left: 49.943%;
     transform: translateX(-50%);
     z-index: 12;
-    width: 23%;
+    width: 18.9744%;
     height: auto;
     aspect-ratio: 1 / 1;
     pointer-events: none;

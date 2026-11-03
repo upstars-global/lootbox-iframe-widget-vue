@@ -15,10 +15,31 @@ export const config: ThemeConfig = {
     numberOfSpins: 1,
     winSection: 0,
   },
-  /** Літнє промо: автоматичний сезонний дизайн (див. bootstrap.js + styles/_promo.scss) */
+  /** Сезонне промо: автоматичний дизайн на період (див. bootstrap.js + styles/_promo.scss). Час — Київ (+02:00 взимку) */
   promoPeriod: {
-    start: '2026-05-15T10:00:00+03:00',
-    end: '2026-05-29T18:00:00+03:00',
+    start: '2026-10-30T00:00:00+02:00',
+    end: '2027-01-10T23:59:59+02:00',
+  },
+  /** Кеглі тексту секторів у промо: диск секторів займає 74.6% колеса замість 60% у класиці */
+  promoFontSizes: {
+    sum: {
+      short: '7',
+      medium: '5.9',
+      long: '5.05',
+      veryLong: '4.6',
+      extraLong: '3.4',
+      max: '2.5',
+    },
+    currency: {
+      short: '4',
+      long: '2.4',
+    },
+    bonus: {
+      default: '3.64',
+      short: '3.64',
+      medium: '2.95',
+      long: '2',
+    },
   },
   // Custom font sizes for KingWheel theme (adjust as needed)
   fontSizes: {
