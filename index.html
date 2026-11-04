@@ -233,6 +233,8 @@
         }
 
         var fsOrg = project && fsOrgMap[project]
+        // ?no_analytics (превʼю-фрейми test-ab.html) вимикає і FullStory, не лише track()
+        if (new URLSearchParams(location.search).has('no_analytics')) fsOrg = null
         if (fsOrg) {
           window['_fs_run_in_iframe'] = true
           window['_fs_debug'] = false
