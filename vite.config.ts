@@ -18,7 +18,8 @@ export default defineConfig({
       enforce: 'pre' as const,
       configureServer(server) {
         server.middlewares.use((req, _res, next) => {
-          if (req.url?.includes('/themes/') && req.url.includes('?')) {
+          // Лише публічні /themes/… (файли тем); /src/themes/…?import — модулі Vite, їх query не чіпаємо
+          if (req.url?.startsWith('/themes/') && req.url.includes('?')) {
             req.url = req.url.split('?')[0]
           }
           next()
