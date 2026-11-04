@@ -13,6 +13,7 @@ const SWITCH_EFFECTS_THRESHOLD = 0.7 // Поріг для переключенн
 const RESET_DELAY = 30000 // Затримка перед поверненням колеса в початковий стан після виграшу (30s)
 const WAITING_START_ANGLE = 40 // Поза колеса на 0% @keyframes waitingSpinAnimation (styles/_animations.scss тем)
 const RETURN_TO_WAITING_DURATION = 2000 // Плавний поворот у позу початку покачування після утримання виграшу
+const FINISH_TIMER_SLACK = 100 // Запас таймера завершення: у видимій вкладці першим завершує кадр
 
 /** Найкоротший поворот до того самого положення по колу: результат у [-180, 180) */
 const nearestTurn = (delta: number): number => (((delta % 360) + 540) % 360) - 180
@@ -251,6 +252,26 @@ export function useWheelAnimation(
   }
 
   /**
+   * Завершення виграшної фази за часом — дублює кадрове завершення. У фоновій вкладці
+   * (і в iframe поза екраном) requestAnimationFrame стоїть, а зупинка і spinEnd мають
+   * відбутися вчасно. Якщо кадр уже завершив спін (running = false) — нічого не робить;
+   * новий спін скасовує таймер разом з іншими winTimers.
+   */
+  const scheduleFinish = (start: number, startAngle: number, winDistance?: number) => {
+    const delay = start + SPIN_WITH_WIN_DURATION + FINISH_TIMER_SLACK - performance.now()
+    winTimers.push(
+      setTimeout(() => {
+        if (!running.value) return
+        if (animationId.value !== null) cancelAnimationFrame(animationId.value)
+        angle.value = winFinalAngle(startAngle, winnerSection.value || 0, winDistance)
+        motionBlurOpacity.value = 0
+        maskOpacity.value = 1
+        handleWinAnimation()
+      }, delay)
+    )
+  }
+
+  /**
    * Повернення в очікування без стрибка: колесо плавно доповертається з фінальної позиції
    * в позу 0% покачування, і лише тоді winAnimationStarted = false вмикає waiting-spin-animation
    */
@@ -318,6 +339,7 @@ export function useWheelAnimation(
     maskOpacity.value = 0
     running.value = true
 
+    if (hasWinSection.value) scheduleFinish(start, startAngle)
     animationId.value = requestAnimationFrame(() => handleAnimationFrame(start, startAngle))
   }
 
@@ -354,6 +376,7 @@ export function useWheelAnimation(
     const distance = ((cycleDistance / SPIN_WITHOUT_WIN_DURATION) * SPIN_WITH_WIN_DURATION) / 4
 
     if (animationId.value !== null) cancelAnimationFrame(animationId.value)
+    scheduleFinish(now, from, distance)
     animationId.value = requestAnimationFrame(() => handleAnimationFrame(now, from, distance))
   }
 
