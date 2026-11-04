@@ -134,6 +134,13 @@ const SEASON_UTC_RE = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/
 /** Роздільник сезонного файлу: <ключ>--<id сезону>.<ext> (той самий у bootstrap.js) */
 const SEASON_SEPARATOR = '--'
 
+/** Ключі fontSizes / promoFontSizes, які читає App.vue (неповний обʼєкт → TypeError у рендері) */
+const FONT_SIZE_KEYS: Record<string, string[]> = {
+  sum: ['short', 'medium', 'long', 'veryLong', 'extraLong', 'max'],
+  currency: ['short', 'long'],
+  bonus: ['default', 'short', 'medium', 'long'],
+}
+
 /** Легка runtime‑перевірка форми конфігу (страховка від «битих» даних) */
 function assertThemeConfig(cfg: any, themeId: string): asserts cfg is ThemeConfig {
   const fail = (m: string) => {
@@ -141,7 +148,24 @@ function assertThemeConfig(cfg: any, themeId: string): asserts cfg is ThemeConfi
   }
   if (!cfg || typeof cfg !== 'object') fail('config must be an object')
   if (typeof cfg.name !== 'string') fail('field "name" must be string')
+  // CSS теми вантажиться за name, картинки — за текою: розбіжність = 404 і порожнє колесо
+  if (cfg.name !== themeId) {
+    fail(`field "name" ("${cfg.name}") must match the theme folder "${themeId}"`)
+  }
   if (typeof cfg.styleId !== 'number') fail('field "styleId" must be number')
+  if (typeof cfg.project !== 'string' || !cfg.project.trim()) {
+    fail('field "project" must be a non-empty string')
+  }
+  for (const field of ['fontSizes', 'promoFontSizes'] as const) {
+    const sizes = cfg[field]
+    if (sizes === undefined) continue
+    if (!sizes || typeof sizes !== 'object') fail(`"${field}" must be an object when set`)
+    for (const [group, keys] of Object.entries(FONT_SIZE_KEYS)) {
+      for (const key of keys) {
+        if (typeof sizes[group]?.[key] !== 'string') fail(`${field}.${group}.${key} must be string`)
+      }
+    }
+  }
   if (!cfg.timings || typeof cfg.timings !== 'object') fail('"timings" missing/invalid')
   if (!cfg.logic || typeof cfg.logic !== 'object') fail('"logic" missing/invalid')
   const t = cfg.timings,
@@ -161,6 +185,9 @@ function assertThemeConfig(cfg: any, themeId: string): asserts cfg is ThemeConfi
     const endStr = pp.end as string
     if (Number.isNaN(Date.parse(startStr))) fail('promoPeriod.start must be a valid date string')
     if (Number.isNaN(Date.parse(endStr))) fail('promoPeriod.end must be a valid date string')
+    if (Date.parse(startStr) >= Date.parse(endStr)) {
+      fail('promoPeriod.start must be earlier than promoPeriod.end')
+    }
   }
   if (cfg.seasons !== undefined) {
     if (!Array.isArray(cfg.seasons) || cfg.seasons.length === 0) {
@@ -227,6 +254,85 @@ function assertSeasonAssets(themeId: string, cfg: ThemeConfig, rels: string[]): 
       throw new Error(`[themes] ${themeId}/images: "${key}" — no base image "${base}" to override`)
     }
   }
+}
+
+/**
+ * Перевірка звʼязок між темами: styleId і name унікальні (інакше порядок реєстру залежить
+ * від readdirSync), у кожного проекту рівно одна тема з isProjectDefault
+ */
+function assertRegistry(themes: RegistryTheme[]): void {
+  const fail = (m: string) => {
+    throw new Error(`[themes] registry: ${m}`)
+  }
+  const byStyleId = new Map<number, string>()
+  const names = new Set<string>()
+  const defaults = new Map<string, string[]>()
+  for (const t of themes) {
+    const other = byStyleId.get(t.styleId)
+    if (other) fail(`styleId ${t.styleId} is used by both "${other}" and "${t.name}"`)
+    byStyleId.set(t.styleId, t.name)
+    if (names.has(t.name)) fail(`name "${t.name}" is used by two themes`)
+    names.add(t.name)
+    const list = defaults.get(t.project) ?? []
+    if (t.isProjectDefault) list.push(t.name)
+    defaults.set(t.project, list)
+  }
+  for (const [project, list] of defaults) {
+    if (list.length !== 1) {
+      fail(
+        `project "${project}" must have exactly one theme with isProjectDefault, found ${list.length}` +
+          (list.length ? `: ${list.join(', ')}` : '')
+      )
+    }
+  }
+}
+
+/**
+ * Звірка ручних таблиць index.html (вибір прелоадера і фону до bootstrap.js) з конфігами тем:
+ * PROJECT_DEFAULTS, PROJECT_THEMES, themeBgColors, FALLBACK_THEME
+ */
+function assertIndexHtmlTables(themes: RegistryTheme[]): void {
+  const fail = (m: string) => {
+    throw new Error(`[themes] index.html: ${m}`)
+  }
+  const html = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf-8')
+  const read = (name: string): any => {
+    const m = html.match(new RegExp(`var ${name} = (\\{[^}]*\\}|'[^']*')`))
+    if (!m) fail(`"var ${name} = …" not found`)
+    return new Function(`return (${m![1]})`)()
+  }
+  const projectDefaults = read('PROJECT_DEFAULTS') as Record<string, string>
+  const projectThemes = read('PROJECT_THEMES') as Record<string, string[]>
+  const bgColors = read('themeBgColors') as Record<string, string>
+  const fallback = read('FALLBACK_THEME') as string
+
+  const projects = [...new Set(themes.map(t => t.project))].sort()
+  const same = (a: string[], b: string[]) => a.join() === b.join()
+  if (!same(Object.keys(projectDefaults).sort(), projects)) {
+    fail(
+      `PROJECT_DEFAULTS projects (${Object.keys(projectDefaults)}) ≠ config projects (${projects})`
+    )
+  }
+  if (!same(Object.keys(projectThemes).sort(), projects)) {
+    fail(`PROJECT_THEMES projects (${Object.keys(projectThemes)}) ≠ config projects (${projects})`)
+  }
+  for (const project of projects) {
+    const own = themes.filter(t => t.project === project)
+    const def = own.find(t => t.isProjectDefault)?.name
+    if (projectDefaults[project] !== def) {
+      fail(
+        `PROJECT_DEFAULTS.${project} is "${projectDefaults[project]}", config default is "${def}"`
+      )
+    }
+    const names = own.map(t => t.name).sort()
+    if (!same([...(projectThemes[project] ?? [])].sort(), names)) {
+      fail(`PROJECT_THEMES.${project} (${projectThemes[project]}) ≠ config themes (${names})`)
+    }
+  }
+  for (const t of themes) {
+    if (!bgColors[t.name]) fail(`themeBgColors has no color for "${t.name}"`)
+  }
+  if (!themes.some(t => t.name === fallback)) fail(`FALLBACK_THEME "${fallback}" is not a theme`)
 }
 
 /** Компіляція TypeScript конфігу в JavaScript через esbuild */
@@ -357,6 +463,8 @@ async function handleRegistry(res: any): Promise<void> {
     themes.push({ id, ...cfg, images: urls })
   }
   themes.sort((a, b) => a.styleId - b.styleId)
+  assertRegistry(themes)
+  assertIndexHtmlTables(themes)
 
   const abTests = await readABTestsConfig()
   const reg: Registry = { themes, ...(abTests ? { abTests } : {}) }
@@ -486,6 +594,8 @@ export function themesPlugin(): Plugin {
 
       // 4) Один реєстр на всі теми + A/B конфіг
       reg.themes.sort((a, b) => a.styleId - b.styleId)
+      assertRegistry(reg.themes)
+      assertIndexHtmlTables(reg.themes)
       const abTests = await readABTestsConfig()
       if (abTests) reg.abTests = abTests
       this.emitFile({
