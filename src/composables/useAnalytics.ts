@@ -103,6 +103,8 @@ const getCommonParams = (): Record<string, string> => {
     session_id: getSessionId(),
     host: getHost(),
     env: import.meta.env.DEV ? 'dev' : 'prod',
+    // ?active=false — сторінка «спін уже використано»: щоб такі покази можна було відфільтрувати
+    active: window.currentTheme?.isActive === false ? 'false' : 'true',
     ...(userId ? { user_id: userId } : {}),
     ...(abTest
       ? {
@@ -170,7 +172,7 @@ export function useAnalytics() {
 
   /**
    * Універсальний трекінг з автоматичним додаванням загальних параметрів
-   * Кожна подія отримує: session_id, host, env
+   * Кожна подія отримує: session_id, host, env, active
    * Якщо в URL є ?no_analytics — нічого не відправляється (preview iframe)
    */
   const track = (eventName: string, properties?: Record<string, unknown>): void => {
