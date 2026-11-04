@@ -15,7 +15,7 @@
  */
 
 // GA4 Worker endpoint (проксі для обходу блокування Safari / AdBlock)
-const GA_WORKER_URL = 'https://still-band-a01d.upstars-marbella.workers.dev'
+const GA_WORKER_URL = 'https://still-band-a01d.upstars-landings.workers.dev'
 
 // Прапорець для вимкнення аналітики (використовується для preview iframe на test-ab.html)
 const isAnalyticsDisabled = new URLSearchParams(window.location.search).has('no_analytics')
