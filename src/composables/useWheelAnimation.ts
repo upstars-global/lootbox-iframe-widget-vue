@@ -11,6 +11,24 @@ const SPIN_WITHOUT_WIN_DURATION = 3000 // Тривалість для оберт
 const SPIN_WITH_WIN_DURATION = 14000 // Тривалість для обертання з виграшем (14s)
 const SWITCH_EFFECTS_THRESHOLD = 0.7 // Поріг для переключення ефектів (70%)
 const RESET_DELAY = 30000 // Затримка перед поверненням колеса в початковий стан після виграшу (30s)
+const WAITING_START_ANGLE = 40 // Поза колеса на 0% @keyframes waitingSpinAnimation (styles/_animations.scss тем)
+const RETURN_TO_WAITING_DURATION = 2000 // Плавний поворот у позу початку покачування після утримання виграшу
+
+/** Найкоротший поворот до того самого положення по колу: результат у [-180, 180) */
+const nearestTurn = (delta: number): number => (((delta % 360) + 540) % 360) - 180
+
+/**
+ * Реальний кут колеса на екрані: у спокої його задає CSS-покачування (waiting-spin-animation),
+ * а не angle. null — елемента немає або transform не задано.
+ */
+const readWheelAngle = (): number | null => {
+  const el = document.getElementById('wheel_sectors')
+  if (!el) return null
+  const transform = getComputedStyle(el).transform
+  if (!transform || transform === 'none') return null
+  const m = new DOMMatrix(transform)
+  return (Math.atan2(m.b, m.a) * 180) / Math.PI
+}
 
 /**
  * useWheelAnimation
@@ -203,10 +221,33 @@ export function useWheelAnimation(
     // застосуванню класу waiting-spin-animation, який скидає позицію колеса
     winTimers.push(
       setTimeout(() => {
-        winAnimationStarted.value = false
         maskOpacity.value = 0
+        returnToWaiting()
       }, totalDelay)
     )
+  }
+
+  /**
+   * Повернення в очікування без стрибка: колесо плавно доповертається з фінальної позиції
+   * в позу 0% покачування, і лише тоді winAnimationStarted = false вмикає waiting-spin-animation
+   */
+  const returnToWaiting = () => {
+    const from = angle.value
+    const to = from + nearestTurn(WAITING_START_ANGLE - from)
+    const start = performance.now()
+
+    const step = () => {
+      const t = Math.min(1, (performance.now() - start) / RETURN_TO_WAITING_DURATION)
+      const eased = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2 // ease-in-out
+      angle.value = from + eased * (to - from)
+      if (t < 1) {
+        animationId.value = requestAnimationFrame(step)
+        return
+      }
+      winAnimationStarted.value = false
+    }
+
+    animationId.value = requestAnimationFrame(step)
   }
 
   /**
@@ -220,6 +261,13 @@ export function useWheelAnimation(
    * 5. Запуск покадрової анімації
    */
   const spinTo = () => {
+    // Старт зі спокою: беремо кут, який зараз на екрані (поза покачування або фінал минулого
+    // спіну), — інакше перший кадр стрибає з пози покачування в angle. Читаємо до зміни станів:
+    // DOM ще з класом покачування
+    if (!running.value) angle.value = readWheelAngle() ?? angle.value
+    // Зупиняємо поворот у покачування, якщо він ще йде
+    if (animationId.value !== null) cancelAnimationFrame(animationId.value)
+
     winTimers.forEach(id => clearTimeout(id))
     winTimers.length = 0
 
