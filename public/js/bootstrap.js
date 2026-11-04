@@ -480,7 +480,8 @@
     var hash = 2166136261
     for (var i = 0; i < str.length; i++) {
       hash ^= str.charCodeAt(i)
-      hash = (hash * 16777619) >>> 0
+      // Math.imul: 32-бітне множення; звичайне hash * 16777619 перевищує 2^53 і губить молодші біти
+      hash = Math.imul(hash, 16777619) >>> 0
     }
     return hash
   }
