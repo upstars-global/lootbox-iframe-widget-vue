@@ -399,6 +399,12 @@ function compileCss(themeId: string): string | null {
   const scssB = path.join(dir, 'styles.scss')
   const cssA = path.join(dir, 'theme.css')
   const cssB = path.join(dir, 'styles.css')
+  // Без sass тема з .scss лишилася б без theme.css (404 у браузері, порожнє колесо) — падаємо одразу
+  if (!sass && (fs.existsSync(scssA) || fs.existsSync(scssB))) {
+    throw new Error(
+      `[themes] ${themeId}: theme has .scss but "sass" is not installed (npm i -D sass)`
+    )
+  }
   if (fs.existsSync(scssA) && sass) return sass.compile(scssA, { style: 'compressed' as any }).css
   if (fs.existsSync(scssB) && sass) return sass.compile(scssB, { style: 'compressed' as any }).css
   if (fs.existsSync(cssA)) return fs.readFileSync(cssA, 'utf-8')
@@ -601,6 +607,12 @@ export function themesPlugin(): Plugin {
       assertRegistry(reg.themes)
       assertIndexHtmlTables(reg.themes)
       const abTests = await readABTestsConfig()
+      // Файл є, але не прочитався — без цього A/B мовчки вимкнувся б на проді
+      if (!abTests && fs.existsSync(path.join(ROOT, 'src/ab/config.ts'))) {
+        throw new Error(
+          '[themes] src/ab/config.ts exists but could not be read (see the warning above)'
+        )
+      }
       if (abTests) reg.abTests = abTests
       this.emitFile({
         type: 'asset',
