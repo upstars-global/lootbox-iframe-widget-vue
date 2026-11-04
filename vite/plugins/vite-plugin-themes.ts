@@ -116,6 +116,15 @@ function hasTsConfig(dir: string): boolean {
   return fs.existsSync(path.join(dir, 'config.ts'))
 }
 
+/** Теки тем — однаково для DEV і BUILD: без службових ("_…", ".…") і лише з config.ts */
+function listThemeIds(): string[] {
+  return fs
+    .readdirSync(SRC_THEMES_DIR)
+    .filter(d => !d.startsWith('_') && !d.startsWith('.'))
+    .filter(d => isThemeDir(path.join(SRC_THEMES_DIR, d)))
+    .filter(d => hasTsConfig(path.join(SRC_THEMES_DIR, d)))
+}
+
 /** Рекурсивно обійти файли (без прихованих/службових) і повернути відносні шляхи */
 function walkFiles(dir: string, root: string, acc: string[] = []): string[] {
   if (!fs.existsSync(dir)) return acc
@@ -450,10 +459,7 @@ async function readABTestsConfig(): Promise<Record<string, unknown> | null> {
 
 /** Обслуговування /themes/themes-config.js — реєстр тем */
 async function handleRegistry(res: any): Promise<void> {
-  const ids = fs
-    .readdirSync(SRC_THEMES_DIR)
-    .filter(d => isThemeDir(path.join(SRC_THEMES_DIR, d)))
-    .filter(d => hasTsConfig(path.join(SRC_THEMES_DIR, d))) // ← тільки з config.ts
+  const ids = listThemeIds()
 
   const themes: RegistryTheme[] = []
   for (const id of ids) {
@@ -560,9 +566,7 @@ export function themesPlugin(): Plugin {
     async generateBundle(this: RollupPluginContext) {
       if (!fs.existsSync(SRC_THEMES_DIR)) return
 
-      const ids = fs
-        .readdirSync(SRC_THEMES_DIR)
-        .filter(d => isThemeDir(path.join(SRC_THEMES_DIR, d)))
+      const ids = listThemeIds()
 
       const reg: Registry = { themes: [] }
 
