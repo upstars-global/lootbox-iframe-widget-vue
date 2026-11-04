@@ -225,11 +225,11 @@
         )
 
         // FullStory initialization
-        // Маппінг project → FullStory Org ID (project вже нормалізований: rocket → alpa)
+        // Маппінг project → FullStory Org ID (project вже нормалізований: rocket → alpa).
+        // Проекту без справжнього Org ID тут немає — скрипт FullStory для нього не вантажиться
         var fsOrgMap = {
           alpa: 'FWWXX',
           king: 'o-207RBN-na1',
-          thor: 'THOR_ORG_ID', // TODO: замінити на реальний
         }
 
         var fsOrg = project && fsOrgMap[project]
