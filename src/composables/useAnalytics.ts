@@ -36,6 +36,11 @@ const uuid = (): string => {
   return `${h.slice(0, 8)}-${h.slice(8, 12)}-${h.slice(12, 16)}-${h.slice(16, 20)}-${h.slice(20)}`
 }
 
+// Запасні id, коли сховище недоступне (заблоковані сторонні cookies, sandbox без allow-same-origin):
+// генеруються один раз на завантаження, а не на кожну подію — інакше кожна подія = новий користувач
+let fallbackClientId: string | null = null
+let fallbackSessionId: string | null = null
+
 /**
  * Генерує або отримує збережений client_id для GA4
  */
@@ -49,7 +54,7 @@ const getClientId = (): string => {
     return clientId
   } catch {
     // Fallback для private mode / iframe without storage
-    return uuid()
+    return (fallbackClientId ??= uuid())
   }
 }
 
@@ -67,7 +72,7 @@ const getSessionId = (): string => {
     return sessionId
   } catch {
     // Fallback для private mode / iframe without storage
-    return uuid()
+    return (fallbackSessionId ??= uuid())
   }
 }
 
