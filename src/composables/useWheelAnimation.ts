@@ -348,9 +348,12 @@ export function useWheelAnimation(
    *
    * Захист від повторних запусків під час анімації.
    * Використовується ззовні для запуску гри.
+   * @returns true — обертання запущено; false — колесо вже крутиться, команду проігноровано
    */
-  const runWheel = () => {
-    if (!running.value) spinTo()
+  const runWheel = (): boolean => {
+    if (running.value) return false
+    spinTo()
+    return true
   }
 
   /**

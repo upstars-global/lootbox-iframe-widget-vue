@@ -371,7 +371,8 @@ const { postToParent } = usePostMessageBus<LootboxMessages>(
   {
     // Слухаємо: команда запуску колеса від сайту
     startSpin: () => {
-      runWheel()
+      // Колесо вже крутиться — команду проігноровано, подію не рахуємо
+      if (!runWheel()) return
       // Аналітика: відправляємо подію напряму в FullStory
       track('Spin Started', { theme: currentTheme, project: currentProject })
     },
