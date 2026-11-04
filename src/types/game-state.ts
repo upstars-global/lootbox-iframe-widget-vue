@@ -5,7 +5,7 @@ import type { Ref } from 'vue'
  * - running: чи зараз крутиться
  * - winAnimationStarted: чи показується win-анімація (також блокує waiting-spin-animation)
  * - showWinAnimation: чи відображається візуальна анімація виграшу (окремо від winAnimationStarted)
- * - angle/randomAngle: керують обертанням та маскою
+ * - angle: поточний кут колеса; randomAngle: зсув кута зупинки (зараз завжди 0)
  * - motionBlurOpacity/maskOpacity: прозорості ефектів
  * - winAnimationOpacity: прозорість анімації виграшу (для плавного зникнення)
  * - animationId: ref з requestAnimationFrame

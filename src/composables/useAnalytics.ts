@@ -172,7 +172,7 @@ export function useAnalytics() {
 
   /**
    * Універсальний трекінг з автоматичним додаванням загальних параметрів
-   * Кожна подія отримує: session_id, host, env, active
+   * Кожна подія отримує: session_id, host, env, active (і user_id, ab_test_id, ab_variant, якщо вони є)
    * Якщо в URL є ?no_analytics — нічого не відправляється (preview iframe)
    */
   const track = (eventName: string, properties?: Record<string, unknown>): void => {

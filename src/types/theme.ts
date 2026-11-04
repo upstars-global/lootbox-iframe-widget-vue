@@ -41,8 +41,8 @@ export interface ThemeSeason {
  * - name/styleId: ідентифікація теми
  * - project: назва проекту (king, alpa, thor тощо)
  * - isProjectDefault: чи є ця тема дефолтною для проекту
- * - timings: тривалість анімацій (обертання, показ результату, прелоадер)
- * - logic: логіка гри (кількість обертів, виграшний сектор)
+ * - timings: timeToPopup і winAnimationOffset керують показом win-анімації та spinEnd; spinDuration код не читає
+ * - logic: numberOfSpins і winSection код не читає
  * - fontSizes: налаштування розмірів шрифтів (опціонально)
  */
 export interface ThemeConfig {

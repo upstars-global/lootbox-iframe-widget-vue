@@ -41,11 +41,11 @@ const readWheelAngle = (): number | null => {
  * - Розрахунок фінального кута для цільового сектора (0..7)
  * - Покадрова анімація з ease-out через requestAnimationFrame
  * - Керування візуальними ефектами (маска, motion blur)
- * - Відправка подій у parent: `winSector`, `spinEnd`
+ * - Завершення спіну повідомляється через callback (`setSpinEndCallback`); сам `spinEnd` у parent надсилає App.vue
  * - Автоматичне повернення у стан очікування
  *
  * Приклад використання:
- * const { runWheel } = useWheelAnimation(gameState, spinDuration, timeToPopup, postToParent, sectionsData)
+ * const { runWheel } = useWheelAnimation(gameState, spinDuration, timeToPopup, winAnimationOffset, sectionsData)
  * runWheel() // Запуск обертання
  */
 export function useWheelAnimation(
@@ -107,15 +107,11 @@ export function useWheelAnimation(
    * Покадрова анімація через requestAnimationFrame з двофазною логікою
    *
    * Керує плавним обертанням колеса з візуальними ефектами:
-   * - Motion blur зникає на 60% анімації
-   * - Маска з'являється на 50% анімації
-   * - Переключення ефектів на 70% при наявності виграшного сектора
+   * - Motion blur зникає, а маска з'являється на 70% прогресу (SWITCH_EFFECTS_THRESHOLD) при наявності виграшного сектора
    * - Ease-out забезпечує природне сповільнення
    *
    * @param start - час початку анімації (performance.now())
    * @param startAngle - початковий кут колеса
-   * @param finalAngle - цільовий кут для зупинки
-   * @param duration - тривалість анімації в мс
    * @param winDistance - відстань фази, перезапущеної з приходом результату (див. setWinner)
    */
   const handleAnimationFrame = (start: number, startAngle: number, winDistance?: number) => {
@@ -137,7 +133,7 @@ export function useWheelAnimation(
       t = t // Лінійна анімація для звичайного обертання
     }
 
-    // Оновлюємо кут з урахуванням динамічно зміненого finalAngle
+    // Оновлюємо кут: тривалість і цільовий кут перераховуються щокадру залежно від наявності виграшу
     angle.value = startAngle + t * (currentFinalAngle - startAngle)
 
     // Переключаємо ефекти на 70% прогресу якщо є виграш

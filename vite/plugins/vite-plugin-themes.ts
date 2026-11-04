@@ -46,7 +46,7 @@ try {
   const mod: typeof import('esbuild') = await import('esbuild')
   esbuild = mod
 } catch {
-  // якщо конфіги лише у JSON — залежність не обов'язкова
+  // без esbuild config.ts не прочитати: readThemeConfig кине помилку
 }
 
 // ──────────────────────────────────────────────────────────────────────────────

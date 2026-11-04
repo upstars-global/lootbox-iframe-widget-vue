@@ -4,7 +4,7 @@ export {}
 declare global {
   interface Window {
     /**
-     * FullStory SDK (завантажується динамічно якщо передано fs_org параметр)
+     * FullStory SDK (index.html завантажує його, якщо для ?project= є Org ID у fsOrgMap і немає ?no_analytics)
      */
     FS?: {
       event: (name: string, properties?: Record<string, unknown>) => void

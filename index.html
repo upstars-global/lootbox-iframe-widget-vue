@@ -14,7 +14,8 @@
       Проект Rocket перейменовано на Alpa (теми RocketWheel* → AlpaWheel*). На проді
       вже роздані iframe-посилання зі старими значеннями ?project=rocket / ?style=RocketWheel*,
       тому старі імена нормалізуються в нові тут і в bootstrap.js (через window.__lootboxBoot).
-      Мапи аліасів живуть в одному місці — не дублювати їх у скриптах нижче.
+      Мапи аліасів задаються тут; bootstrap.js читає їх із window.__lootboxBoot (власна копія
+      в bootstrap.js — лише запасна, на випадок окремого підключення скрипта).
     -->
     <script>
       ;(function () {
@@ -195,7 +196,7 @@
       Synchronous script to set background BEFORE body rendering (prevents FOUC - Flash of Unstyled Content)
       
       Why it's needed:
-      - bootstrap.js loads asynchronously and sets theme background from config.ts
+      - bootstrap.js loads asynchronously, so the theme background is not known yet when the body renders
       - During async load, body renders with default background causing visible flash
       - This inline script executes synchronously BEFORE body renders, setting correct background immediately
       
@@ -204,7 +205,7 @@
       2. Sets --theme-bg-color CSS variable from hardcoded mapping
       3. Body renders with correct background from the start
       
-      Note: themeBgColors must match backgroundColor values in theme config.ts files
+      Note: themeBgColors needs an entry for every theme (the build checks this); keep the values equal to backgroundColor in the theme config.ts files
     -->
     <script>
       ;(function () {
