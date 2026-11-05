@@ -16,19 +16,23 @@
 ```
 Projects/lootbox-iframe-widget-vue/
 ├── public/                  # Статичні файли (копіюються в dist)
-│   └── js/
-│       └── bootstrap.js     # Ранній рантайм + A/B тестування
+│   ├── js/
+│   │   └── bootstrap.js     # Ранній рантайм + A/B тестування
+│   └── test-*.html          # Тестові сторінки: test-lootbox, test-alpa-lootbox,
+│                            #   test-king-lootbox, test-thor-lootbox, test-ab
 ├── src/
 │   ├── ab/                   # A/B тестування
 │   │   └── config.ts         # Конфігурація A/B тестів
+│   ├── components/           # FpsMonitor.vue (?fps=true)
 │   ├── composables/          # Перевикористовувана логіка
 │   │   ├── useWheelAnimation.ts    # Анімація колеса
 │   │   ├── usePostMessageBus.ts    # PostMessage комунікація
 │   │   ├── useAnalytics.ts         # Аналітика (FullStory, GA4)
 │   │   ├── useImagePreloader.ts    # Попереднє завантаження зображень
 │   │   └── useWinAnimationPreloader.ts # Прелоад win-анімації
-│   ├── types/               # TypeScript типи
-│   ├── utils/               # Утиліти (парсинг секторів)
+│   ├── types/               # TypeScript типи (тема, повідомлення, стан колеса)
+│   ├── utils/               # Утиліти: sectors-parser.ts (парсинг призів),
+│   │                        #   sector-text-layout.ts (позиції тексту секторів)
 │   ├── themes/              # Теми дизайну
 │   │   ├── _shared/         # Спільні конфіги тем (не є темою)
 │   │   │   └── alpaFontSizes.ts
@@ -56,6 +60,7 @@ Projects/lootbox-iframe-widget-vue/
 │   │       ├── theme.scss
 │   │       ├── images/
 │   │       └── styles/
+│   ├── main.ts              # Монтує Vue після готовності теми
 │   └── App.vue              # Головний компонент
 ├── vite/                    # Конфігурація збірки
 │   └── plugins/
@@ -83,7 +88,7 @@ Projects/lootbox-iframe-widget-vue/
 │       └── ThorWheel/
 │           ├── theme.css
 │           └── images/
-└── test-lootbox.html        # Тестовий прототип
+└── index.html               # Точка входу: ранній вибір теми, прелоадер, FullStory
 ```
 
 ### Архітектурні принципи
@@ -100,15 +105,16 @@ Projects/lootbox-iframe-widget-vue/
 
 - Генерує `themes-config.js` з конфігурацією всіх тем
 - Компілює SCSS файли в CSS для кожної теми
-- Копіює зображення в `dist/themes/`
+- Копіює зображення в `dist/themes/` без змін
 - Створює готову структуру для розподілу
+- Перевіряє конфіги тем і зв'язки між ними (див. «Перевірки під час збірки»)
 
 **Bootstrap.js** (`public/js/bootstrap.js`):
 
 - **Ранній рантайм** - виконується ДО main.ts
 - **Парсинг URL параметрів** для вибору теми
 - **Динамічне завантаження** CSS стилів теми
-- **Попереднє завантаження** всіх зображень теми
+- **Попереднє завантаження** критичних зображень теми (важкі відкладені — `winanimation`, `promo-center-anim` — вантажаться у фоні пізніше)
 - **Запобігання FOUC** (Flash of Unstyled Content)
 - **Підготовка середовища** для Vue додатку
 - **Встановлення** `window.currentTheme` з готовими ресурсами
@@ -146,7 +152,7 @@ Projects/lootbox-iframe-widget-vue/
 Усі конфіги, стилі та зображення тем зберігаються в `src/themes`. Це забезпечує:
 
 - **Типобезпеку**: `config.ts` проходить перевірку TypeScript
-- **Єдиний збірочний пайплайн**: SCSS компілюється, зображення оптимізуються, ресурси автоматично копіюються у `dist/`
+- **Єдиний збірочний пайплайн**: SCSS компілюється, зображення копіюються без змін, ресурси автоматично потрапляють у `dist/`
 - **Керованість та версіонування**: теми версіонуються разом із кодом, зміни легко відслідковуються та відкочуються
 - **Автоматизацію**: спеціальний Vite-плагін генерує `themes-config.js` без ручного втручання
 
@@ -154,7 +160,7 @@ Projects/lootbox-iframe-widget-vue/
 
 ```
 src/themes/
-├── _shared/                 # Не тема: директорії з "_" плагін ігнорує
+├── _shared/                 # Не тема: теки, назва яких починається з "_" або ".", плагін ігнорує
 │   ├── alpaFontSizes.ts     # Спільні кеглі тексту секторів для колес Alpa
 │   └── sectorTextDefaults.scss  # Дефолтні позиції тексту секторів (viewBox)
 ├── AlpaWheelLight/
@@ -203,7 +209,7 @@ src/themes/
              сектор
 ```
 
-Кожен сектор — це `<g class="sector">` у SVG з `viewBox="0 0 100 100"`, повернутий на `index × 45°`. Координати задаються в **viewBox-одиницях** (0–100, де 50 = центр колеса, 100 = зовнішній край). Ніяких `px` і ніяких CSS `transform` на тексті.
+Кожен сектор — це `<g class="sector">` у SVG з `viewBox="0 0 100 100"`, повернутий на `index × 45°`. Координати задаються в **viewBox-одиницях** (0–100, де 50 = центр колеса, 100 = зовнішній край). Ніяких `px` і ніяких CSS `transform` для позиціонування `.loot-box-prize-type`, `.loot-box-sum` і `.loot-box-currency`. Єдиний виняток — декоративна тінь суми `.loot-box-sum-shadow` (див. розділ про промо).
 
 #### Головний файл — тільки один
 
@@ -295,26 +301,29 @@ sum:      --sector-sum-x          = 89   − N   (translate(−Npx))
 currency: --sector-currency-x     = 88.7 − N   (translate(−N%))
 ```
 
-Звідси King = `37+4 = 41`, Thor = `37+5 = 42`, Alpa = `35+7 = 42`.
+Звідси King = `37+4 = 41`, Thor = `37+5 = 42`, Alpa = `37+5 = 42`.
 
 ### Динамічне завантаження
 
 - **Query-параметри**:
-  - `?style=1` - вибір теми за ID (default, crown, тощо)
+  - `?project=alpa` - вибір проекту (дефолтна тема проекту)
+  - `?style=AlpaWheelPro` - вибір теми за назвою (не за числовим `styleId`)
   - `?sectors=100%20FS;50%20USD` - налаштування секторів
   - `?sectors_type=Free%20Spins;USD` - типи призів для секторів
 - **Автоматична компіляція** SCSS в CSS
 - **Попереднє завантаження** зображень теми
 - **Запобігання FOUC** (Flash of Unstyled Content)
 
-### Життєвий цикл завантаження приложения
+### Життєвий цикл завантаження застосунку
 
 **Послідовність виконання:**
 
-1. **index.html** завантажується
-2. **bootstrap.js** (`public/js/bootstrap.js`) виконується ДО main.ts
-3. **main.ts** чекає готовності теми (`window.currentTheme.ready`)
-4. **Vue додаток** ініціалізується тільки після повного завантаження ресурсів
+1. **index.html** завантажується. Ранній inline-скрипт у `<head>` визначає тему для прелоадера і фону (`window.__lootboxBoot`), а за `?project=` запускає FullStory (alpa, king). Google Fonts підключені неблокуючим `<link media="print" onload>`, тож старт від них не залежить.
+2. **`themes/themes-config.js`** і **bootstrap.js** (`public/js/bootstrap.js`) виконуються ДО main.ts: вибір теми, завантаження CSS, прогрів зображень.
+3. **main.ts** чекає готовності теми (`window.currentTheme.ready`) і монтує Vue.
+4. **App.vue** чекає завантаження зображень колеса (до 15 с), ховає прелоадер і лише тоді надсилає сайту `lootboxReady`.
+
+Якщо `themes/themes-config.js` або `theme.css` не завантажились, віджет не стартує: на `<html>` ставиться `data-theme-failed`, прелоадер лишається на екрані, Vue не монтується і `lootboxReady` не надсилається.
 
 ### Система попереднього завантаження ресурсів
 
@@ -324,35 +333,40 @@ currency: --sector-currency-x     = 88.7 − N   (translate(−N%))
 
 - Парсинг URL параметрів та вибір теми
 - Завантаження CSS стилів теми
-- Попереднє завантаження всіх зображень теми
+- Попереднє завантаження критичних зображень теми (до 6 секунд; зображення, які не встигли, не блокують старт)
+- Шрифти: якщо CSS Google Fonts уже прийшов, bootstrap чекає файли шрифтів у межах того самого ліміту 6 с від старту; якщо ні — не чекає
 - Встановлення `window.currentTheme` з готовими ресурсами
 
 **Етап 2: Vue ініціалізація (main.ts)**
 
 - Очікування готовності теми (`window.currentTheme.ready`)
-- Запуск Vue додатку тільки після повного завантаження ресурсів
-- Fallback механізм з таймаутом (6 сек)
+- Запуск Vue додатку тільки після завантаження CSS теми та критичних зображень
+- Якщо тема не готова за 6 секунд, у консоль виводиться попередження, а очікування триває далі (прелоадер лишається); якщо bootstrap.js повідомив про збій (`data-theme-failed`), додаток не запускається
 
 ```javascript
 // bootstrap.js - завантаження ресурсів теми
 const cssReady = loadThemeStylesheet(selectedTheme)
-await waitForAllImages(selectedTheme.images, IMAGE_LOAD_TIMEOUT_MS)
-await cssReady
+const criticalImages = pickPreloadImages(themeImageUrls, isPromo)
+await waitForAllImages(criticalImages, IMAGE_LOAD_TIMEOUT_MS) // до 6 с
+if (!(await cssReady)) throw new Error('не завантажився theme.css')
 
 // main.ts - синхронізація з готовністю теми
-async function waitThemeReady(): Promise<void> {
+async function waitThemeReady(): Promise<boolean> {
   while (!window.currentTheme?.ready) {
+    if (document.documentElement.hasAttribute('data-theme-failed')) return false
     await new Promise(resolve => setTimeout(resolve, POLLING_INTERVAL_MS))
   }
+  return true
 }
-await waitThemeReady() // Vue ініціалізація
 ```
+
+**Критичні зображення** — усі зображення теми, крім відкладених (`winanimation`, `promo-center-anim`) і, залежно від режиму промо, зайвих `promo-*` або їхніх класичних пар (див. розділ про промо).
 
 **Переваги:**
 
 - Запобігання FOUC (Flash of Unstyled Content)
 - Попереднє завантаження CSS стилів теми
-- Попереднє завантаження всіх зображень теми в кеш браузера
+- Попереднє завантаження критичних зображень теми в кеш браузера
 - Оптимізоване завантаження зображень з `fetchPriority: 'high'`
 - Асинхронне декодування зображень без блокування UI
 - Гарантована готовність теми перед рендерингом
@@ -372,13 +386,13 @@ export const config: ThemeConfig = {
   isProjectDefault: true, // Дефолтна тема для проекту Alpa
   backgroundColor: '#000a12',
   timings: {
-    spinDuration: 8000,
+    spinDuration: 8000, // код не читає (див. «Поля, які код не читає»)
     timeToPopup: 9000,
     winAnimationOffset: 0,
   },
   logic: {
-    numberOfSpins: 1,
-    winSection: 0,
+    numberOfSpins: 1, // код не читає
+    winSection: 0, // код не читає
   },
   // Усі колеса Alpa мають однакові кеглі — конфіг винесено у src/themes/_shared
   fontSizes: alpaFontSizes,
@@ -386,7 +400,7 @@ export const config: ThemeConfig = {
 ```
 
 ```typescript
-// src/themes/KingWheel/config.ts
+// src/themes/KingWheel/config.ts (скорочено)
 import type { ThemeConfig } from '../../types/theme'
 
 export const config: ThemeConfig = {
@@ -394,6 +408,7 @@ export const config: ThemeConfig = {
   styleId: 3,
   project: 'king', // Належність до проекту King
   isProjectDefault: true, // Дефолтна тема для проекту King
+  backgroundColor: '#F8F7FA',
   timings: {
     spinDuration: 8000,
     timeToPopup: 9000,
@@ -403,6 +418,13 @@ export const config: ThemeConfig = {
     numberOfSpins: 1,
     winSection: 0,
   },
+  // Період сезонного промо (див. розділ «Сезонне промо»)
+  promoPeriod: {
+    start: '2026-10-30T00:00:00+02:00',
+    end: '2027-01-10T23:59:59+02:00',
+  },
+  // Кеглі тексту секторів на час промо (та сама структура, що fontSizes)
+  promoFontSizes: { /* sum, currency, bonus */ },
   // Кастомні розміри шрифтів (опціонально)
   fontSizes: {
     sum: { short: '8', medium: '7', long: '6', veryLong: '5.5', extraLong: '4', max: '3' },
@@ -412,22 +434,47 @@ export const config: ThemeConfig = {
 }
 ```
 
-**Обов'язкові поля конфігурації:**
+**Обов'язкові поля конфігурації** (збірка падає, якщо їх немає або вони неправильного типу):
 
-| Поле               | Тип     | Опис                               |
-| ------------------ | ------- | ---------------------------------- |
-| `name`             | string  | Унікальна назва теми               |
-| `styleId`          | number  | Унікальний числовий ID             |
-| `project`          | string  | Назва проекту (alpa, king, тощо) |
-| `isProjectDefault` | boolean | Чи є ця тема дефолтною для проекту |
-| `timings`          | object  | Налаштування часу анімацій         |
-| `logic`            | object  | Логіка гри                         |
+| Поле               | Тип     | Опис                                                                        |
+| ------------------ | ------- | --------------------------------------------------------------------------- |
+| `name`             | string  | Назва теми; має збігатися з назвою папки теми                               |
+| `styleId`          | number  | Унікальний числовий ID (дублікат зупиняє збірку); за ним сортується реєстр  |
+| `project`          | string  | Назва проекту (alpa, king, тощо), непорожня                                 |
+| `isProjectDefault` | boolean | Рівно одна тема кожного проекту має `true`                                  |
+| `timings`          | object  | `spinDuration`, `timeToPopup`, `winAnimationOffset` — числа                 |
+| `logic`            | object  | `numberOfSpins`, `winSection` — числа                                       |
 
 **Опціональні поля:**
 
-| Поле        | Тип    | Опис                                  |
-| ----------- | ------ | ------------------------------------- |
-| `fontSizes` | object | Кастомні розміри шрифтів для секторів |
+| Поле              | Тип    | Опис                                                                                                             |
+| ----------------- | ------ | ---------------------------------------------------------------------------------------------------------------- |
+| `fontSizes`       | object | Кастомні розміри шрифтів для секторів. Потрібен повний набір ключів (`sum`: short, medium, long, veryLong, extraLong, max; `currency`: short, long; `bonus`: default, short, medium, long), інакше збірка падає |
+| `promoFontSizes`  | object | Кеглі на час промо; та сама структура і перевірка, що в `fontSizes`                                              |
+| `backgroundColor` | string | Колір фону теми (див. «Поля, які код не читає»)                                                                  |
+| `promoPeriod`     | object | `{ start, end }` — ISO-рядки з часовим поясом; `start` має бути раніше за `end`                                  |
+| `seasons`         | array  | Сезони теми (див. розділ про сезони)                                                                             |
+
+**Які поля керують поведінкою:**
+
+| Поле                          | Що робить                                                                                                                                                                                         |
+| ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `timings.timeToPopup`         | Відлік від зупинки колеса: `spinEnd` надсилається через `timeToPopup − 3000` мс (при 9000 — через 6 с після зупинки); win-анімація видима `timeToPopup` мс (останні 500 мс згасає); далі колесо ще 30 с тримає результат |
+| `timings.winAnimationOffset`  | На скільки мс до зупинки колеса показати win-анімацію (0 — після зупинки)                                                                                                                         |
+| `fontSizes`, `promoFontSizes` | Розміри шрифтів тексту секторів                                                                                                                                                                   |
+| `promoPeriod`, `seasons`      | Автоматичне промо і сезони за датою                                                                                                                                                               |
+| `name`, `project`, `isProjectDefault`, `styleId` | Вибір теми; `styleId` лише впорядковує реєстр                                                                                                                                  |
+
+#### Поля, які код не читає
+
+Ці поля присутні в конфігах і типі `ThemeConfig`, збірка вимагає їх наявність (крім `backgroundColor`), але під час роботи віджета вони нічого не змінюють. Їх не видалено:
+
+| Поле                   | Як є насправді                                                                                                          |
+| ---------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `timings.spinDuration` | Тривалість обертання задана в коді: цикли по 3 с без результату і 14 с сповільнення з результатом                       |
+| `logic.numberOfSpins`  | Кількість обертів задана в коді                                                                                         |
+| `logic.winSection`     | Виграшний сектор приходить повідомленням `winSector`                                                                    |
+| `backgroundColor`      | Потрапляє в `window.currentTheme.backgroundColor`, але ніде не використовується; колір фону прелоадера береться з `themeBgColors` в `index.html` |
 
 ### Створення нової теми
 
@@ -454,7 +501,7 @@ import type { ThemeConfig } from '../../types/theme'
 export const config: ThemeConfig = {
   // === ІДЕНТИФІКАЦІЯ ===
   name: 'YourThemeName', // Унікальна назва теми (PascalCase)
-  styleId: 4, // Унікальний числовий ID (не повторюється)
+  styleId: 8, // Унікальний числовий ID (дублікат зупиняє збірку; зараз зайняті 1, 2, 3, 4, 6, 7)
 
   // === НАЛЕЖНІСТЬ ДО ПРОЕКТУ ===
   project: 'yourproject', // Назва проекту (lowercase)
@@ -463,15 +510,15 @@ export const config: ThemeConfig = {
 
   // === НАЛАШТУВАННЯ АНІМАЦІЇ ===
   timings: {
-    spinDuration: 8000, // Тривалість обертання (мс)
-    timeToPopup: 9000, // Час до показу попапу (мс)
+    spinDuration: 8000, // Обов'язкове за типом, але код не читає
+    timeToPopup: 9000, // Відлік від зупинки: spinEnd через timeToPopup − 3000 мс, win-анімація видима timeToPopup мс
     winAnimationOffset: 0, // На скільки мс раніше показувати win-анімацію (0 = стандартно)
   },
 
-  // === ЛОГІКА ГРИ ===
+  // === ЛОГІКА ГРИ (обов'язкове за типом, але код не читає) ===
   logic: {
-    numberOfSpins: 1, // Кількість обертів
-    winSection: 0, // Дефолтний виграшний сектор
+    numberOfSpins: 1,
+    winSection: 0,
   },
 
   // === ОПЦІОНАЛЬНО: кастомні розміри шрифтів ===
@@ -491,9 +538,22 @@ export const config: ThemeConfig = {
 Перший inline-скрипт у `<head>` резолвить активну тему ще до завантаження
 `themes-config.js` і кладе результат у `window.__lootboxBoot`. Від нього залежать
 `<link rel="preload">` для `preloader.svg`, колір фону та `src` прелоадера в `<body>`.
-Preload генерується динамічно для однієї резолвленої теми, тож нічого додавати не треба.
+Preload генерується автоматично для однієї резолвленої теми, тож нічого додавати не треба.
 
-**3.1. Якщо це новий проект — додати маппінг в `PROJECT_DEFAULTS`:**
+Таблиці в `index.html` треба вести вручну, але збірка їх перевіряє: якщо вони не збігаються з конфігами тем, `npm run build` (і dev-сервер) падає з поясненням.
+
+**3.1. Додати тему в `PROJECT_THEMES` (для будь-якої нової теми):**
+
+```javascript
+var PROJECT_THEMES = {
+  alpa: ['AlpaWheelLight', 'AlpaWheelPro', 'AlpaWheelMax', 'AlpaWheelMart'],
+  king: ['KingWheel'],
+  thor: ['ThorWheel'],
+  yourproject: ['YourThemeName'], // ← тема (або новий проект з темою)
+}
+```
+
+**3.2. Якщо це новий проект — додати маппінг в `PROJECT_DEFAULTS`:**
 
 ```javascript
 var PROJECT_DEFAULTS = {
@@ -506,17 +566,31 @@ var PROJECT_DEFAULTS = {
 
 > Значення мають збігатися з темами, у яких `isProjectDefault: true`.
 
-**3.2. Додати колір фону теми в `themeBgColors`:**
+**3.3. Додати колір фону теми в `themeBgColors`:**
 
 ```javascript
 var themeBgColors = {
   AlpaWheelLight: '#000a12',
   // ...
-  YourThemeName: '#000a12', // ← має збігатися з backgroundColor у config.ts
+  YourThemeName: '#000a12', // ← колір фону прелоадера
 }
 ```
 
-**3.3. Якщо стару назву проекту/теми вже роздано на прод — додати аліас:**
+> Збірка перевіряє лише наявність запису для кожної теми. Якщо запису немає, збірка падає. Щоб прелоадер не відрізнявся від теми кольором, тримайте значення таким самим, як `backgroundColor` у `config.ts`.
+
+**3.4. Якщо новий проект має FullStory — додати Org ID в `fsOrgMap`:**
+
+```javascript
+var fsOrgMap = {
+  alpa: 'FWWXX',
+  king: 'o-207RBN-na1',
+  // yourproject: '<FullStory Org ID>', // ← без запису FullStory для проекту не вантажиться
+}
+```
+
+FullStory вмикається за `?project=`. Проект без запису в `fsOrgMap` (зараз це thor) працює без FullStory.
+
+**3.5. Якщо стару назву проекту/теми вже роздано на прод — додати аліас:**
 
 ```javascript
 var LEGACY_PROJECTS = { rocket: 'alpa' }
@@ -527,12 +601,13 @@ var LEGACY_THEMES = {
 }
 ```
 
-Мапи живуть тільки в `index.html`; `bootstrap.js` читає їх із `window.__lootboxBoot`
-і нормалізує URL-параметри перед вибором теми. Не дублюйте їх у інших місцях.
+Мапи аліасів задані в `index.html`; `bootstrap.js` читає їх із `window.__lootboxBoot`. У самому `bootstrap.js` лишилася запасна копія цих мап на випадок, коли скрипт підключено окремо від `index.html`, тож при зміні аліасів оновлюйте обидва місця.
 
-#### Крок 4: Оновіть test-lootbox.html (опціонально)
+**Змінна `FALLBACK_THEME`** (`AlpaWheelLight`) — тема, яку `index.html` бере для прелоадера, коли в URL немає відомого проекту й відомої теми; збірка перевіряє, що така тема існує.
 
-Додайте новий проект в селект для тестування:
+#### Крок 4: Оновіть тестові сторінки (опціонально)
+
+Додайте новий проект і тему в селекти тестових сторінок `public/test-*.html` (наприклад, `public/test-lootbox.html`):
 
 ```html
 <select id="projectSelect" class="theme-select">
@@ -569,54 +644,75 @@ var LEGACY_THEMES = {
 
 1. Створіть тему як описано вище
 2. В `config.ts` вкажіть `project: 'alpa'` та `isProjectDefault: false`
-3. В `index.html` додайте тільки preload (projectDefaults оновлювати НЕ потрібно)
+3. В `index.html` додайте тему в `PROJECT_THEMES` і колір фону в `themeBgColors` (`PROJECT_DEFAULTS` оновлювати НЕ потрібно; preload будується автоматично)
 4. Для використання вказуйте явно: `?project=alpa&style=AlpaWheelDark`
 
 ---
 
 ### Чеклист створення теми
 
-- [ ] Створено папку `src/themes/YourThemeName/`
+- [ ] Створено папку `src/themes/YourThemeName/` (назва папки = `name` у `config.ts`)
 - [ ] Створено `config.ts` з усіма обов'язковими полями
 - [ ] Вказано правильний `project` (lowercase)
-- [ ] Встановлено `isProjectDefault: true` якщо це єдина або дефолтна тема проекту
+- [ ] Встановлено `isProjectDefault: true` якщо це єдина або дефолтна тема проекту (рівно одна на проект)
 - [ ] Створено `theme.scss`
 - [ ] Додано `preloader.svg` в `images/`
-- [ ] Оновлено `index.html` (preload + projectDefaults якщо новий проект)
-- [ ] Протестовано на `test-lootbox.html`
+- [ ] Оновлено `index.html`: `PROJECT_THEMES`, `themeBgColors`; для нового проекту ще `PROJECT_DEFAULTS` і, якщо потрібен FullStory, `fsOrgMap`
+- [ ] `npm run build` проходить без помилок
+- [ ] Протестовано на `test-lootbox.html` (або `test-<проект>-lootbox.html`)
 
 ### SCSS структура
 
+Тема стилізує фіксований набір класів з `App.vue` (`.loot-box-spin-wheel-container`, `.wheel-sectors`, `.wheel-sectors-mask`, `.wheel-frame`, `.wheel-pointer`, `.wheel-center`, `.lamps`, `.lamp`, `.win-frame`, `.win-animation`, `.sector`, `.loot-box-sum`, `.loot-box-currency`, `.loot-box-prize-type` та інші). Змінні теми живуть під селектором `[data-theme='<Назва>']`. Найнадійніше — скопіювати файли найближчої існуючої теми і змінювати їх.
+
 ```scss
 // theme.scss
-@import './styles/tokens';
-@import './styles/animations';
+@use './styles/animations';
+@use '../_shared/sectorTextDefaults';
+@use './styles/tokens';
 
-.lootbox-theme {
-  // Основні стилі теми
+.loot-box-spin-wheel-container {
+  position: relative;
+  width: 100vmin;
+  height: 100vmin;
+}
+
+// ... стилі класів з App.vue
+```
+
+```scss
+// styles/_tokens.scss
+[data-theme='YourThemeName'] {
+  --color-primary-5: #ffffad;
+  --color-warning: #fdd835;
+  --color-primary-2: #ffbb42;
+  --color-win-highlight: #ffa000;
+
+  /* Позиції тексту секторів (одиниці viewBox) */
+  --sector-label-radius: 42;
+  --sector-sum-x: 87;
+  --sector-sum-y: 52;
+  --sector-currency-x: 86.7;
+  --sector-currency-y: 56;
 }
 ```
 
 ```scss
-// _tokens.scss
-:root {
-  --primary-color: #007bff;
-  --secondary-color: #6c757d;
-  --border-radius: 4px;
+// styles/_animations.scss
+@keyframes lampFlashes1 {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
 }
 ```
 
-```scss
-// _animations.scss
-@keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-```
+Приклад скорочений: реальні `_animations.scss` містять ще `lampFlashes2` та анімації очікування колеса.
 
 ## 📋 Сезонне промо (KingWheel)
 
@@ -886,22 +982,24 @@ centerbg--milky-way.webp
 
 Проект підтримує такі параметри:
 
-- **`project`** - назва проекту (string, наприклад: `alpa`, `king`)
-- **`style`** - назва теми (string, наприклад: `AlpaWheelLight`, `KingWheel`)
-- **`ab`** - активація A/B тестування (boolean, `true` для активації)
-- **`sectors`** - список секторів з призами
-- **`sectors_type`** - типи призів для кожного сектора
+- **`project`** - назва проекту (string, наприклад: `alpa`, `king`, `thor`)
+- **`style`** - назва теми (string, наприклад: `AlpaWheelLight`, `KingWheel`); це назва, а не числовий `styleId`
+- **`ab`** - активація A/B тестування (boolean, `true` для активації; працює лише з `project` і без `style`)
+- **`sectors`** - список з 8 призів, розділених `;`; кожен приз — «значення пробіл валюта»
+- **`sectors_type`** - типи призів для кожного сектора, розділені `;`; обов'язковий
 - **`active`** - активність лутбокса (boolean, за замовчуванням true)
-- **`vip_level`** - VIP рівень гравця (число від 0 до максимального рівня на проекті, за замовчуванням 0)
-- **`fs_org`** - FullStory Org ID для відстеження взаємодій в iframe (string, опціонально)
-- **`user_id`** - ID користувача для передачі в Google Analytics (string, опціонально)
+- **`user_id`** - ID користувача: впливає на A/B варіант, додається до кожної події аналітики (string, опціонально)
+- **`no_analytics`** - наявність параметра вимикає події (GA4 і FullStory) та завантаження FullStory
+- **`fps`** - `true` показує FPS-монітор (діагностика)
 - **`promo`** - QA-override сезонного промо KingWheel: `force` / `disable` (інші значення ігноруються). Деталі — у розділі «Сезонне промо (KingWheel)»
 - **`season`** - примусовий VIP-сезон теми AlpaWheelMax: id сезону або `none` (опціонально; без параметра сезон обирається за датою в UTC). Деталі — у розділі «Сезони VIP (AlpaWheelMax)»
 - **`season_at`** - QA-override поточного часу для перевірки меж сезонів (ISO-8601 у UTC, напр. `2027-01-04T10:01:00Z`)
 
-> **Примітка:** Параметр `vip_level` зарезервований для майбутнього використання. Наразі він не впливає на відображення колеса, але в майбутніх версіях може використовуватись для кастомізації дизайну залежно від VIP статусу гравця.
+> **Примітка про `sectors`:** колесо має рівно 8 секторів, тож потрібно 8 призів. Приз без пробілу (`JACKPOT`, `150%`) показується цілим як значення, з порожньою валютою. Якщо призів менше 8, частина секторів лишається порожньою; менше 2 чи більше 8 — список вважається некоректним, і всі сектори порожні. Без `sectors_type` список призів порожній.
 
-> **FullStory:** Параметр `fs_org` активує запис сесій FullStory всередині iframe. Якщо параметр не передано — FullStory не завантажується.
+> **Примітка про `vip_level`:** віджет цей параметр не читає. Тестові сторінки додають його до URL, але на колесо й аналітику він не впливає.
+
+> **FullStory:** параметра `fs_org` немає. FullStory вмикається за `?project=` через таблицю `fsOrgMap` в `index.html` (зараз `alpa` і `king`); для `thor` і для запитів без `?project=` FullStory не завантажується. `?no_analytics` вимикає його теж.
 
 ### Логіка вибору теми
 
@@ -915,7 +1013,11 @@ centerbg--milky-way.webp
    - Якщо для проекту налаштовано A/B тест — тема обирається автоматично на основі варіанту користувача
    - Якщо A/B тест не налаштовано — використовується дефолтна тема проекту
 4. **`?project=` без `?style=` та без `?ab=true`** — використовується дефолтна тема проекту, A/B вимкнено
-5. **Fallback** — перша тема в списку
+5. **Fallback** — тема, яку обрав `index.html` для прелоадера (`AlpaWheelLight`):
+   - невідомий `project` — `console.error` і ця тема;
+   - невідома `style` без `project` — `console.warn` і ця тема.
+
+Старі назви (`project=rocket`, `RocketWheel*`) перед вибором приводяться до нових (`alpa`, `AlpaWheel*`).
 
 **Приклад валідації:**
 
@@ -926,6 +1028,8 @@ centerbg--milky-way.webp
 ```
 
 ### Приклади використання
+
+Приклади скорочені: у реальному URL потрібні 8 призів у `sectors` і `sectors_type`.
 
 ```
 # Використання дефолтної теми проекту (без A/B)
@@ -943,8 +1047,8 @@ centerbg--milky-way.webp
 # Повний приклад з A/B тестуванням та user_id
 ?project=alpa&ab=true&user_id=12345&sectors=500%20USD;1,000%20USD&sectors_type=Bonus%20Prize;Bonus%20Prize
 
-# Приклад з FullStory інтеграцією
-?project=alpa&fs_org=FWWXX&sectors=500%20USD;1,000%20USD&sectors_type=Bonus%20Prize;Bonus%20Prize
+# Без аналітики та FullStory (превʼю, тести)
+?project=alpa&no_analytics&sectors=500%20USD;1,000%20USD&sectors_type=Bonus%20Prize;Bonus%20Prize
 ```
 
 ## 📋 A/B тестування
@@ -953,10 +1057,11 @@ centerbg--milky-way.webp
 
 ### Принцип роботи
 
-1. **Стабільна ідентифікація користувача**: При першому завантаженні генерується унікальний `ab_user_id` (UUID) і зберігається в `localStorage`
-2. **Детерміністичне хешування**: Комбінація `userId + testId` хешується алгоритмом FNV-1a для отримання стабільного числа
-3. **Розподіл за вагою**: Хеш використовується для вибору варіанту згідно з налаштованими вагами (наприклад, 50/50)
+1. **Ідентифікація користувача**: береться `user_id` з URL; якщо його немає, генерується випадковий `ab_user_id` (UUID) і зберігається в `localStorage`. Якщо сховище заблоковане, id генерується заново при кожному завантаженні, тож варіант може змінюватись. Для стабільного варіанту передавайте `user_id`
+2. **Детерміністичне хешування**: рядок `userId + ':' + testId` хешується алгоритмом FNV-1a (32-бітне множення через `Math.imul`) для отримання стабільного числа
+3. **Розподіл за вагою**: `хеш % 100` порівнюється з накопичуваними вагами варіантів (наприклад, 50/50)
 4. **Прозорість**: Результат A/B тесту доступний в `window.currentTheme.abTest` та автоматично додається до всіх аналітичних подій
+5. **Умова запуску**: лише з `?ab=true&project=…` і без `?style=` (див. «Коли A/B тест застосовується»)
 
 ### Конфігурація A/B тестів
 
@@ -979,7 +1084,7 @@ export type ABTestsConfig = Record<string, ABTest>
 
 export const abTests: ABTestsConfig = {
   alpa: {
-    testId: 'alpa_theme_v1',
+    testId: 'alpa_theme_v2',
     variants: [
       { id: 'A', theme: 'AlpaWheelLight', weight: 50 },
       { id: 'B', theme: 'AlpaWheelPro', weight: 50 },
@@ -992,13 +1097,13 @@ export const abTests: ABTestsConfig = {
 
 ```javascript
 // bootstrap.js - спрощена логіка
-function resolveABVariant(themesConfig, project) {
+function resolveABVariant(themesConfig, project, urlUserId) {
   const test = themesConfig.abTests[project]
   if (!test) return null
 
-  const userId = getOrCreateABUserId()  // з localStorage або новий UUID
+  const userId = urlUserId || getOrCreateABUserId()  // user_id з URL або id з localStorage
   const hash = fnv1aHash(userId + ':' + test.testId)  // детерміністичний хеш
-  const variant = pickVariant(test.variants, hash % 100)  // вибір за вагою
+  const variant = pickVariant(test.variants, hash)    // hash % 100 проти накопичених ваг
 
   return {
     testId: test.testId,
@@ -1030,13 +1135,15 @@ A/B тестування **вимикається** якщо:
 - Явно вказано параметр `?style=` — користувач/розробник обрав конкретну тему (навіть якщо передано `?ab=true`)
 - Для проекту не налаштовано A/B тест в `config.ts`
 - Тема з варіанту не знайдена в реєстрі тем
+- Не вказано `?project=` (без проекту тест не визначається)
+- Визначення варіанту завершилось помилкою — у консоль виводиться `console.error`, і показується тема без тесту
 
 ### Доступ до результату A/B тесту
 
 ```javascript
 // В консолі браузера
 window.currentTheme.abTest
-// { testId: 'alpa_theme_v1', variantId: 'A' } або null
+// { testId: 'alpa_theme_v2', variantId: 'A' } або null
 ```
 
 ### Додавання нового A/B тесту
@@ -1047,7 +1154,7 @@ window.currentTheme.abTest
 ```typescript
 export const abTests: ABTestsConfig = {
   alpa: {
-    testId: 'alpa_theme_v1',
+    testId: 'alpa_theme_v2',
     variants: [
       { id: 'A', theme: 'AlpaWheelLight', weight: 50 },
       { id: 'B', theme: 'AlpaWheelPro', weight: 50 },
@@ -1089,10 +1196,10 @@ location.reload()
 
 | Секція | Призначення |
 |--------|-------------|
-| **1. Інформація** | Поточні параметри: тема, варіант A/B, user_id, статус готовності |
+| **1. Попередній перегляд варіантів** | Два iframe (варіанти A і B) з назвами тем |
 | **2. Симуляція реальних user_id** | Toggle + таблиця mock-користувачів для емуляції продового сценарію |
-| **3. Живий A/B тест** | iframe з віджетом, кнопки керування (спін, скидання) |
-| **4. Лог подій** | Лог дій на сторінці (не GA4-події, а внутрішній лог тестової сторінки) |
+| **3. Живий A/B тест** | iframe з віджетом, інформація про поточного користувача, розподіл після скидань, кнопки керування (спін, скидання) |
+| **4. Аналітичні події** | Лог подій на сторінці (не GA4-події, а внутрішній лог тестової сторінки) |
 
 #### Режим симуляції user_id
 
@@ -1122,7 +1229,7 @@ const MOCK_USERS = [
 Ланцюжок передачі:
 1. `test-ab.html` додає `?user_id=user_003` до URL iframe
 2. `bootstrap.js` парсить параметр → зберігає в `window.currentTheme.userId`
-3. `useAnalytics.ts` включає `user_id` в кожну GA4-подію (`Widget Loaded`, `Spin Started`, `Spin Ended`)
+3. `useAnalytics.ts` включає `user_id` в кожну подію (`Widget Loaded`, `Lootbox View`, `Spin Started`, `Spin Ended`)
 
 ## 📋 Аналітика
 
@@ -1132,17 +1239,19 @@ const MOCK_USERS = [
 
 | Провайдер | Призначення | Активація |
 |-----------|-------------|-----------|
-| **FullStory** | Запис сесій, heatmaps | Параметр `?fs_org=XXXXX` |
-| **Google Analytics 4** | Конверсії, A/B аналіз | Завжди активний |
+| **FullStory** | Запис сесій, heatmaps | За `?project=` через `fsOrgMap` в `index.html` (alpa, king); для thor не завантажується |
+| **Google Analytics 4** | Конверсії, A/B аналіз | Завжди активний, якщо немає `?no_analytics` |
+
+`?no_analytics` вимикає і відправку подій, і завантаження FullStory.
 
 ### Відстежувані події
 
 | Подія | Коли відправляється | Параметри |
 |-------|---------------------|-----------|
-| `Widget Loaded` | Після завантаження всіх зображень | `theme`, `project` |
-| `Lootbox View` | При монтуванні компонента | `theme`, `project` |
-| `Spin Started` | При отриманні `startSpin` від батьківського сайту | `theme`, `project` |
-| `Spin Ended` | Після зупинки колеса (за 3 сек до приховання win-анімації) | `prize`, `sector`, `theme`, `project`, `prize_type`, `prize_value`, `prize_currency` |
+| `Widget Loaded` | Коли колесо готове: CSS теми та зображення завантажені, прелоадер прихований (разом з `lootboxReady`) | `theme`, `project` |
+| `Lootbox View` | Одразу після `Widget Loaded` | `theme`, `project` |
+| `Spin Started` | Коли колесо справді починає обертатися; `startSpin` під час обертання ігнорується і подію не створює | `theme`, `project` |
+| `Spin Ended` | У момент відправки `spinEnd` (через `timeToPopup − 3000` мс після зупинки) | `prize`, `sector`, `theme`, `project`, `prize_type`, `prize_value`, `prize_currency` |
 
 ### Автоматичні параметри
 
@@ -1153,20 +1262,18 @@ const MOCK_USERS = [
   session_id: string,      // UUID сесії (sessionStorage)
   host: string,            // Домен батьківського сайту (document.referrer)
   env: 'dev' | 'prod',     // Середовище
+  active: 'true' | 'false', // Значення ?active (false — сторінка «спін уже використано»)
+  user_id?: string,        // ?user_id з URL (якщо передано)
   ab_test_id?: string,     // ID A/B тесту (якщо активний)
   ab_variant?: string,     // Варіант A/B тесту (якщо активний)
 }
 ```
 
+Якщо сховище браузера заблоковане, `session_id` і ідентифікатор клієнта GA4 генеруються один раз на завантаження і зберігаються в памʼяті.
+
 ### GA4 інтеграція
 
-Google Analytics 4 інтегрований через Cloudflare Worker проксі для обходу блокувальників реклами:
-
-```typescript
-// src/composables/useAnalytics.ts
-const GA4_ENDPOINT = 'https://still-band-a01d.upstars-marbella.workers.dev'
-const GA4_MEASUREMENT_ID = 'G-XXXXXXXXXX'
-```
+Google Analytics 4 інтегрований через Cloudflare Worker проксі для обходу блокувальників реклами. Адреса проксі задана константою `GA_WORKER_URL` у `src/composables/useAnalytics.ts`; ідентифікатор вимірювання (measurement id) у віджеті не зберігається. Імена подій у GA4 перетворюються в snake_case (`Spin Ended` → `spin_ended`).
 
 ### Аналіз A/B конверсій в GA4
 
@@ -1223,10 +1330,20 @@ const handleAnimationFrame = (start: number, startAngle: number) => {
 
 ### Двофазна логіка роботи
 
-1. **Фаза 1**: Звичайне обертання (3s, linear) - запускається по команді з батьківського сайту
-2. **Фаза 2**: Spin to win (14s, ease-out) - при отриманні winnerSection з бекенда
+1. **Фаза 1**: Обертання без результату (3s, linear): запускається командою `startSpin` і повторюється циклами по 3 с, поки не прийде результат. Команди «зупинитися» немає
+2. **Фаза 2**: Spin to win (14s, ease-out): стартує, коли відомий виграшний сектор
 
-**Динамічне переключення**: Анімація може переключатися між фазами в реальному часі без перезапуску.
+**Динамічне переключення**: Якщо результат (`winSector`) прийшов посеред циклу, колесо зберігає поточну швидкість і сповільнюється 14 с від цього моменту (без стрибка кута). Якщо результат відомий уже на старті (`winSector` надіслано до `startSpin`) — 14 с від старту.
+
+**Після зупинки:**
+
+1. Win-анімація показується `timeToPopup` мс (9 с; останні 500 мс згасає)
+2. `spinEnd` надсилається через `timeToPopup − 3000` мс після зупинки (6 с)
+3. Колесо ще 30 с тримає результат, потім за 2 с плавно повертається в покачування очікування
+
+Зупинка і `spinEnd` дублюються таймером, тому відбуваються вчасно і у фоновій вкладці (де `requestAnimationFrame` стоїть). Новий спін скасовує всі таймери попереднього виграшу, тож «застарілий» `spinEnd` не приходить. `startSpin` під час обертання ігнорується.
+
+**Результат до `startSpin` і після зупинки**: `winSector`, надісланий до `startSpin` або після зупинки колеса, зберігається і використовується наступним спіном.
 
 ### Константи анімації
 
@@ -1234,6 +1351,8 @@ const handleAnimationFrame = (start: number, startAngle: number) => {
 const SPIN_WITHOUT_WIN_DURATION = 3000 // 3 секунди
 const SPIN_WITH_WIN_DURATION = 14000 // 14 секунд
 const SWITCH_EFFECTS_THRESHOLD = 0.7 // 70% прогресу
+const RESET_DELAY = 30000 // утримання результату після win-анімації (30 с)
+const RETURN_TO_WAITING_DURATION = 2000 // плавне повернення в покачування (2 с)
 ```
 
 ### Easing функції
@@ -1257,6 +1376,8 @@ t = 1 - Math.pow(1 - t, 4)
 
 ### Вхідні повідомлення
 
+Віджет приймає повідомлення лише від батьківського вікна (`event.source === window.parent`).
+
 ```typescript
 // Від батьківського сайту
 {
@@ -1264,11 +1385,15 @@ t = 1 - Math.pow(1 - t, 4)
 }
 {
   type: 'winSector',
-  data: 5 // номер сектора (0-7)
+  data: 5 // індекс сектора: число 0..7
 }
 ```
 
+**`winSector`**: `data` — Number, індекс сектора в списку `sectors` (0 — перший приз). Числовий рядок (`"5"`) приводиться до числа і приймається. Некоректне значення (`null`, `""`, `true`, `8`, `-1`, `5.5`, `"abc"`) ігнорується з `console.error`: колесо продовжує крутитися і чекає коректного номера. Верхня межа — кількість призів мінус 1 (7, якщо список призів порожній).
+
 ### Вихідні повідомлення
+
+Віджет надсилає їх у батьківське вікно з `targetOrigin = '*'`.
 
 ```typescript
 // До батьківського сайту
@@ -1276,14 +1401,16 @@ t = 1 - Math.pow(1 - t, 4)
   type: 'lootboxReady'
 }
 {
-  type: 'winSector',
-  data: { sector: 5, timestamp: 1234567890 }
-}
-{
   type: 'spinEnd',
   data: { prize: '1000 USD', timestamp: 1234567890 }
 }
 ```
+
+Повідомлення `winSector` віджет сайту **не надсилає**: цей тип лише вхідний. `lootboxReady` не має даних. `prize` у `spinEnd` — «значення пробіл валюта» (порожній рядок, якщо для сектора немає даних).
+
+### Безпека: як сайту приймати повідомлення
+
+Оскільки `targetOrigin` дорівнює `'*'`, сайт має сам перевіряти відправника: приймати повідомлення лише коли `event.source === iframe.contentWindow` і `event.origin` дорівнює origin колеса. Приз для нарахування береться з відповіді бекенда: `prize` у `spinEnd` призначений лише для показу.
 
 ### Інтеграція для розробників
 
@@ -1291,13 +1418,13 @@ t = 1 - Math.pow(1 - t, 4)
 
 ```html
 <iframe
-  src="https://lootbox.example.com/?sectors=100%20FS&style=default&vip_level=5"
+  src="https://lootbox.example.com/?project=alpa&sectors=500%20USD;1000%20USD;10%20FS;20%20FS;35%20FS;25%20USD;100%20USD;250%20USD&sectors_type=Bonus%20Prize;Bonus%20Prize;Free%20Spins;Free%20Spins;Free%20Spins;Bonus%20Prize;Bonus%20Prize;Bonus%20Prize"
   id="lootbox-iframe"
 >
 </iframe>
 ```
 
-> **Примітка:** Параметр `vip_level` можна передати при підключенні iframe для майбутньої кастомізації досвіду залежно від VIP статусу гравця.
+> **Примітка:** адреса iframe має починатися з `https://`: на https-сайтах браузер блокує iframe з `http://`.
 
 #### 2. Запуск анімації
 
@@ -1309,11 +1436,11 @@ iframe.contentWindow.postMessage({ type: 'startSpin' }, '*')
 #### 3. Встановлення виграшного сектора
 
 ```javascript
-// Встановлюємо сектор після запуску анімації
+// Надсилаємо сектор, коли бекенд його повернув (після startSpin; ранній сектор теж зберігається)
 iframe.contentWindow.postMessage(
   {
     type: 'winSector',
-    data: 5, // номер сектора (0-7)
+    data: 5, // індекс сектора: число 0..7
   },
   '*'
 )
@@ -1322,26 +1449,34 @@ iframe.contentWindow.postMessage(
 #### 4. Обробка результатів
 
 ```javascript
+const WHEEL_ORIGIN = 'https://lootbox.example.com'
+
 window.addEventListener('message', event => {
+  if (event.source !== iframe.contentWindow) return
+  if (event.origin !== WHEEL_ORIGIN) return
+  if (!event.data || typeof event.data !== 'object') return
+
   if (event.data.type === 'spinEnd') {
-    console.log('Приз:', event.data.data.prize)
+    console.log('Приз для показу:', event.data.data.prize)
   }
 })
 ```
 
 ### Типи повідомлень
 
-**lootboxReady** - відправляється коли лутбокс готовий до роботи.
+**lootboxReady** - відправляється коли лутбокс готовий до роботи (CSS теми та зображення завантажені). Якщо `themes-config.js` або `theme.css` не завантажились, не надсилається.
 
-**startSpin** - запускає анімацію обертання колеса.
+**startSpin** - запускає анімацію обертання колеса; ігнорується, якщо колесо вже крутиться.
 
 **winSector** - встановлює виграшний сектор (відправляється з батьківського сайту).
 
-**spinEnd** - повідомляє про завершення анімації з результатом.
+**spinEnd** - повідомляє про завершення анімації з призом і міткою часу.
 
 ## 📋 Тестування
 
 ### Прототип інтеграції
+
+Тестові сторінки лежать у `public/`: `test-lootbox.html`, `test-alpa-lootbox.html`, `test-king-lootbox.html`, `test-thor-lootbox.html` та `test-ab.html`. Вхідні повідомлення від колеса сторінки приймають лише від власного iframe (`event.source === iframe.contentWindow`).
 
 `test-lootbox.html` демонструє:
 
@@ -1383,6 +1518,23 @@ npm run build
 - `dist/` містить готові файли
 - `themes-config.js` з конфігураціями всіх тем
 - Зображення та стилі
+
+`npm run build` складається з двох кроків: спочатку перевірка типів (`vue-tsc`), потім `vite build`. Помилка типів зупиняє збірку до її початку.
+
+### Перевірки під час збірки
+
+Теки в `src/themes`, назва яких починається з `_` або `.`, пропускаються; теки без `config.ts` теж (однаково в dev і в build). Збірка (і dev-сервер) падає з поясненням, якщо:
+
+- `name` у конфігу не збігається з назвою папки теми;
+- `project` порожній, або не задані повні `fontSizes`/`promoFontSizes`;
+- `promoPeriod.start` не раніше за `promoPeriod.end`;
+- повторюється `styleId` або `name`;
+- у проекту не рівно одна тема з `isProjectDefault: true`;
+- таблиці `index.html` (`PROJECT_DEFAULTS`, `PROJECT_THEMES`, `themeBgColors`, `FALLBACK_THEME`) не збігаються з конфігами тем;
+- тема має `.scss`, а пакет `sass` не встановлено;
+- файл `src/ab/config.ts` існує, але його не вдалося прочитати.
+
+Нова тема потребує записів у таблицях `index.html` (а для нового проекту з FullStory — ще й у `fsOrgMap`); див. «Створення нової теми». Preload для `preloader.svg` будується автоматично.
 
 ### Розміщення на статичному хостингу
 

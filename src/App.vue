@@ -284,7 +284,7 @@ const isPromoActive = window.currentTheme?.isPromoActive ?? false
 const sectionsData = ((): Sector[] => {
   if (!window.currentTheme?.sectors || !window.currentTheme?.sectorsType) return []
 
-  // Обробляємо сектори з URL параметрів після маунту компонента:
+  // Обробляємо сектори з URL параметрів (під час setup компонента):
   // парсинг, валідація кількості, створення структурованих об'єктів
   const sectors = processSectorsFromUrl(
     window.currentTheme.sectors,
@@ -347,14 +347,23 @@ const getFontSize = (text: string | undefined, type: 'sum' | 'currency' | 'bonus
 
 /**
  * Валідація переможного сектора від бекенда
- * Захист від некорректних даних та fallback на сектор 0
+ * Число-рядок ("5") приводиться до числа. Невірне значення → null:
+ * виграшний сектор не змінюється, колесо чекає на коректний номер.
+ * Верхня межа — останній сектор зі списку призів; без списку — 7.
  */
-const validateWinnerSection = (value: number): number => {
-  if (value >= 0 && value <= 7 && Number.isInteger(value)) {
-    return value
+const validateWinnerSection = (value: unknown): number | null => {
+  const maxSector = sectionsData.length > 0 ? sectionsData.length - 1 : 7
+  const sector = typeof value === 'string' && value.trim() !== '' ? Number(value) : value
+  if (
+    typeof sector === 'number' &&
+    Number.isInteger(sector) &&
+    sector >= 0 &&
+    sector <= maxSector
+  ) {
+    return sector
   }
   console.error('Невірний winnerSection від бекенда:', value)
-  return 0
+  return null
 }
 
 // Комунікація з батьківським вікном через postMessage
@@ -362,14 +371,16 @@ const { postToParent } = usePostMessageBus<LootboxMessages>(
   {
     // Слухаємо: команда запуску колеса від сайту
     startSpin: () => {
-      runWheel()
+      // Колесо вже крутиться — команду проігноровано, подію не рахуємо
+      if (!runWheel()) return
       // Аналітика: відправляємо подію напряму в FullStory
       track('Spin Started', { theme: currentTheme, project: currentProject })
     },
 
     // Слухаємо: команда відправки виграшного сектора
     winSector: sector => {
-      winnerSection.value = validateWinnerSection(sector)
+      const validSector = validateWinnerSection(sector)
+      if (validSector !== null) setWinner(validSector)
     },
   },
   {
@@ -378,7 +389,7 @@ const { postToParent } = usePostMessageBus<LootboxMessages>(
 )
 
 // Анімація колеса з двофазною логікою
-const { runWheel, setSpinEndCallback } = useWheelAnimation(
+const { runWheel, setWinner, setSpinEndCallback } = useWheelAnimation(
   {
     running,
     winAnimationStarted,
@@ -400,14 +411,14 @@ const { runWheel, setSpinEndCallback } = useWheelAnimation(
 
 // Callback після завершення анімації
 setSpinEndCallback(prize => {
-  // Старий спосіб: відправляємо у parent сайт (залишаємо для зворотної сумісності)
+  // Повідомляємо батьківський сайт: spinEnd з призом і міткою часу
   postToParent('spinEnd', { prize, timestamp: Date.now() })
 
   // Отримуємо дані виграшного сектора для розширеної аналітики
   const winningSector = winnerSection.value ?? 0
   const sectorData = sectionsData[winningSector]
 
-  // Новий спосіб: аналітика напряму в FullStory/GA4 з iframe
+  // Аналітика напряму з iframe у FullStory/GA4
   track('Spin Ended', {
     prize,
     sector: winningSector,
@@ -477,6 +488,9 @@ onMounted(async () => {
   // Fallback таймаут 15 секунд — на випадок якщо якесь зображення зламане
   await waitForImages('.loot-box-spin-wheel-container img', 15000)
 
+  // Без теми колесо порожнє — не ховаємо прелоадер і не повідомляємо сайт
+  if (!window.currentTheme) return
+
   // Тільки ПІСЛЯ завантаження — ховаємо прелоадер
   hidePreloader()
 
@@ -516,7 +530,7 @@ onUnmounted(() => {
 
 <style>
 /*
-  Стилі завантажуються динамічно з теми (з URL параметрів ?style=N) через bootstrap.js для запобігання FOUC
+  Стилі завантажуються динамічно з теми (за назвою теми з URL параметрів ?style=<назва> або за ?project=) через bootstrap.js для запобігання FOUC
   Архітектура:
   - index.html (базові)
   - bootstrap.js (завантаження) → themes/{theme}/theme.css

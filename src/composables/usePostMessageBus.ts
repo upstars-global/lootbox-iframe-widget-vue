@@ -20,7 +20,7 @@ function isPlainObject(v: unknown): v is Record<string, unknown> {
  * Приклад використання:
  * const { postToParent } = usePostMessageBus<LootboxMessages>({
  *   startSpin: () => runWheel(),
- *   stopSpin: () => stopWheel()
+ *   winSector: sector => setWinner(sector)
  * })
  */
 export function usePostMessageBus<M extends Record<string, unknown>>(
@@ -61,7 +61,7 @@ export function usePostMessageBus<M extends Record<string, unknown>>(
    * @param payload - дані події (структура залежить від типу)
    * @param targetOrigin - обмеження за origin для безпеки (за замовчуванням '*')
    *
-   * Приклад: postTo(iframe.contentWindow, 'startSpin', { timestamp: Date.now() })
+   * Приклад: postTo(iframe.contentWindow, 'winSector', 5)
    */
   function postTo<K extends keyof M>(
     targetWindow: Window | null | undefined,
@@ -83,7 +83,7 @@ export function usePostMessageBus<M extends Record<string, unknown>>(
    * @param payload - дані події (необов'язково)
    * @param targetOrigin - обмеження за origin (за замовчуванням '*')
    *
-   * Приклад: postToParent('winSector', { sector: 0, timestamp: Date.now() })
+   * Приклад: postToParent('spinEnd', { prize: '500 USD', timestamp: Date.now() })
    */
   function postToParent<K extends keyof M>(type: K, payload?: M[K], targetOrigin = '*') {
     if (window.parent && window.parent !== window) {

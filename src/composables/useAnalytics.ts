@@ -15,7 +15,7 @@
  */
 
 // GA4 Worker endpoint (проксі для обходу блокування Safari / AdBlock)
-const GA_WORKER_URL = 'https://still-band-a01d.upstars-marbella.workers.dev'
+const GA_WORKER_URL = 'https://still-band-a01d.upstars-landings.workers.dev'
 
 // Прапорець для вимкнення аналітики (використовується для preview iframe на test-ab.html)
 const isAnalyticsDisabled = new URLSearchParams(window.location.search).has('no_analytics')
@@ -26,6 +26,21 @@ const GA_CLIENT_ID_KEY = 'ga_client_id'
 // Ключ для збереження session_id в sessionStorage
 const GA_SESSION_ID_KEY = 'analytics_session_id'
 
+/** UUID v4: crypto.randomUUID є лише в secure context (https, localhost) — інакше з getRandomValues */
+const uuid = (): string => {
+  if (typeof crypto.randomUUID === 'function') return crypto.randomUUID()
+  const b = crypto.getRandomValues(new Uint8Array(16))
+  b[6] = (b[6]! & 0x0f) | 0x40
+  b[8] = (b[8]! & 0x3f) | 0x80
+  const h = Array.from(b, x => x.toString(16).padStart(2, '0')).join('')
+  return `${h.slice(0, 8)}-${h.slice(8, 12)}-${h.slice(12, 16)}-${h.slice(16, 20)}-${h.slice(20)}`
+}
+
+// Запасні id, коли сховище недоступне (заблоковані сторонні cookies, sandbox без allow-same-origin):
+// генеруються один раз на завантаження, а не на кожну подію — інакше кожна подія = новий користувач
+let fallbackClientId: string | null = null
+let fallbackSessionId: string | null = null
+
 /**
  * Генерує або отримує збережений client_id для GA4
  */
@@ -33,13 +48,13 @@ const getClientId = (): string => {
   try {
     let clientId = localStorage.getItem(GA_CLIENT_ID_KEY)
     if (!clientId) {
-      clientId = crypto.randomUUID()
+      clientId = uuid()
       localStorage.setItem(GA_CLIENT_ID_KEY, clientId)
     }
     return clientId
   } catch {
     // Fallback для private mode / iframe without storage
-    return crypto.randomUUID()
+    return (fallbackClientId ??= uuid())
   }
 }
 
@@ -51,13 +66,13 @@ const getSessionId = (): string => {
   try {
     let sessionId = sessionStorage.getItem(GA_SESSION_ID_KEY)
     if (!sessionId) {
-      sessionId = crypto.randomUUID()
+      sessionId = uuid()
       sessionStorage.setItem(GA_SESSION_ID_KEY, sessionId)
     }
     return sessionId
   } catch {
     // Fallback для private mode / iframe without storage
-    return crypto.randomUUID()
+    return (fallbackSessionId ??= uuid())
   }
 }
 
@@ -88,6 +103,8 @@ const getCommonParams = (): Record<string, string> => {
     session_id: getSessionId(),
     host: getHost(),
     env: import.meta.env.DEV ? 'dev' : 'prod',
+    // ?active=false — сторінка «спін уже використано»: щоб такі покази можна було відфільтрувати
+    active: window.currentTheme?.isActive === false ? 'false' : 'true',
     ...(userId ? { user_id: userId } : {}),
     ...(abTest
       ? {
@@ -155,7 +172,7 @@ export function useAnalytics() {
 
   /**
    * Універсальний трекінг з автоматичним додаванням загальних параметрів
-   * Кожна подія отримує: session_id, host, env
+   * Кожна подія отримує: session_id, host, env, active (і user_id, ab_test_id, ab_variant, якщо вони є)
    * Якщо в URL є ?no_analytics — нічого не відправляється (preview iframe)
    */
   const track = (eventName: string, properties?: Record<string, unknown>): void => {

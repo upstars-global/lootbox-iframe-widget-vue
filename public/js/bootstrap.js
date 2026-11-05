@@ -9,7 +9,7 @@
  */
 
 ;(async function () {
-  // === КОНСТАНТИ ===9
+  // === КОНСТАНТИ ===
   const IMAGE_LOAD_TIMEOUT_MS = 6000
 
   // === ДОПОМІЖНІ ФУНКЦІЇ ===
@@ -79,7 +79,7 @@
    * 3. ?project= + ?style= → валідуємо належність теми до проекту
    *    - якщо тема належить проекту → використовуємо її
    *    - якщо ні → ігноруємо style, використовуємо дефолт проекту + console.warn
-   * 4. Fallback → перша тема
+   * 4. Fallback → тема з index.html (window.__lootboxBoot.theme), інакше перша
    */
   function selectTheme(themesConfig, params) {
     const themes = Array.isArray(themesConfig.themes) ? themesConfig.themes : []
@@ -136,8 +136,20 @@
       }
     }
 
-    // Сценарій 4: Fallback — перша тема
-    return themes[0] || null
+    // Сценарій 4: Fallback — тема, яку вже вибрав index.html (від неї прелоадер і фон),
+    // а не перша за сортуванням styleId; перша — лише якщо такої теми немає
+    const bootTheme = window.__lootboxBoot && window.__lootboxBoot.theme
+    const fallback = themes.find(t => t.name === bootTheme) || themes[0] || null
+    if (fallback && params.project && !themes.some(t => t.project === params.project)) {
+      console.error(
+        `[Lootbox] Unknown project "${params.project}". Using fallback theme "${fallback.name}".`
+      )
+    } else if (fallback && params.themeName && !params.project) {
+      console.warn(
+        `[Lootbox] Theme "${params.themeName}" not found. Using fallback theme "${fallback.name}".`
+      )
+    }
+    return fallback
   }
 
   /** Встановлення data-theme атрибута */
@@ -145,14 +157,16 @@
     document.documentElement.setAttribute('data-theme', theme.name)
   }
 
-  /** Завантаження CSS теми */
+  /** Завантаження CSS теми: Promise → true (завантажився) | false (помилка завантаження) */
   function loadThemeStylesheet(theme) {
     const href = `themes/${theme.name}/theme.css`
     const linkEl = document.createElement('link')
     linkEl.rel = 'stylesheet'
     linkEl.href = href
-    // Promise який чекає завантаження CSS файлу
-    const ready = new Promise(resolve => linkEl.addEventListener('load', resolve, { once: true }))
+    const ready = new Promise(resolve => {
+      linkEl.addEventListener('load', () => resolve(true), { once: true })
+      linkEl.addEventListener('error', () => resolve(false), { once: true })
+    })
     document.head.appendChild(linkEl)
     return ready
   }
@@ -195,6 +209,28 @@
       new Promise(r => setTimeout(r, timeoutMs)),
     ])
     // console.log('[bootstrap] Всі зображення завантажені')
+  }
+
+  /**
+   * Шрифти колеса (Google Fonts, <link id="google-fonts"> в index.html).
+   * Файли шрифтів браузер качає лише тоді, коли текст уже в DOM, тому запускаємо
+   * завантаження заздалегідь — щойно прийде CSS Google. Повертає Promise, який
+   * виконується, коли шрифти завантажились (або не вдалося); null — немає чого чекати.
+   */
+  const THEME_FONTS = ['800 10px Poppins', '900 10px "Roboto Slab"', '700 10px Rubik']
+
+  function loadThemeFonts() {
+    const link = document.getElementById('google-fonts')
+    if (!link || !document.fonts) return null
+    const load = () => Promise.all(THEME_FONTS.map(f => document.fonts.load(f))).catch(() => {})
+    if (link.media === 'all') return load()
+    return new Promise(resolve => link.addEventListener('load', () => resolve(load()), { once: true }))
+  }
+
+  /** Чи вже прийшов CSS Google Fonts (index.html перемикає media на all після load) */
+  function isFontsCssLoaded() {
+    const link = document.getElementById('google-fonts')
+    return !!link && link.media === 'all'
   }
 
   /** Ключ зображення без розширення з URL (basename → ключ для мапи images) */
@@ -444,9 +480,24 @@
     var hash = 2166136261
     for (var i = 0; i < str.length; i++) {
       hash ^= str.charCodeAt(i)
-      hash = (hash * 16777619) >>> 0
+      // Math.imul: 32-бітне множення; звичайне hash * 16777619 перевищує 2^53 і губить молодші біти
+      hash = Math.imul(hash, 16777619) >>> 0
     }
     return hash
+  }
+
+  /** UUID v4: crypto.randomUUID є лише в secure context (https, localhost) — інакше з getRandomValues */
+  function uuid() {
+    if (typeof crypto.randomUUID === 'function') return crypto.randomUUID()
+    var b = crypto.getRandomValues(new Uint8Array(16))
+    b[6] = (b[6] & 0x0f) | 0x40
+    b[8] = (b[8] & 0x3f) | 0x80
+    var h = Array.prototype.map
+      .call(b, function (x) {
+        return (x + 256).toString(16).slice(1)
+      })
+      .join('')
+    return [h.slice(0, 8), h.slice(8, 12), h.slice(12, 16), h.slice(16, 20), h.slice(20)].join('-')
   }
 
   /** Отримати або створити стабільний userId для A/B розподілу */
@@ -455,12 +506,12 @@
     try {
       var id = localStorage.getItem(key)
       if (!id) {
-        id = crypto.randomUUID()
+        id = uuid()
         localStorage.setItem(key, id)
       }
       return id
     } catch {
-      return crypto.randomUUID()
+      return uuid()
     }
   }
 
@@ -551,6 +602,8 @@
 
   // === ГОЛОВНА ЛОГІКА ===
 
+  const bootStart = performance.now()
+  const fontsReady = loadThemeFonts()
   const urlParams = normalizeLegacyParams(readUrlParams())
   const themesConfig = getThemesConfig()
 
@@ -560,10 +613,20 @@
   // та НЕ вказано конкретну тему (?style=)
   var abResult = null
   if (urlParams.project && urlParams.ab && !urlParams.themeName) {
-    abResult = resolveABVariant(themesConfig, urlParams.project, urlParams.userId)
+    try {
+      abResult = resolveABVariant(themesConfig, urlParams.project, urlParams.userId)
+    } catch (error) {
+      // Збій A/B не має ламати старт: показуємо тему без тесту
+      console.error('[Lootbox A/B] Не вдалося визначити варіант:', error)
+      abResult = null
+    }
     if (abResult) {
       selectedTheme = abResult.theme
     }
+  }
+
+  if (!selectedTheme) {
+    throw new Error('тему не знайдено (немає themes/themes-config.js або тем у ньому)')
   }
 
   setThemeDataAttribute(selectedTheme)
@@ -594,8 +657,21 @@
   // Прелоад без winanimation і з урахуванням промо (див. pickPreloadImages)
   const criticalImages = pickPreloadImages(themeImageUrls, isPromo)
   await waitForAllImages(criticalImages, IMAGE_LOAD_TIMEOUT_MS)
-  await cssReady
+  if (!(await cssReady)) {
+    throw new Error(`не завантажився themes/${selectedTheme.name}/theme.css`)
+  }
+  // Шрифти: якщо CSS Google вже прийшов — чекаємо файли шрифтів у межах того ж ліміту
+  // від старту; якщо ні — не чекаємо (старт не залежить від швидкості Google)
+  if (fontsReady && isFontsCssLoaded()) {
+    const timeLeft = Math.max(0, IMAGE_LOAD_TIMEOUT_MS - (performance.now() - bootStart))
+    await Promise.race([fontsReady, new Promise(r => setTimeout(r, timeLeft))])
+  }
 
   const imageMap = applySeasonToImageMap(buildImageMap(themeImageUrls, isPromo), seasonId)
   exposeThemeRuntime(selectedTheme, urlParams, imageMap, abResult, isPromo, seasonId) // window.currentTheme = { ... }
-})()
+})().catch(function (error) {
+  // Старт не вдався: тему не показуємо, прелоадер лишається, main.ts не монтує app
+  // і «lootboxReady» не відправляється (див. main.ts → waitThemeReady)
+  console.error('[bootstrap] Тема не завантажилась:', error)
+  document.documentElement.setAttribute('data-theme-failed', '1')
+})

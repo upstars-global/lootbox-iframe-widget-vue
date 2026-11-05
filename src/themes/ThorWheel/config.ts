@@ -15,7 +15,7 @@ export const config: ThemeConfig = {
     numberOfSpins: 1,
     winSection: 0,
   },
-  // Custom font sizes for KingWheel theme (adjust as needed)
+  // Custom font sizes for ThorWheel theme (adjust as needed)
   fontSizes: {
     sum: {
       short: '8',

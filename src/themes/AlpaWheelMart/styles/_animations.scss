@@ -1,3 +1,16 @@
+/* Анімація лампочок - перша фаза: горять → гаснуть → горять */
+@keyframes lampFlashes1 {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
 /* Анімація лампочок - протифазна до lampFlashes1 для різноманітності */
 @keyframes lampFlashes2 {
   0% {

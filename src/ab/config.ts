@@ -3,7 +3,7 @@
  *
  * Визначає варіанти тем для кожного проекту.
  * Розподіл користувачів відбувається в bootstrap.js на основі хешу userId.
- * Зміни iframe URL не потрібні — A/B працює прозоро.
+ * A/B вмикається лише з `?ab=true&project=…` і без `?style=` в URL iframe.
  *
  * Щоб додати новий тест:
  * 1. Додай запис з ключем = назва проекту
@@ -31,8 +31,11 @@ export const abTests: ABTestsConfig = {
   // testId оновлено (rocket_theme_v1 → alpa_theme_v1) навмисно: теми повністю
   // перемальовані під нові сегменти, тому попередні заміри незіставні, а нова
   // сіль хешу заново перерозподіляє користувачів між варіантами.
+  //
+  // alpa_theme_v1 → alpa_theme_v2: хеш розподілу виправлено (Math.imul у bootstrap.js),
+  // частки стали 50/50 замість 51,5/48,5 — користувачі перерозподілені, заміри v1 незіставні.
   alpa: {
-    testId: 'alpa_theme_v1',
+    testId: 'alpa_theme_v2',
     variants: [
       { id: 'A', theme: 'AlpaWheelLight', weight: 50 },
       { id: 'B', theme: 'AlpaWheelPro', weight: 50 },

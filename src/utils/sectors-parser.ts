@@ -60,16 +60,11 @@ function parseSingleSector(s: string): { prizeText: string; prizeCurrency: strin
 
 /**
  * Створює об’єкти секторів із рядків і (необов’язково) масиву типів.
- * Якщо формат сектора неправильний — кидає помилку (ловиться на рівні processSectorsFromUrl).
+ * Сектор без пробілу ("JACKPOT", "150%") — увесь рядок стає значенням, валюта порожня.
  */
 export function createSectorObjects(sectors: string[], types?: string[]): Sector[] {
   return sectors.map((raw, index) => {
-    const parsed = parseSingleSector(raw)
-    if (!parsed) {
-      throw new Error(
-        `Неправильний формат сектора: "${raw}". Очікується формат "значення валюта", напр. "100 FS"`,
-      )
-    }
+    const parsed = parseSingleSector(raw) ?? { prizeText: raw, prizeCurrency: '' }
 
     const type = types?.[index]
     return {

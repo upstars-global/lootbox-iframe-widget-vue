@@ -14,7 +14,8 @@
       Проект Rocket перейменовано на Alpa (теми RocketWheel* → AlpaWheel*). На проді
       вже роздані iframe-посилання зі старими значеннями ?project=rocket / ?style=RocketWheel*,
       тому старі імена нормалізуються в нові тут і в bootstrap.js (через window.__lootboxBoot).
-      Мапи аліасів живуть в одному місці — не дублювати їх у скриптах нижче.
+      Мапи аліасів задаються тут; bootstrap.js читає їх із window.__lootboxBoot (власна копія
+      в bootstrap.js — лише запасна, на випадок окремого підключення скрипта).
     -->
     <script>
       ;(function () {
@@ -26,6 +27,12 @@
         }
         // Мають збігатися з isProjectDefault: true у config.ts відповідних тем
         var PROJECT_DEFAULTS = { alpa: 'AlpaWheelLight', king: 'KingWheel', thor: 'ThorWheel' }
+        // Теми кожного проекту — мають збігатися з project у config.ts тем
+        var PROJECT_THEMES = {
+          alpa: ['AlpaWheelLight', 'AlpaWheelPro', 'AlpaWheelMax', 'AlpaWheelMart'],
+          king: ['KingWheel'],
+          thor: ['ThorWheel'],
+        }
         var FALLBACK_THEME = 'AlpaWheelLight'
 
         var params = new URLSearchParams(location.search)
@@ -35,7 +42,20 @@
         style = (style && LEGACY_THEMES[style]) || style
         project = (project && LEGACY_PROJECTS[project]) || project
 
-        var theme = style || (project && PROJECT_DEFAULTS[project]) || FALLBACK_THEME
+        // style беремо, лише якщо тема відома і належить переданому проекту — за тим самим
+        // правилом тему вибирає bootstrap.js, тож прелоадер і фон не розходяться з колесом
+        var projectThemes = project && PROJECT_THEMES[project]
+        var styleKnown = false
+        for (var p in PROJECT_THEMES) {
+          if (PROJECT_THEMES[p].indexOf(style) !== -1) styleKnown = true
+        }
+        var theme = projectThemes
+          ? projectThemes.indexOf(style) !== -1
+            ? style
+            : PROJECT_DEFAULTS[project]
+          : styleKnown
+            ? style
+            : FALLBACK_THEME
 
         window.__lootboxBoot = {
           style: style,
@@ -52,9 +72,13 @@
         document.head.appendChild(link)
       })()
     </script>
+    <!-- Неблокуюче підключення: media="print" не затримує скрипти нижче, після завантаження → all -->
     <link
+      id="google-fonts"
       href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Roboto+Slab:wght@900&family=Rubik:wght@700&display=swap"
       rel="stylesheet"
+      media="print"
+      onload="this.media='all'"
     />
     <style>
       *,
@@ -172,7 +196,7 @@
       Synchronous script to set background BEFORE body rendering (prevents FOUC - Flash of Unstyled Content)
       
       Why it's needed:
-      - bootstrap.js loads asynchronously and sets theme background from config.ts
+      - bootstrap.js loads asynchronously, so the theme background is not known yet when the body renders
       - During async load, body renders with default background causing visible flash
       - This inline script executes synchronously BEFORE body renders, setting correct background immediately
       
@@ -181,7 +205,7 @@
       2. Sets --theme-bg-color CSS variable from hardcoded mapping
       3. Body renders with correct background from the start
       
-      Note: themeBgColors must match backgroundColor values in theme config.ts files
+      Note: themeBgColors needs an entry for every theme (the build checks this); keep the values equal to backgroundColor in the theme config.ts files
     -->
     <script>
       ;(function () {
@@ -202,14 +226,16 @@
         )
 
         // FullStory initialization
-        // Маппінг project → FullStory Org ID (project вже нормалізований: rocket → alpa)
+        // Маппінг project → FullStory Org ID (project вже нормалізований: rocket → alpa).
+        // Проекту без справжнього Org ID тут немає — скрипт FullStory для нього не вантажиться
         var fsOrgMap = {
           alpa: 'FWWXX',
           king: 'o-207RBN-na1',
-          thor: 'THOR_ORG_ID', // TODO: замінити на реальний
         }
 
         var fsOrg = project && fsOrgMap[project]
+        // ?no_analytics (превʼю-фрейми test-ab.html) вимикає і FullStory, не лише track()
+        if (new URLSearchParams(location.search).has('no_analytics')) fsOrg = null
         if (fsOrg) {
           window['_fs_run_in_iframe'] = true
           window['_fs_debug'] = false
@@ -306,10 +332,17 @@
           document.documentElement.removeAttribute('data-theme-ready')
         }
 
-        // Listen to all possible reload events
+        // Listen to all possible reload events (no 'unload': it can keep the host page out of bfcache)
         window.addEventListener('beforeunload', hideContent, { capture: true })
         window.addEventListener('pagehide', hideContent, { capture: true })
-        window.addEventListener('unload', hideContent, { capture: true })
+
+        // Restored from bfcache ("back"): pagehide removed the attribute — put it back
+        // if the theme had been ready, otherwise #app stays hidden with no preloader
+        window.addEventListener('pageshow', function (e) {
+          if (e.persisted && window.currentTheme) {
+            document.documentElement.setAttribute('data-theme-ready', '1')
+          }
+        })
 
         // 3. AUTOMATIC hiding of broken images
         document.addEventListener(
